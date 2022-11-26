@@ -4,16 +4,15 @@ import mime from 'mime';
 import path from 'path';
 import url from 'url';
 
-// import downloadAsset from "./src/download_assets.mjs";
+import downloadAsset from './download_assets';
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 
 const port = 80;
 
-// downloadAsset("https://dd.b.pvp.net/latest/set1-lite-en_us.zip",
-// "set1-lite");
+downloadAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip', 'set1-lite');
 
-
+/*
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
   if (typeof req.url === "undefined") {
@@ -57,3 +56,4 @@ const app = http.createServer(function(req, resp) {
   });
 });
 app.listen(port);
+*/
