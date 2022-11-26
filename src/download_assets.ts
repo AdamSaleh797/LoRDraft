@@ -6,16 +6,16 @@ import path from 'path';
 const _DIRNAME = path.resolve();
 const _ASSET_DIR = _DIRNAME + '/assets';
 
-export default function downloadAsset(url, dst_file_name) {
-  const request = https.get(url, function(response) {
+export default function downloadAsset(url: string, dst_file_name: string) {
+  https.get(url, function(response) {
     const path = _ASSET_DIR + '/' + dst_file_name;
-    let file = fs.createWriteStream(path + '.zip');
+    const file = fs.createWriteStream(path + '.zip');
     response.pipe(file);
 
     file.on('finish', () => {
       file.close();
 
-      decompress(path + '.zip', path).then((files) => {}).catch((error) => {
+      decompress(path + '.zip', path).catch((error) => {
         console.log(error);
       });
     });
