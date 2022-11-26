@@ -6,7 +6,7 @@ import url from 'url';
 
 // import downloadAsset from "./src/download_assets.mjs";
 
-const __dirname = path.resolve();
+const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 
 const port = 80;
 
@@ -16,12 +16,15 @@ const port = 80;
 
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
+  if (typeof req.url === "undefined") {
+    return;
+  }
   let reqFile = url.parse(req.url).pathname;
-  if (reqFile === '/') {
+  if (reqFile === null || reqFile === '/') {
     reqFile = '/main.html';
   }
-  const filename = path.join(__dirname, '/static', reqFile);
-  (fs.exists || path.exists)(filename, function(exists) {
+  const filename = path.join(_STATIC_DIR, reqFile);
+  fs.exists(filename, function(exists) {
     if (exists) {
       fs.readFile(filename, function(err, data) {
         if (err) {
@@ -34,6 +37,13 @@ const app = http.createServer(function(req, resp) {
 
         // File exists and is readable
         const mimetype = mime.getType(filename);
+        if (mimetype === null) {
+          // File exists but has unknown mime type.
+          resp.writeHead(500, {'Content-Type': 'text/plain'});
+          resp.write('Internal server error: could not read file');
+          resp.end();
+          return;
+        }
         resp.writeHead(200, {'Content-Type': mimetype});
         resp.write(data);
         resp.end();
