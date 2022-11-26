@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "sudo node index.js",
+    "format": "git-clang-format --extensions js,mjs",
+    "start": "node index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "clang-format": "^1.8.0",
+    "decompress": "^4.2.1",
     "mime": "^3.0.0"
   }
 }
