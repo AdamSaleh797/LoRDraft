@@ -1,21 +1,27 @@
-import {downloadZipAsset, removeBundle, extractFromBundle } from './download_assets';
 import path from 'path';
-import bundles from './bundles.json';
 
-
+import {downloadZipAsset, extractFromBundle, removeBundle} from './bundle';
+import bundles from './config/bundles.json';
 
 
 export function updateSetPacks() {
   console.log(bundles);
 
   bundles.forEach((bundle) => {
-    downloadZipAsset(bundle.url, bundle.setName, ()=> {
-      extractFromBundle(bundle.setName, bundle.configPath, path.basename(bundle.configPath), ()=> {
-        removeBundle(bundle.setName, ()=>{});
-      });
-     
+    downloadZipAsset(bundle.url, bundle.setName, (err) => {
+      if (err) {
+        throw err;
+      }
+
+      extractFromBundle(
+          bundle.setName, bundle.configPath, path.basename(bundle.configPath),
+          (err) => {
+            if (err) {
+              throw err;
+            }
+
+            removeBundle(bundle.setName);
+          });
     });
-    
-    
-  }) 
+  })
 }
