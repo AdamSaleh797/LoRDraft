@@ -1,0 +1,5 @@
+// ./src/settings.json
+{
+    "dry": false,
+    "debug": false
+}

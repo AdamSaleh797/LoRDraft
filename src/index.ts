@@ -4,14 +4,14 @@ import mime from 'mime';
 import path from 'path';
 import url from 'url';
 
-import downloadAsset from './download_assets';
+import { updateSetPacks } from './set_packs';
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 
 const port = 80;
 
-downloadAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip', 'set1-lite');
-
+//downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip', 'set1-lite');
+updateSetPacks();
 /*
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
