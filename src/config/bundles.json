@@ -3,5 +3,35 @@
     "setName": "set1", 
     "url": "https://dd.b.pvp.net/latest/set1-lite-en_us.zip",
     "configPath": "en_us/data/set1-en_us.json"
+  },
+  {
+    "setName": "set2", 
+    "url": "https://dd.b.pvp.net/latest/set2-lite-en_us.zip",
+    "configPath": "en_us/data/set2-en_us.json"
+  },
+  {
+    "setName": "set3", 
+    "url": "https://dd.b.pvp.net/latest/set3-lite-en_us.zip",
+    "configPath": "en_us/data/set3-en_us.json"
+  },
+  {
+    "setName": "set4", 
+    "url": "https://dd.b.pvp.net/latest/set4-lite-en_us.zip",
+    "configPath": "en_us/data/set4-en_us.json"
+  },
+  {
+    "setName": "set5", 
+    "url": "https://dd.b.pvp.net/latest/set5-lite-en_us.zip",
+    "configPath": "en_us/data/set5-en_us.json"
+  },
+  {
+    "setName": "set6", 
+    "url": "https://dd.b.pvp.net/latest/set6-lite-en_us.zip",
+    "configPath": "en_us/data/set6-en_us.json"
+  },
+  {
+    "setName": "set6cde", 
+    "url": "https://dd.b.pvp.net/latest/set6cde-lite-en_us.zip",
+    "configPath": "en_us/data/set6cde-en_us.json"
   }
 ]

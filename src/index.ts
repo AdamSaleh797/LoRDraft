@@ -11,7 +11,9 @@ const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 const port = 80;
 
 //downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip', 'set1-lite');
-updateSetPacks();
+updateSetPacks((err) => {
+  console.log("finished hehe");
+});
 /*
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
