@@ -2,11 +2,11 @@ import child_process from 'child_process';
 import fs from 'fs';
 import https from 'https';
 import path from 'path';
-import {callback_fn} from './util';
 
 const _DIRNAME = path.resolve();
 const _ASSET_DIR = path.join(_DIRNAME, 'assets');
 
+export type callback_fn = (err: Error|null) => void;
 
 function prepareAssetsDir() {
   try {

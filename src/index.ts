@@ -4,15 +4,20 @@ import mime from 'mime';
 import path from 'path';
 import url from 'url';
 
-import { updateSetPacks } from './set_packs';
+import {updateSetPacks} from './set_packs';
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 
 const port = 80;
 
-//downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip', 'set1-lite');
+// downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip',
+// 'set1-lite');
 updateSetPacks((err) => {
-  console.log("finished hehe");
+  if (err) {
+    console.log(err);
+    return;
+  }
+  console.log('finished hehe');
 });
 /*
 const app = http.createServer(function(req, resp) {
