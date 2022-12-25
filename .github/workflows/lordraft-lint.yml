@@ -17,4 +17,4 @@ jobs:
         with:
           source: '.'
           extensions: 'ts'
-          clangFormatVersion: 14
+          clangFormatVersion: 15
