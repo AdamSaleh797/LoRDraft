@@ -83,3 +83,7 @@ export function parseFile(
     callback(null, cards);
   });
 }
+
+export function isCollectable(card: Card) {
+  return card.rarity.toUpperCase() !== 'NONE';
+}

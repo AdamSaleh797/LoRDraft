@@ -4,11 +4,11 @@ import mime from 'mime';
 import path from 'path';
 import url from 'url';
 
-import {parseFile, updateSetPacks} from './set_packs';
+import {isCollectable, parseFile, updateSetPacks} from './set_packs';
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 
-const port = 80;
+const port = 2000;
 
 // downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip',
 // 'set1-lite');
@@ -20,19 +20,19 @@ const port = 80;
   console.log('finished hehe');
 });*/
 
-const packs = [
+const sets = [
   'set1-en_us.json', 'set2-en_us.json', 'set3-en_us.json', 'set4-en_us.json',
   'set5-en_us.json', 'set6-en_us.json', 'set6cde-en_us.json'
 ];
 
-packs.forEach((pack) => {
-  parseFile(pack, (err, cards) => {
+sets.forEach((set) => {
+  parseFile(set, (err, cards) => {
     if (err || !cards) {
       console.log(err);
       return;
     }
     cards.forEach((card) => {
-      if (card.subtypes.length > 1) {
+      if (isCollectable(card)) {
         console.log(card.name);
         console.log(card.subtypes);
       }
@@ -40,10 +40,10 @@ packs.forEach((pack) => {
   });
 });
 
-/*
+
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
-  if (typeof req.url === "undefined") {
+  if (typeof req.url === 'undefined') {
     return;
   }
   let reqFile = url.parse(req.url).pathname;
@@ -84,4 +84,3 @@ const app = http.createServer(function(req, resp) {
   });
 });
 app.listen(port);
-*/
