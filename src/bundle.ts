@@ -78,3 +78,9 @@ export function removeBundle(
     callback(err);
   });
 }
+
+export function readBundle(
+    bundle: string,
+    callback: (err: Error|null, data: string|null) => void = () => undefined) {
+  fs.readFile(path.join(_ASSET_DIR, bundle), 'utf-8', callback);
+}

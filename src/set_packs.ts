@@ -1,9 +1,10 @@
-import path from 'path';
-import fs from 'fs';
 
-import {downloadZipAsset, extractFromBundle, removeBundle} from './bundle';
+import fs from 'fs';
+import path from 'path';
+
+import {downloadZipAsset, extractFromBundle, readBundle, removeBundle} from './bundle';
 import bundles from './config/bundles.json';
-import './assets/set1-en_us.json';
+
 
 type callback_fn = (err: PromiseRejectedResult[]|null) => void;
 
@@ -47,28 +48,38 @@ export function updateSetPacks(callback: callback_fn = () => undefined) {
       callback(null);
     }
   });
+}
 
-  interface Card{
-    rarity : string;
-    imageUrl : string;
-    cost : number;
-    name : string;
-    regions : string[];  
-  }
+interface Card {
+  rarity: string;
+  imageUrl: string;
+  cost: number;
+  name: string;
+  regions: string[];
+  subtypes: string[];
+}
 
-  function parseFile(file : string) : Card[] {
-      const obj = JSON.parse(fs.readFileSync(file).toString());
-      const cards : Card[] = [];
-      obj.forEach((card : any) => {
-        cards.push({
-          rarity : card.rarity,
-          imageUrl : card.assets[0].gameAbsolutePath,
-          cost : card.cost,
-          name : card.name,
-          regions : card.regions
-         });
-      });     
-      return cards;
-  }
-
+export function parseFile(
+    bundle: string,
+    callback: (err: Error|null, cards: Card[]|null) => void = () =>
+        undefined): void {
+  readBundle(bundle, (err: Error|null, data: string|null) => {
+    if (err || !data) {
+      callback(err, null);
+      return;
+    }
+    const obj = JSON.parse(data);
+    const cards: Card[] = [];
+    obj.forEach((card: any) => {
+      cards.push({
+        rarity: card.rarity,
+        imageUrl: card.assets[0].gameAbsolutePath,
+        cost: card.cost,
+        name: card.name,
+        regions: card.regions,
+        subtypes: card.subtypes
+      });
+    });
+    callback(null, cards);
+  });
 }

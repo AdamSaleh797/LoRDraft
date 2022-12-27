@@ -4,7 +4,7 @@ import mime from 'mime';
 import path from 'path';
 import url from 'url';
 
-import {updateSetPacks} from './set_packs';
+import {parseFile, updateSetPacks} from './set_packs';
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
 
@@ -12,13 +12,34 @@ const port = 80;
 
 // downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip',
 // 'set1-lite');
-updateSetPacks((err) => {
+/*updateSetPacks((err) => {
   if (err) {
     console.log(err);
     return;
   }
   console.log('finished hehe');
+});*/
+
+const packs = [
+  'set1-en_us.json', 'set2-en_us.json', 'set3-en_us.json', 'set4-en_us.json',
+  'set5-en_us.json', 'set6-en_us.json', 'set6cde-en_us.json'
+];
+
+packs.forEach((pack) => {
+  parseFile(pack, (err, cards) => {
+    if (err || !cards) {
+      console.log(err);
+      return;
+    }
+    cards.forEach((card) => {
+      if (card.subtypes.length > 1) {
+        console.log(card.name);
+        console.log(card.subtypes);
+      }
+    });
+  });
 });
+
 /*
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
