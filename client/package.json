@@ -1,5 +1,5 @@
 {
-  "name": "lordraft",
+  "name": "lordraft-client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -17,6 +17,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "format": "",
+    "lint": "",
     "start": "react-scripts start",
     "build": "BUILD_PATH='../../static' react-scripts build"
   },
