@@ -2,28 +2,24 @@
   "name": "lordraft",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "subPackages": [
+    "client",
+    "server"
+  ],
   "scripts": {
-    "format": "clang-format -i $(find src/ -name \"*.ts\" -type f)",
-    "lint": "npx eslint src",
-    "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build-tsc": "node_modules/.bin/tsc -b",
-    "build": "npm run build-tsc && npm run lint"
+    "postinstall": "cd client && npm install && cd ../server && npm install",
+    "format": "subpkg run format",
+    "lint": "subpkg run lint",
+    "start": "cd server && npm run start",
+    "build-client": "cd client && npm run build",
+    "build-server": "cd server && npm run build",
+    "build": "npm run build-client && npm run build-server"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mime": "^3.0.0"
   },
   "devDependencies": {
-    "@types/mime": "^3.0.1",
-    "@types/watch": "^1.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.44.0",
-    "@typescript-eslint/parser": "^5.44.0",
-    "child_process": "^1.0.2",
-    "clang-format": "^1.8.0",
-    "eslint": "^8.28.0",
-    "typescript": "^4.9.3"
+    "subpackage": "^1.1.0"
   }
 }
