@@ -50,7 +50,7 @@ const app = http.createServer(function(req, resp) {
   }
   let reqFile = url.parse(req.url).pathname;
   if (reqFile === null || reqFile === '/') {
-    reqFile = '/main.html';
+    reqFile = '/index.html';
   }
   const filename = path.join(_STATIC_DIR, reqFile);
   fs.exists(filename, function(exists) {
