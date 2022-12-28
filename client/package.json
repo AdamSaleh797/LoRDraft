@@ -19,7 +19,7 @@
   "scripts": {
     "format": "",
     "lint": "",
-    "build-react": "npx webpack --mode development --progress --config webpack.config.js",
+    "build-react": "npx webpack --mode production --progress --config webpack.config.js",
     "build-public": "cp -r public/* ../static/",
     "build": "npm run build-react && npm run build-public"
   },

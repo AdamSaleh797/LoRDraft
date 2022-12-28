@@ -11,7 +11,9 @@
     "format": "subpkg run format",
     "lint": "subpkg run lint",
     "start": "cd server && npm run start",
-    "build": "subpkg run build"
+    "build-client": "cd client && npm run build",
+    "build-server": "cd server && npm run build",
+    "build": "npm run build-client && npm run build-server"
   },
   "author": "",
   "license": "ISC",
