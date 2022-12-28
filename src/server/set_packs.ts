@@ -2,8 +2,9 @@
 import fs from 'fs';
 import path from 'path';
 
+import bundles from '../config/bundles.json';
+
 import {downloadZipAsset, extractFromBundle, readBundle, removeBundle} from './bundle';
-import bundles from './config/bundles.json';
 
 
 type callback_fn = (err: PromiseRejectedResult[]|null) => void;

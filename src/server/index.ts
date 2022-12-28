@@ -6,7 +6,7 @@ import url from 'url';
 
 import {isCollectable, parseFile, updateSetPacks} from './set_packs';
 
-const _STATIC_DIR = path.resolve(path.join(__dirname, '../static'));
+const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'));
 
 const port = 2000;
 
@@ -20,6 +20,7 @@ const port = 2000;
   console.log('finished hehe');
 });*/
 
+/*
 const sets = [
   'set1-en_us.json', 'set2-en_us.json', 'set3-en_us.json', 'set4-en_us.json',
   'set5-en_us.json', 'set6-en_us.json', 'set6cde-en_us.json'
@@ -39,6 +40,7 @@ sets.forEach((set) => {
     });
   });
 });
+*/
 
 
 const app = http.createServer(function(req, resp) {

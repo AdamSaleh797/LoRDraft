@@ -2,11 +2,11 @@
   "name": "lordraft",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server/index.js",
   "scripts": {
     "format": "clang-format -i $(find src/ -name \"*.ts\" -type f)",
     "lint": "npx eslint src",
-    "start": "node dist/index.js",
+    "start": "node dist/server/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-tsc": "node_modules/.bin/tsc -b",
     "build": "npm run build-tsc && npm run lint"
