@@ -1,10 +1,8 @@
-const path = require('path');
+const path = require('path')
 
 module.exports = {
   entry: {
-    'index.ts': [
-      path.resolve(__dirname, 'src/index.ts'),
-    ]
+    'index.ts': [path.resolve(__dirname, 'src/index.ts')],
   },
   output: {
     filename: 'index.js',
@@ -22,13 +20,13 @@ module.exports = {
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        use: ["style-loader", "css-loader"],
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.jsx', '.js'],
+    extensions: ['.tsx', '.mts', '.ts', '.jsx', '.mjs', '.js'],
     modules: ['../node_modules'],
   },
-  target: "node",
-};
+  target: 'node',
+}

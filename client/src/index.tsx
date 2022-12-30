@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import io from 'socket.io-client'
 
 import { Card } from 'card'
 
@@ -43,6 +44,8 @@ class CardComponent extends React.Component<
     )
   }
 }
+
+const socket = io()
 
 const test_card: Card = {
   name: 'Fading Memories',

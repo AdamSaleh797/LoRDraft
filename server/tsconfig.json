@@ -10,16 +10,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "moduleSuffixes": [".tsx", ".mts", ".ts", ""],
     "baseUrl": "./",
     "paths": {
-      "*": [
-        "src/*",
-        "../node_modules/*",
-        "../common/*"
-      ]
+      "*": ["src/*", "../node_modules/*", "../common/*"]
     }
   },
-  "exclude": [
-    "./node_modules"
-  ]
+  "exclude": ["./node_modules"]
 }

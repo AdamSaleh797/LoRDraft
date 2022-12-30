@@ -5,10 +5,10 @@
   "scripts": {
     "format": "npx prettier --write .",
     "check-types": "tsc --noemit",
-    "lint": "",
+    "lint": "npx eslint src",
     "build-react": "npx webpack --mode production --progress --config webpack.config.js",
     "build-public": "cp -r public/* ../static/",
-    "build": "npm run check-types && npm run build-react && npm run build-public"
+    "build": "npm run check-types && npm run build-react && npm run build-public && npm run lint"
   },
   "eslintConfig": {
     "extends": [
