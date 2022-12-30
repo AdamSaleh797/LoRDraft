@@ -6,14 +6,16 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "noEmitOnError": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
       "*": [
-        "node_modules/*",
-        "src/*"
+        "src/*",
+        "../node_modules/*",
+        "../common/*"
       ]
     }
   },

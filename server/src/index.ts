@@ -8,17 +8,17 @@ import {isCollectable, parseFile, updateSetPacks} from './set_packs';
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'));
 
-const port = 2000;
+const port = 80;
 
-// downloadZipAsset('https://dd.b.pvp.net/latest/set1-lite-en_us.zip',
-// 'set1-lite');
-/*updateSetPacks((err) => {
+/*
+updateSetPacks((err) => {
   if (err) {
     console.log(err);
     return;
   }
-  console.log('finished hehe');
-});*/
+  console.log('done downloading!');
+});
+*/
 
 /*
 const sets = [
@@ -26,6 +26,7 @@ const sets = [
   'set5-en_us.json', 'set6-en_us.json', 'set6cde-en_us.json'
 ];
 
+let cnt = 0;
 sets.forEach((set) => {
   parseFile(set, (err, cards) => {
     if (err || !cards) {
@@ -33,7 +34,8 @@ sets.forEach((set) => {
       return;
     }
     cards.forEach((card) => {
-      if (isCollectable(card)) {
+      if (isCollectable(card) && cnt < 10) {
+        cnt++;
         console.log(card.name);
         console.log(card.subtypes);
       }
@@ -41,7 +43,6 @@ sets.forEach((set) => {
   });
 });
 */
-
 
 const app = http.createServer(function(req, resp) {
   // This callback runs when a new connection is made to our HTTP server.

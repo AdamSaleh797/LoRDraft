@@ -1,4 +1,5 @@
 
+import {Card} from 'card';
 import fs from 'fs';
 import path from 'path';
 
@@ -42,21 +43,12 @@ export function updateSetPacks(callback: callback_fn = () => undefined) {
     const err_list = results.filter(
         (result: PromiseSettledResult<unknown>):
             result is PromiseRejectedResult => result.status === 'rejected');
-    if (err_list) {
+    if (err_list.length !== 0) {
       callback(err_list);
     } else {
       callback(null);
     }
   });
-}
-
-interface Card {
-  rarity: string;
-  imageUrl: string;
-  cost: number;
-  name: string;
-  regions: string[];
-  subtypes: string[];
 }
 
 export function parseFile(

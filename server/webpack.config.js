@@ -2,8 +2,8 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    'index.tsx': [
-      path.resolve(__dirname, 'src/index.tsx'),
+    'index.ts': [
+      path.resolve(__dirname, 'src/index.ts'),
     ]
   },
   output: {
@@ -27,7 +27,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.jsx', '.js'],
+    extensions: ['.ts', '.jsx', '.js'],
     modules: ['../node_modules'],
   },
   target: "node",

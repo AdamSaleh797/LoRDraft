@@ -3,8 +3,7 @@ import fs from 'fs';
 import https from 'https';
 import path from 'path';
 
-const _DIRNAME = path.resolve();
-const _ASSET_DIR = path.join(_DIRNAME, 'assets');
+const _ASSET_DIR = path.join(__dirname, '../assets');
 
 export type callback_fn = (err: Error|null) => void;
 
