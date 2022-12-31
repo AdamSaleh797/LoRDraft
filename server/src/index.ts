@@ -3,10 +3,9 @@ import http from 'http'
 import mime from 'mime'
 import path from 'path'
 import url from 'url'
-import { Server } from 'socket.io'
 
 // import { isCollectable, parseFile, updateSetPacks } from './set_packs'
-import { LoRDraftServer, LoRDraftSocket } from 'socket-msgs'
+import { InitSocket } from 'socket_init'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
@@ -89,13 +88,7 @@ const app = http.createServer(function (req, resp) {
   })
 })
 
-const io: LoRDraftServer = new Server(app)
-
-io.on('connection', (socket: LoRDraftSocket) => {
-  console.log('a user connected')
-
-  socket.emit('card', 'Spiderling')
-})
+InitSocket(app)
 
 app.listen(port)
 
