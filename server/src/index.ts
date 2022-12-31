@@ -9,7 +9,7 @@ import { InitSocket } from './socket_init'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
-const port = 2000
+const port = 2001
 
 /*
 updateSetPacks((err) => {

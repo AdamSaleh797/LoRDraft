@@ -12,7 +12,7 @@ interface CardComponentProps {
 function CardComponent(props: CardComponentProps) {
   // Card size is controlled entirely by the width of its container
   const style = {
-    width: '100%',
+    width: '25%',
     display: 'inline-block',
   }
   const img_style = {
@@ -26,33 +26,48 @@ function CardComponent(props: CardComponentProps) {
   )
 }
 
+function PoolComponent() {
+  const [cards, setCards] = React.useState<Card[]>([])
+  const names = ['Illaoi', 'Norra', 'Gwen', 'Aphelios']
+
+  socket.off('card_res')
+  socket.on('card_res', (err, card) => {
+    console.log('new card time !')
+    if (err || card === undefined) {
+      console.log(err)
+      return
+    }
+    console.log(cards.concat([card]))
+    setCards(cards.concat([card]))
+    if (cards.length < 3) {
+      socket.emit('card_req', names[cards.length + 1])
+    }
+  })
+
+  React.useEffect(() => {
+    socket.emit('card_req', names[0])
+  }, [])
+
+  return (
+    <body>
+      {cards.map((card) => {
+        return <CardComponent card={card} />
+      })}
+    </body>
+  )
+}
+
 const socket: LoRDraftClientSocket = io()
 
 function Main() {
-  const [card, setCard] = React.useState<Card | null>(null)
+  const Pool: Card[] = []
 
-  React.useEffect(() => {
-    socket.on('card_res', (err, card) => {
-      if (err || card === undefined) {
-        console.log(err)
-        return
-      }
-      setCard(card)
-    })
-
-    socket.emit('card_req', 'Norra')
-  }, [])
-
-  if (card) {
-    return <CardComponent card={card} />
-  } else {
-    return <div />
-  }
+  return <PoolComponent />
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
-  <div style={{ width: '244px' }}>
+  <div style={{ width: '976px', marginLeft: 'calc(50vw - 8px - 976px/2)' }}>
     <Main />
   </div>
 )
