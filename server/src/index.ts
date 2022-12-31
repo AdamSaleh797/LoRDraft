@@ -5,21 +5,21 @@ import path from 'path'
 import url from 'url'
 import { Server } from 'socket.io'
 
-import { isCollectable, parseFile, updateSetPacks } from './set_packs'
+// import { isCollectable, parseFile, updateSetPacks } from './set_packs'
 import { LoRDraftServer, LoRDraftSocket } from 'sockets'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
-const port = 80
+const port = 2000
 
 /*
 updateSetPacks((err) => {
   if (err) {
-    console.log(err);
-    return;
+    console.log(err)
+    return
   }
-  console.log('done downloading!');
-});
+  console.log('done downloading!')
+})
 */
 
 /*
@@ -93,6 +93,8 @@ const io: LoRDraftServer = new Server(app)
 
 io.on('connection', (socket: LoRDraftSocket) => {
   console.log('a user connected')
+
+  socket.emit('noArg')
 })
 
 app.listen(port)

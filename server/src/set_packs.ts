@@ -1,5 +1,4 @@
-import { Card } from 'card'
-import fs from 'fs'
+import { Card, SetPackCard } from 'card'
 import path from 'path'
 
 import {
@@ -70,7 +69,7 @@ export function parseFile(
     }
     const obj = JSON.parse(data)
     const cards: Card[] = []
-    obj.forEach((card: any) => {
+    obj.forEach((card: SetPackCard) => {
       cards.push({
         rarity: card.rarity,
         imageUrl: card.assets[0].gameAbsolutePath,

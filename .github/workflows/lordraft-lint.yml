@@ -1,0 +1,22 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+jobs:
+  check-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out LoRDraft
+        uses: actions/checkout@v2
+        with:
+          path: LoRDraft
+          submodules: recursive
+      - name: Install eslint
+        working-directory: LoRDraft
+        run: |
+          npm install eslint
+      - name: Run eslint
+        working-directory: LoRDraft
+        run: |
+          npx eslint --max-warnings=0 .

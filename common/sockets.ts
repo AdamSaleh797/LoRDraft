@@ -1,4 +1,5 @@
 import { Server, Socket } from 'socket.io'
+import { Socket as ClientSocket } from 'socket.io-client'
 
 export interface ServerToClientEvents {
   noArg: () => void
@@ -31,4 +32,9 @@ export type LoRDraftSocket = Socket<
   ServerToClientEvents,
   InterServerEvents,
   SocketData
+>
+
+export type LoRDraftClientSocket = ClientSocket<
+  ServerToClientEvents,
+  ClientToServerEvents
 >

@@ -6,7 +6,7 @@
     "format": "npx prettier --write .",
     "check-types": "tsc --noemit",
     "lint": "npx eslint src",
-    "start": "sudo node dist/index.js",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-tsc": "npx webpack --mode development --progress --config webpack.config.js",
     "build": "npm run check-types && npm run build-tsc && npm run lint"

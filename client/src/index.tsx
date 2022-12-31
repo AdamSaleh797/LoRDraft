@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
 import { Card } from 'card'
+import { LoRDraftClientSocket } from 'sockets'
 
 interface CardComponentProps {
   card: Card
@@ -45,7 +46,11 @@ class CardComponent extends React.Component<
   }
 }
 
-const socket = io()
+const socket: LoRDraftClientSocket = io()
+
+socket.on('noArg', () => {
+  console.log('Received test!')
+})
 
 const test_card: Card = {
   name: 'Fading Memories',
