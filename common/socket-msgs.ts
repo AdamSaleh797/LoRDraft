@@ -1,23 +1,20 @@
 import { Server, Socket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
+import { Card } from 'card'
+
 export interface ServerToClientEvents {
-  noArg: () => void
-  basicEmit: (a: number, b: string, c: Buffer) => void
-  withAck: (d: string, callback: (e: number) => void) => void
+  card: (name: string) => void
 }
 
 export interface ClientToServerEvents {
   hello: () => void
 }
 
-export interface InterServerEvents {
-  ping: () => void
-}
+export type InterServerEvents = Record<string, never>
 
 export interface SocketData {
-  name: string
-  age: number
+  token?: string
 }
 
 export type LoRDraftServer = Server<

@@ -6,7 +6,7 @@ import url from 'url'
 import { Server } from 'socket.io'
 
 // import { isCollectable, parseFile, updateSetPacks } from './set_packs'
-import { LoRDraftServer, LoRDraftSocket } from 'sockets'
+import { LoRDraftServer, LoRDraftSocket } from 'socket-msgs'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
@@ -94,7 +94,19 @@ const io: LoRDraftServer = new Server(app)
 io.on('connection', (socket: LoRDraftSocket) => {
   console.log('a user connected')
 
-  socket.emit('noArg')
+  socket.emit('card', 'Spiderling')
 })
 
 app.listen(port)
+
+{
+  let addr = app.address()
+  if (addr !== null && typeof addr !== 'string') {
+    if (addr.family === 'IPv6') {
+      addr = `[${addr.address}]:${addr.port}`
+    } else {
+      addr = `${addr.address}:${addr.port}`
+    }
+  }
+  console.log(`Server running on http://${addr}`)
+}
