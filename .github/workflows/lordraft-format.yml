@@ -1,0 +1,22 @@
+name: Format
+
+on:
+  push:
+  pull_request:
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out LoRDraft
+        uses: actions/checkout@v2
+        with:
+          path: LoRDraft
+          submodules: recursive
+      - name: Install prettier
+        working-directory: LoRDraft
+        run: |
+          npm install prettier
+      - name: Run prettier
+        working-directory: LoRDraft
+        run: |
+          npx prettier -c .
