@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
+import { Empty } from 'lor_util'
 import { Card } from 'card'
 import { LoRDraftClientSocket } from 'socket-msgs'
 
@@ -9,61 +10,52 @@ interface CardComponentProps {
   card: Card
 }
 
-interface CardComponentState {
-  card: Card
-}
+function CardComponent(props: CardComponentProps) {
+  const card = React.useState<Card>(props.card)[0]
 
-class CardComponent extends React.Component<
-  CardComponentProps,
-  CardComponentState
-> {
-  constructor(props: CardComponentProps) {
-    super(props)
-    this.state = {
-      card: props.card,
-    }
+  // Card size is controlled entirely by the width of its container
+  const style = {
+    width: '100%',
+    display: 'inline-block',
   }
-
-  render() {
-    // Card size is controlled entirely by the width of its container
-    const style = {
-      width: '100%',
-      display: 'inline-block',
-    }
-    const img_style = {
-      width: '100%',
-      height: '100%',
-    }
-    return (
-      <div className='card' style={style}>
-        <img
-          src={this.state.card.imageUrl}
-          alt={this.state.card.name}
-          style={img_style}
-        />
-      </div>
-    )
+  const img_style = {
+    width: '100%',
+    height: '100%',
   }
+  return (
+    <div className='card' style={style}>
+      <img src={card.imageUrl} alt={card.name} style={img_style} />
+    </div>
+  )
 }
 
 const socket: LoRDraftClientSocket = io()
 
-socket.on('card', (name: string) => {
-  console.log(`Received request for card ${name}`)
-})
+function Main() {
+  const [card, setCard] = React.useState<Card | null>(null)
 
-const test_card: Card = {
-  name: 'Fading Memories',
-  rarity: 'RARE',
-  imageUrl: 'http://dd.b.pvp.net/3_21_0/set1/en_us/img/cards/01SI047.png',
-  cost: 0,
-  regions: ['Shadow Isles'],
-  subtypes: [],
+  React.useEffect(() => {
+    socket.on('card_res', (err, card) => {
+      if (err || card === undefined) {
+        console.log(err)
+        return
+      }
+      setCard(card)
+    })
+
+    socket.emit('card_req', 'Spiderling')
+  }, [])
+
+  if (card) {
+    return <CardComponent card={card} />
+  } else {
+    return <div />
+  }
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <div style={{ width: '244px' }}>
-    <CardComponent card={test_card} />
+    <Main />
   </div>
 )

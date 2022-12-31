@@ -2,20 +2,23 @@ import { Server, Socket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
 import { Card } from 'card'
+import { Empty } from 'lor_util'
+
+export interface ClientAuth {
+  token?: string[]
+}
 
 export interface ServerToClientEvents {
-  card: (name: string) => void
+  card_res: (err?: Error, card?: Card) => void
 }
 
 export interface ClientToServerEvents {
-  hello: () => void
+  card_req: (name?: string) => void
 }
 
-export type InterServerEvents = Record<string, never>
+export type InterServerEvents = Empty
 
-export interface SocketData {
-  token?: string
-}
+export type SocketData = Empty
 
 export type LoRDraftServer = Server<
   ClientToServerEvents,

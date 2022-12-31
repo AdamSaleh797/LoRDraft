@@ -58,7 +58,7 @@ export function updateSetPacks(callback: callback_fn = () => undefined) {
   })
 }
 
-export function parseFile(
+export function loadSetPack(
   bundle: string,
   callback: (err: Error | null, cards: Card[] | null) => void = () => undefined
 ): void {

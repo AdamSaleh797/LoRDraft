@@ -5,7 +5,7 @@ import path from 'path'
 import url from 'url'
 
 // import { isCollectable, parseFile, updateSetPacks } from './set_packs'
-import { InitSocket } from 'socket_init'
+import { InitSocket } from './socket_init'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
@@ -29,7 +29,7 @@ const sets = [
 
 let cnt = 0;
 sets.forEach((set) => {
-  parseFile(set, (err, cards) => {
+  loadSetPack(set, (err, cards) => {
     if (err || !cards) {
       console.log(err);
       return;
