@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "format": "npx prettier --write .",
     "check-types": "tsc --noemit",
     "lint": "npx eslint .",
     "build": "npm run check-types && npm run lint"

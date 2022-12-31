@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "format": "npx prettier --write .",
     "check-types": "tsc --noemit",
     "lint": "npx eslint src",
     "start": "node dist/index.js",

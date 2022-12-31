@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "format": "npx prettier --write .",
     "check-types": "tsc --noemit",
     "lint": "npx eslint src",
     "build-react": "npx webpack --mode development --progress --config webpack.config.js",

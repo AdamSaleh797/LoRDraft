@@ -11,6 +11,18 @@ import bundles from './config/bundles.json'
 
 type callback_fn = (err: PromiseRejectedResult[] | null) => void
 
+const g_set_packs = [
+  'set1-en_us.json',
+  'set2-en_us.json',
+  'set3-en_us.json',
+  'set4-en_us.json',
+  'set5-en_us.json',
+  'set6-en_us.json',
+  'set6cde-en_us.json',
+]
+
+let g_cards: Card[] | undefined
+
 export function updateSetPacks(callback: callback_fn = () => undefined) {
   console.log(bundles)
   const promiseList = bundles.map((bundle) => {
@@ -81,6 +93,37 @@ export function loadSetPack(
     })
     callback(null, cards)
   })
+}
+
+export function allCards(
+  callback: (err: Error | null, cards: Card[] | null) => void
+): void {
+  if (g_cards !== undefined) {
+    callback(null, g_cards)
+    return
+  }
+
+  Promise.all(
+    g_set_packs.map((set) => {
+      return new Promise<Card[]>((resolve, reject) => {
+        loadSetPack(set, (err, cards) => {
+          if (err || !cards) {
+            reject(err)
+            return
+          }
+          resolve(cards.filter((card) => isCollectable(card)))
+        })
+      })
+    })
+  ).then(
+    (cards) => {
+      g_cards = cards.flat(1)
+      callback(null, g_cards)
+    },
+    (err) => {
+      callback(err, null)
+    }
+  )
 }
 
 export function isCollectable(card: Card) {

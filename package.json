@@ -8,7 +8,7 @@
     "server"
   ],
   "scripts": {
-    "format": "subpkg run format",
+    "format": "npx prettier --write .",
     "lint": "subpkg run lint",
     "start": "cd server && npm run start",
     "build-common": "cd common && npm run build",
