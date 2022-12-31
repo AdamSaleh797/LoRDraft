@@ -11,8 +11,6 @@ interface CardComponentProps {
 }
 
 function CardComponent(props: CardComponentProps) {
-  const card = React.useState<Card>(props.card)[0]
-
   // Card size is controlled entirely by the width of its container
   const style = {
     width: '100%',
@@ -24,7 +22,7 @@ function CardComponent(props: CardComponentProps) {
   }
   return (
     <div className='card' style={style}>
-      <img src={card.imageUrl} alt={card.name} style={img_style} />
+      <img src={props.card.imageUrl} alt={props.card.name} style={img_style} />
     </div>
   )
 }
@@ -43,7 +41,7 @@ function Main() {
       setCard(card)
     })
 
-    socket.emit('card_req', 'Spiderling')
+    socket.emit('card_req', 'Norra')
   }, [])
 
   if (card) {
