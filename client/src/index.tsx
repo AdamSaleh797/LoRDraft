@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
-import { Empty } from 'lor_util'
 import { Card } from 'card'
 import { LoRDraftClientSocket } from 'socket-msgs'
 
