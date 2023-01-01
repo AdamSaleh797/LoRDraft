@@ -4,6 +4,7 @@ import io from 'socket.io-client'
 
 import { Card } from 'card'
 import { LoRDraftClientSocket } from 'socket-msgs'
+import { SessionComponent } from './auth_session'
 
 interface CardComponentProps {
   card: Card
@@ -44,7 +45,12 @@ function Main() {
   }, [])
 
   if (card) {
-    return <CardComponent card={card} />
+    return (
+      <div>
+        <SessionComponent socket={socket} />
+        <CardComponent card={card} />
+      </div>
+    )
   } else {
     return <div />
   }
