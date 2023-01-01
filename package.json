@@ -60,6 +60,7 @@
     "@types/jest": "^29.2.4",
     "@types/node": "^18.11.18",
     "bcrypt": "^5.1.0",
+    "buffer": "^6.0.3",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "mime": "^3.0.0",

@@ -1,5 +1,10 @@
 import crypto from 'crypto'
-import { LoginCred, LoginCredT, LoRDraftSocket } from 'socket-msgs'
+import {
+  LoginCred,
+  LoginCredT,
+  LoRDraftSocket,
+  SessionCredT,
+} from 'socket-msgs'
 
 import { isOk, MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 import assert from 'assert'
@@ -9,6 +14,7 @@ export interface SessionAuthInfo {
 }
 
 export interface AuthUser {
+  username: string
   password_hash: Buffer
   logged_in: boolean
   // Defined only when logged in.
@@ -30,6 +36,7 @@ const users: AuthUserDict = new Map()
   const hash = crypto.createHash(PASSWORD_HASH_METHOD)
   const password_hash = hash.update('test_pw').digest()
   users.set('clayton', {
+    username: 'clayton',
     password_hash: password_hash,
     logged_in: false,
   })
@@ -61,6 +68,57 @@ export function init_auth(socket: LoRDraftSocket): void {
         token: auth_user.session_info.token,
       })
     })
+  })
+
+  socket.on('join_session_req', (session_cred) => {
+    if (!SessionCredT.guard(session_cred)) {
+      // Invalid input, we can ignore
+      console.log('received invalid join session input:')
+      console.log(session_cred)
+      return
+    }
+
+    join_session(
+      session_cred.username,
+      session_cred.token,
+      (status, auth_user) => {
+        if (!isOk(status)) {
+          socket.emit('join_session_res', status)
+          return
+        }
+        assert(auth_user !== undefined)
+
+        socket.emit('join_session_res', status, {
+          username: session_cred.username,
+          token: auth_user.session_info.token,
+        })
+      }
+    )
+  })
+
+  socket.on('logout_req', (session_cred) => {
+    if (!SessionCredT.guard(session_cred)) {
+      // Invalid input, we can ignore
+      console.log('received invalid logout input:')
+      console.log(session_cred)
+      return
+    }
+
+    join_session(
+      session_cred.username,
+      session_cred.token,
+      (status, auth_user) => {
+        if (!isOk(status)) {
+          socket.emit('logout_res', status)
+          return
+        }
+        assert(auth_user !== undefined)
+
+        logout(auth_user, (status) => {
+          socket.emit('logout_res', status)
+        })
+      }
+    )
   })
 }
 
@@ -109,27 +167,11 @@ export function login(
 }
 
 export function logout(
-  username: string,
+  auth_user: LoggedInAuthUser,
   callback: (status: Status) => void
 ): void {
-  const auth_user = users.get(username)
-  if (auth_user === undefined) {
-    callback(MakeErrStatus(StatusCode.UNKNOWN_USER, `Unknown user ${username}`))
-    return
-  }
-
-  if (!auth_user.logged_in) {
-    callback(
-      MakeErrStatus(
-        StatusCode.NOT_LOGGED_IN,
-        `User ${username} is not logged in`
-      )
-    )
-    return
-  }
-
   auth_user.logged_in = false
-  auth_user.session_info = undefined
+  ;(auth_user as AuthUser).session_info = undefined
   callback(OkStatus)
 }
 
@@ -154,10 +196,13 @@ export function join_session(
     return
   }
 
-  if (!crypto.timingSafeEqual(token, auth_user.session_info.token)) {
+  if (
+    token.length !== auth_user.session_info.token.length ||
+    !crypto.timingSafeEqual(token, auth_user.session_info.token)
+  ) {
     callback(
       MakeErrStatus(
-        StatusCode.MISSING_TOKEN,
+        StatusCode.INVALID_TOKEN,
         `Token provided for ${username} is invalid`
       )
     )

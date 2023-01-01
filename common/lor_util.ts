@@ -7,7 +7,7 @@ export enum StatusCode {
   LOGGED_IN = 'LOGGED_IN',
   NOT_LOGGED_IN = 'NOT_LOGGED_IN',
   INCORRECT_PASSWORD = 'INCORRECT_PASSWORD',
-  MISSING_TOKEN = 'MISSING_TOKEN',
+  INVALID_TOKEN = 'INVALID_TOKEN',
 }
 
 export interface OkStatusT {
