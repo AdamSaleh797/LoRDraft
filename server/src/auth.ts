@@ -3,6 +3,8 @@ import {
   LoginCred,
   LoginCredT,
   LoRDraftSocket,
+  RegisterInfo,
+  RegisterInfoT,
   SessionCredT,
 } from 'socket-msgs'
 
@@ -22,6 +24,7 @@ export interface SessionAuthInfo {
 export interface AuthUser {
   username: string
   password_hash: Buffer
+  email: string
   logged_in: boolean
   // Defined only when logged in.
   session_info?: SessionAuthInfo
@@ -38,21 +41,24 @@ const TOKEN_LENGTH = 256
 
 const users: AuthUserDict = new Map()
 
-{
-  const hash = crypto.createHash(PASSWORD_HASH_METHOD)
-  const password_hash = hash.update('test_pw').digest()
-  users.set('clayton', {
-    username: 'clayton',
-    password_hash: password_hash,
-    logged_in: false,
-  })
-}
-
 function logged_in(auth_user: AuthUser): auth_user is LoggedInAuthUser {
   return auth_user.logged_in
 }
 
 export function init_auth(socket: LoRDraftSocket): void {
+  socket.on('register_req', (register_info) => {
+    if (!RegisterInfoT.guard(register_info)) {
+      // Invalid input, we can ignore
+      console.log('received invalid register input:')
+      console.log(register_info)
+      return
+    }
+
+    register(register_info, (status) => {
+      socket.emit('register_res', status)
+    })
+  })
+
   socket.on('login_req', (login_cred?: LoginCred) => {
     if (!LoginCredT.guard(login_cred)) {
       // Invalid input, we can ignore
@@ -61,7 +67,7 @@ export function init_auth(socket: LoRDraftSocket): void {
       return
     }
 
-    login(login_cred.username, login_cred.password, (status, auth_user) => {
+    login(login_cred, (status, auth_user) => {
       if (!isOk(status)) {
         socket.emit('login_res', status)
         return
@@ -128,14 +134,48 @@ export function init_auth(socket: LoRDraftSocket): void {
   })
 }
 
+function register(
+  register_info: RegisterInfo,
+  callback: (status: Status) => void
+) {
+  const auth_user = users.get(register_info.username)
+  if (auth_user !== undefined) {
+    callback(
+      MakeErrStatus(
+        StatusCode.USER_ALREADY_EXISTS,
+        `User ${register_info.username} already exists`
+      )
+    )
+    return
+  }
+
+  // TODO: check that email is not already used
+
+  const hash = crypto.createHash(PASSWORD_HASH_METHOD)
+  const password_hash = hash.update(register_info.password).digest()
+  const new_user = {
+    username: register_info.username,
+    password_hash: password_hash,
+    email: register_info.email,
+    logged_in: false,
+  }
+
+  users.set(register_info.username, new_user)
+  callback(OkStatus)
+}
+
 export function login(
-  username: string,
-  password: string,
+  login_cred: LoginCred,
   callback: (status: Status, auth_user?: AuthUser) => void
 ): void {
-  const auth_user = users.get(username)
+  const auth_user = users.get(login_cred.username)
   if (auth_user === undefined) {
-    callback(MakeErrStatus(StatusCode.UNKNOWN_USER, `Unknown user ${username}`))
+    callback(
+      MakeErrStatus(
+        StatusCode.UNKNOWN_USER,
+        `Unknown user ${login_cred.username}`
+      )
+    )
     return
   }
 
@@ -143,19 +183,19 @@ export function login(
     callback(
       MakeErrStatus(
         StatusCode.LOGGED_IN,
-        `User ${username} is already logged in`
+        `User ${login_cred.username} is already logged in`
       )
     )
     return
   }
 
   const hash = crypto.createHash(PASSWORD_HASH_METHOD)
-  const password_hash = hash.update(password).digest()
+  const password_hash = hash.update(login_cred.password).digest()
   if (!crypto.timingSafeEqual(password_hash, auth_user.password_hash)) {
     callback(
       MakeErrStatus(
         StatusCode.INCORRECT_PASSWORD,
-        `Password for user ${username} is incorrect`
+        `Password for user ${login_cred.username} is incorrect`
       )
     )
     return

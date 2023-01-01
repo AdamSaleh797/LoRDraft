@@ -61,13 +61,15 @@ function clearStorageAuthInfo(): void {
 }
 
 interface LoginComponentProps {
+  register_fn: () => void
   login_fn: () => void
 }
 
 export function LoginComponent(props: LoginComponentProps) {
   return (
     <div>
-      <button onClick={props.login_fn}>Log in/Sign up</button>
+      <button onClick={props.login_fn}>Log in</button>
+      <button onClick={props.register_fn}>Register</button>
     </div>
   )
 }
@@ -96,6 +98,12 @@ export function SessionComponent(props: SessionComponentProps) {
   const socket = props.socket
 
   React.useEffect(() => {
+    socket.on('register_res', (status) => {
+      if (!isOk(status)) {
+        console.log(status)
+      }
+    })
+
     socket.on('login_res', (status, session_cred) => {
       console.log(status)
 
@@ -146,10 +154,17 @@ export function SessionComponent(props: SessionComponentProps) {
 
     return <UserComponent username={username} logout_fn={logout} />
   } else {
+    const register = () => {
+      socket.emit('register_req', {
+        username: 'clayton',
+        password: 'test_pw',
+        email: 'cknit1999@gmail.com',
+      })
+    }
     const login = () => {
       socket.emit('login_req', { username: 'clayton', password: 'test_pw' })
     }
 
-    return <LoginComponent login_fn={login} />
+    return <LoginComponent register_fn={register} login_fn={login} />
   }
 }

@@ -8,6 +8,7 @@ export enum StatusCode {
   NOT_LOGGED_IN = 'NOT_LOGGED_IN',
   INCORRECT_PASSWORD = 'INCORRECT_PASSWORD',
   INVALID_TOKEN = 'INVALID_TOKEN',
+  USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
 }
 
 export interface OkStatusT {
@@ -21,7 +22,10 @@ export interface ErrStatusT {
 
 export type Status = OkStatusT | ErrStatusT
 
-export function MakeErrStatus(status: StatusCode, message: string): ErrStatusT {
+export function MakeErrStatus(
+  status: Exclude<StatusCode, StatusCode.OK>,
+  message: string
+): ErrStatusT {
   return {
     status: status,
     message: message,
