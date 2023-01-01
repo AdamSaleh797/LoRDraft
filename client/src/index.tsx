@@ -4,6 +4,7 @@ import io from 'socket.io-client'
 
 import { Card } from 'card'
 import { LoRDraftClientSocket } from 'socket-msgs'
+import { SessionComponent } from './auth_session'
 
 interface CardComponentProps {
   card: Card
@@ -62,7 +63,12 @@ const socket: LoRDraftClientSocket = io()
 function Main() {
   const Pool: Card[] = []
 
-  return <PoolComponent />
+  return (
+    <div>
+      <PoolComponent />
+      <SessionComponent socket={socket} />
+    </div>
+  )
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)

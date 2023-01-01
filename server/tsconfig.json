@@ -15,6 +15,5 @@
     "paths": {
       "*": ["src/*", "../node_modules/*", "../common/*"]
     }
-  },
-  "exclude": ["./node_modules"]
+  }
 }
