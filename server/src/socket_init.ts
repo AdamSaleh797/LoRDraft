@@ -3,12 +3,15 @@ import { Server } from 'socket.io'
 
 import { allCards } from './set_packs'
 import { LoRDraftServer, LoRDraftSocket } from 'socket-msgs'
+import { init_auth } from './auth'
 
 export function InitSocket(app: http.Server): void {
   const io: LoRDraftServer = new Server(app)
 
   io.on('connection', (socket: LoRDraftSocket) => {
     console.log('a user connected')
+
+    init_auth(socket)
 
     socket.on('card_req', (name?: string) => {
       if (name === undefined) {

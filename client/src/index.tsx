@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
 import { Card } from 'card'
-import { LoRDraftClientSocket } from 'socket-msgs'
+import { LoginCred, LoRDraftClientSocket } from 'socket-msgs'
+import { Status } from 'lor_util'
 
 interface CardComponentProps {
   card: Card
@@ -40,7 +41,14 @@ function Main() {
       setCard(card)
     })
 
+    socket.on('login_res', (status, session_cred) => {
+      console.log(status)
+      console.log(session_cred)
+      console.log(session_cred?.token)
+    })
+
     socket.emit('card_req', 'Norra')
+    socket.emit('login_req', { username: 'clayton', password: 'test_pw' })
   }, [])
 
   if (card) {
