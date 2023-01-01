@@ -9,8 +9,14 @@ import {
 import { isOk, MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 import assert from 'assert'
 
+// Expiration time of sessions in milliseconds.
+const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000
+
 export interface SessionAuthInfo {
   token: Buffer
+  // The last time the user provided their login credentials, in milliseconds
+  // from the epoch.
+  login_time: number
 }
 
 export interface AuthUser {
@@ -159,9 +165,12 @@ export function login(
   // requests in this session.
   const token = crypto.randomBytes(TOKEN_LENGTH)
 
+  const now = new Date().getTime()
+
   auth_user.logged_in = true
   auth_user.session_info = {
     token: token,
+    login_time: now,
   }
   callback(OkStatus, auth_user)
 }
@@ -206,6 +215,24 @@ export function join_session(
         `Token provided for ${username} is invalid`
       )
     )
+    return
+  }
+
+  const now = new Date().getTime()
+  if (now - auth_user.session_info.login_time > SESSION_EXPIRATION_TIME) {
+    // This session is expired.
+    logout(auth_user, (status) => {
+      if (!isOk(status)) {
+        callback(status)
+      } else {
+        callback(
+          MakeErrStatus(
+            StatusCode.NOT_LOGGED_IN,
+            `User ${username} is not logged in`
+          )
+        )
+      }
+    })
     return
   }
 
