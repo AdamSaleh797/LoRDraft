@@ -15,6 +15,7 @@ function getStorageAuthInfo(): SessionCred | null {
   const auth_info_prim: unknown = JSON.parse(
     auth_info_str,
     (_1, val: unknown) => {
+      // Transform the serialized Buffers back into the correct Buffer view.
       if (
         val !== null &&
         typeof val === 'object' &&
@@ -29,7 +30,7 @@ function getStorageAuthInfo(): SessionCred | null {
       }
     }
   )
-  console.log((auth_info_prim as SessionCred).token)
+
   SessionCredT.check(auth_info_prim)
   if (!SessionCredT.guard(auth_info_prim)) {
     console.log("session cred doesn't match expected format:")
@@ -53,7 +54,6 @@ function setStorageAuthInfo(session_cred: SessionCred): void {
     STORAGE_AUTH_INFO_KEY,
     JSON.stringify(session_cred)
   )
-  console.log(JSON.stringify(session_cred))
 }
 
 function clearStorageAuthInfo(): void {
@@ -74,10 +74,16 @@ export function LoginComponent(props: LoginComponentProps) {
 
 interface UserComponentProps {
   username: string
+  logout_fn: () => void
 }
 
 export function UserComponent(props: UserComponentProps) {
-  return <div>{props.username}</div>
+  return (
+    <div>
+      <div>{props.username}</div>
+      <button onClick={props.logout_fn}>Log out</button>
+    </div>
+  )
 }
 
 interface SessionComponentProps {
@@ -92,7 +98,6 @@ export function SessionComponent(props: SessionComponentProps) {
   React.useEffect(() => {
     socket.on('login_res', (status, session_cred) => {
       console.log(status)
-      console.log(session_cred)
 
       if (isOk(status) && session_cred !== undefined) {
         // Explicitly convert token to a buffer, as it is actually deserialized as an ArrayBuffer.
@@ -104,12 +109,12 @@ export function SessionComponent(props: SessionComponentProps) {
     })
 
     socket.on('join_session_res', (status, session_cred) => {
-      console.log('joined session')
-      console.log(status)
-
       if (isOk(status) && session_cred !== undefined) {
+        console.log('joined session')
         setUsername(session_cred.username)
       } else {
+        console.log('failed to join session')
+        console.log(status)
         console.log('clearing token session storage')
         clearStorageAuthInfo()
       }
@@ -120,6 +125,7 @@ export function SessionComponent(props: SessionComponentProps) {
       console.log(status)
 
       clearStorageAuthInfo()
+      setUsername(null)
     })
   }, [])
 
@@ -131,10 +137,16 @@ export function SessionComponent(props: SessionComponentProps) {
   }
 
   if (username !== null) {
-    return <UserComponent username={username} />
+    const logout = () => {
+      const auth_info = getStorageAuthInfo()
+      if (auth_info !== null) {
+        socket.emit('logout_req', auth_info)
+      }
+    }
+
+    return <UserComponent username={username} logout_fn={logout} />
   } else {
     const login = () => {
-      console.log('click!')
       socket.emit('login_req', { username: 'clayton', password: 'test_pw' })
     }
 
