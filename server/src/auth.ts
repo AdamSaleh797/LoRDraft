@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { LoginCred, LoRDraftSocket } from 'socket-msgs'
+import { LoginCred, LoginCredT, LoRDraftSocket } from 'socket-msgs'
 
 import { isOk, MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 import assert from 'assert'
@@ -39,8 +39,10 @@ export function init_auth(socket: LoRDraftSocket): void {
   })
 
   socket.on('login_req', (login_cred?: LoginCred) => {
-    if (login_cred === undefined) {
+    if (!LoginCredT.guard(login_cred)) {
       // Invalid input, we can ignore
+      console.log('received invalid login input:')
+      console.log(login_cred)
       return
     }
 

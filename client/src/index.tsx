@@ -49,6 +49,10 @@ function Main() {
 
     socket.emit('card_req', 'Norra')
     socket.emit('login_req', { username: 'clayton', password: 'test_pw' })
+    socket.emit('login_req', {
+      username: { test: 1 } as any as string,
+      password: 'test_pw',
+    })
   }, [])
 
   if (card) {
