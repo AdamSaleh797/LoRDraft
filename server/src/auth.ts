@@ -26,18 +26,20 @@ const TOKEN_LENGTH = 256
 
 const users: AuthUserDict = new Map()
 
-function logged_in(auth_user: AuthUser): auth_user is LoggedInAuthUser {
-  return auth_user.logged_in
-}
-
-export function init_auth(socket: LoRDraftSocket): void {
+{
   const hash = crypto.createHash(PASSWORD_HASH_METHOD)
   const password_hash = hash.update('test_pw').digest()
   users.set('clayton', {
     password_hash: password_hash,
     logged_in: false,
   })
+}
 
+function logged_in(auth_user: AuthUser): auth_user is LoggedInAuthUser {
+  return auth_user.logged_in
+}
+
+export function init_auth(socket: LoRDraftSocket): void {
   socket.on('login_req', (login_cred?: LoginCred) => {
     if (!LoginCredT.guard(login_cred)) {
       // Invalid input, we can ignore

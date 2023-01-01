@@ -44,7 +44,6 @@ function Main() {
     socket.on('login_res', (status, session_cred) => {
       console.log(status)
       console.log(session_cred)
-      console.log(session_cred?.token)
     })
 
     socket.emit('card_req', 'Norra')
