@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { InstanceOf, Record, String } from 'runtypes'
 import { Server, Socket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
