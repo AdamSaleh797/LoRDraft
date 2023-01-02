@@ -10,12 +10,13 @@ const MAX_DISPLAY_COST = 8
 interface CardComponentProps {
   card: Card
   recordCard: (card: Card) => void
+  numCards: number
 }
 
 function CardComponent(props: CardComponentProps) {
   // Card size is controlled entirely by the width of its container
   const style = {
-    width: '25%',
+    width: `${100 / props.numCards}%`,
     display: 'inline-block',
   }
   const img_style = {
@@ -74,7 +75,13 @@ function PoolComponent(props: PoolComponentProps) {
   return (
     <div onClick={switchPool}>
       {cards.map((card) => {
-        return <CardComponent card={card} recordCard={props.recordCard} />
+        return (
+          <CardComponent
+            card={card}
+            recordCard={props.recordCard}
+            numCards={cards.length}
+          />
+        )
       })}
     </div>
   )
