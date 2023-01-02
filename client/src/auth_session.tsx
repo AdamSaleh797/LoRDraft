@@ -52,14 +52,7 @@ function getStorageAuthInfo(): SessionCred | null {
 function setStorageAuthInfo(session_cred: SessionCred): void {
   window.sessionStorage.setItem(
     STORAGE_AUTH_INFO_KEY,
-    JSON.stringify(session_cred, (key, val) => {
-      // if (key === 'buffer') {
-      //   Buffer.
-      // }
-      // else {
-      return val
-      // }
-    })
+    JSON.stringify(session_cred)
   )
 }
 
