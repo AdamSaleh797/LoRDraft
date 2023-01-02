@@ -3,7 +3,7 @@ import React from 'react'
 import { Buffer } from 'buffer'
 import { LoRDraftClientSocket, SessionCred, SessionCredT } from 'socket-msgs'
 import { isOk, Status } from 'lor_util'
-import { StateMachine, StateMachineDef } from 'state_machine'
+import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
 
