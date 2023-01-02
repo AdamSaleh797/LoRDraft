@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { createReadStream } from 'fs'
 import { builtinModules } from 'module'
 import { numberLiteralTypeAnnotation } from '@babel/types'
+import { calculateNewValue } from '@testing-library/user-event/dist/utils'
 
 const MAX_DISPLAY_COST = 8
 
@@ -73,8 +74,8 @@ function PoolComponent(props: PoolComponentProps) {
 
   const switchPool = () => {
     setCards([])
-    setNames(['Viego', 'Aatrox', 'Seraphine', 'Vayne'])
-    socket.emit('card_req', 'Viego')
+    setNames(['Gravitum', 'Redeemed Prodigy', 'Kindred', 'Chip'])
+    socket.emit('card_req', 'Gravitum')
   }
 
   return (
@@ -97,26 +98,32 @@ function ManaCurve(props: ManaCurveComponentProps) {
     histogram[Math.min(card.cost, MAX_DISPLAY_COST)]++
   })
 
+  const graphContainer = {
+    height: '200px',
+  }
+
   return (
     <div>
-      <div>
+      <div style={graphContainer}>
         {histogram.map((manaValueCount) => {
+          const maxCount = Math.max(...histogram, 1)
+
           const barStyle = {
             width: `calc(${100 / histogram.length}% - 4px)`,
-            height: `${(manaValueCount / props.cards.length) * 200}px`,
+            height: `${(manaValueCount / maxCount) * 200}px`,
             backgroundColor: 'blue',
             display: 'inline-block',
             borderStyle: 'solid',
             borderWidth: '2px',
+            marginTop: `calc(${(1 - manaValueCount / maxCount) * 200}px - 4px)`,
           }
-
           return <div className='histogram' style={barStyle}></div>
         })}
       </div>
       <div>
-        {histogram.map((_1, count) => {
+        {histogram.map((manaValueCount, count) => {
           const textStyle = {
-            width: `calc(${100 / histogram.length}% - 4px)`,
+            width: `calc(${100 / histogram.length}%)`,
             'text-align': 'center',
             display: 'inline-block',
           }
@@ -124,10 +131,34 @@ function ManaCurve(props: ManaCurveComponentProps) {
           return (
             <div className='label' style={textStyle}>
               {count}
+              {manaValueCount === 0 ? '' : ` (${manaValueCount})`}
             </div>
           )
         })}
       </div>
+    </div>
+  )
+}
+
+interface DeckListComponentProps {
+  cards: Card[]
+}
+
+function DeckList(props: DeckListComponentProps) {
+  const map = props.cards.reduce((map, card) => {
+    if (map.has(card.name)) {
+      map.set(card.name, (map.get(card.name) as number) + 1)
+    } else {
+      map.set(card.name, 1)
+    }
+    return map
+  }, new Map<string, number>())
+
+  return (
+    <div>
+      {Array.from(map.entries()).map(([name, count]) => {
+        return <div>{count === 1 ? name : `${name} x${count}`}</div>
+      })}
     </div>
   )
 }
@@ -147,6 +178,9 @@ function Main() {
       </div>
       <div>
         <ManaCurve cards={cards} />
+      </div>
+      <div>
+        <DeckList cards={cards} />
       </div>
     </div>
   )
