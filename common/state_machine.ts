@@ -31,7 +31,11 @@ export class StateMachine<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transition<
     FromT extends State,
-    ToT extends State,
+    ToT extends State extends Exclude<State, FromT>
+      ? MachineDef extends Record<FromT, infer U>
+        ? keyof U
+        : never
+      : never,
     UpdateFnT extends MachineDef extends Record<FromT, infer U>
       ? U extends Record<ToT, infer V>
         ? V extends AnyFn
