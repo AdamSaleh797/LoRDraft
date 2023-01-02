@@ -28,7 +28,6 @@ export class StateMachine<
     this.state_update_fn = state_update_fn
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transition<
     FromT extends State,
     ToT extends State extends Exclude<State, FromT>
