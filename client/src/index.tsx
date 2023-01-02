@@ -4,13 +4,6 @@ import io from 'socket.io-client'
 
 import { Card } from 'card'
 import { LoRDraftClientSocket } from 'socket-msgs'
-import { SessionComponent } from './auth_session'
-
-import { useState } from 'react'
-import { createReadStream } from 'fs'
-import { builtinModules } from 'module'
-import { numberLiteralTypeAnnotation } from '@babel/types'
-import { calculateNewValue } from '@testing-library/user-event/dist/utils'
 
 const MAX_DISPLAY_COST = 8
 
