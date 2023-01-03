@@ -1,7 +1,13 @@
 import React from 'react'
 
 import { Buffer } from 'buffer'
-import { LoRDraftClientSocket, SessionCred, SessionCredT } from 'socket-msgs'
+import {
+  LoginCred,
+  LoRDraftClientSocket,
+  RegisterInfo,
+  SessionCred,
+  SessionCredT,
+} from 'socket-msgs'
 import { isOk, Status } from 'lor_util'
 import { StateMachine } from 'state_machine'
 
@@ -41,10 +47,8 @@ function getStorageAuthInfo(): SessionCred | null {
 
   const { token, ...auth_info_no_token } = { ...auth_info_prim }
 
-  const token_buffer = Buffer.from(token)
-
   return {
-    token: token_buffer,
+    token: Buffer.from(token),
     ...auth_info_no_token,
   }
 }
@@ -61,33 +65,84 @@ function clearStorageAuthInfo(): void {
 }
 
 interface RegisterComponentProps {
-  register_fn: () => void
+  register_fn: (register_info: RegisterInfo) => void
 }
 
 export function RegisterComponent(props: RegisterComponentProps) {
+  const [username, setUsername] = React.useState<string>('')
+  const [password, setPassword] = React.useState<string>('')
+  const [email, setEmail] = React.useState<string>('')
+
   return (
     <div>
       <input
-        value={'clayton'}
-        onChange={(evt) => {
-          console.log(evt)
+        value={username}
+        onChange={(change_event) => {
+          setUsername(change_event.target.value)
         }}
       />
-      <button onClick={props.register_fn}>Register</button>
+      <input
+        type='password'
+        value={password}
+        onChange={(change_event) => {
+          setPassword(change_event.target.value)
+        }}
+      />
+      <input
+        value={email}
+        onChange={(change_event) => {
+          setEmail(change_event.target.value)
+        }}
+      />
+      <button
+        onClick={() => {
+          if (username.length > 0 && password.length > 0) {
+            props.register_fn({
+              username: username,
+              password: password,
+              email: email,
+            })
+          }
+        }}
+      >
+        Register
+      </button>
     </div>
   )
 }
 
 interface LoginComponentProps {
-  register_fn: () => void
-  login_fn: () => void
+  to_register_fn: () => void
+  login_fn: (login_cred: LoginCred) => void
 }
 
 export function LoginComponent(props: LoginComponentProps) {
+  const [username, setUsername] = React.useState<string>('')
+  const [password, setPassword] = React.useState<string>('')
+
   return (
     <div>
-      <button onClick={props.login_fn}>Log in</button>
-      <button onClick={props.register_fn}>Register</button>
+      <input
+        value={username}
+        onChange={(change_event) => {
+          setUsername(change_event.target.value)
+        }}
+      />
+      <input
+        type='password'
+        value={password}
+        onChange={(change_event) => {
+          setPassword(change_event.target.value)
+        }}
+      />
+      <button
+        onClick={() => {
+          props.login_fn({ username: username, password: password })
+        }}
+      >
+        Log in
+      </button>
+      <button onClick={props.to_register_fn}>Register</button>
     </div>
   )
 }
@@ -250,27 +305,49 @@ export function SessionComponent(props: SessionComponentProps) {
     }
   }
 
-  if (username !== null) {
-    const logout = () => {
-      const auth_info = getStorageAuthInfo()
-      if (auth_info !== null) {
-        socket.emit('logout_req', auth_info)
+  switch (sessionState) {
+    case SessionState.REGISTER: {
+      return (
+        <RegisterComponent
+          register_fn={(register_info) => {
+            socket.emit('register_req', register_info)
+          }}
+        />
+      )
+    }
+    case SessionState.LOGIN: {
+      const login = (login_cred: LoginCred) => {
+        socket.emit('login_req', login_cred)
       }
-    }
 
-    return <UserComponent username={username} logout_fn={logout} />
-  } else {
-    const register = () => {
-      socket.emit('register_req', {
-        username: 'clayton',
-        password: 'test_pw',
-        email: 'cknit1999@gmail.com',
-      })
+      return (
+        <LoginComponent
+          to_register_fn={() => {
+            session_state_machine.transition(
+              SessionState.LOGIN,
+              SessionState.REGISTER as const
+            )
+          }}
+          login_fn={login}
+        />
+      )
     }
-    const login = () => {
-      socket.emit('login_req', { username: 'clayton', password: 'test_pw' })
-    }
+    case SessionState.SIGNED_IN: {
+      const logout = () => {
+        const auth_info = getStorageAuthInfo()
+        if (auth_info !== null) {
+          socket.emit('logout_req', auth_info)
+        }
+      }
 
-    return <LoginComponent register_fn={register} login_fn={login} />
+      const auth_info = getStorageAuthInfo()
+
+      return (
+        <UserComponent
+          username={auth_info?.username ?? ''}
+          logout_fn={logout}
+        />
+      )
+    }
   }
 }

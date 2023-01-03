@@ -30,11 +30,7 @@ export class StateMachine<
 
   transition<
     FromT extends State,
-    ToT extends State extends Exclude<State, FromT>
-      ? MachineDef extends Record<FromT, infer U>
-        ? keyof U
-        : never
-      : never,
+    ToT extends MachineDef extends Record<FromT, infer U> ? keyof U : never,
     UpdateFnT extends MachineDef extends Record<FromT, infer U>
       ? U extends Record<ToT, infer V>
         ? V extends AnyFn

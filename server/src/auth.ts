@@ -179,16 +179,6 @@ export function login(
     return
   }
 
-  if (auth_user.logged_in) {
-    callback(
-      MakeErrStatus(
-        StatusCode.LOGGED_IN,
-        `User ${login_cred.username} is already logged in`
-      )
-    )
-    return
-  }
-
   const hash = crypto.createHash(PASSWORD_HASH_METHOD)
   const password_hash = hash.update(login_cred.password).digest()
   if (!crypto.timingSafeEqual(password_hash, auth_user.password_hash)) {
@@ -196,6 +186,16 @@ export function login(
       MakeErrStatus(
         StatusCode.INCORRECT_PASSWORD,
         `Password for user ${login_cred.username} is incorrect`
+      )
+    )
+    return
+  }
+
+  if (auth_user.logged_in) {
+    callback(
+      MakeErrStatus(
+        StatusCode.LOGGED_IN,
+        `User ${login_cred.username} is already logged in`
       )
     )
     return
