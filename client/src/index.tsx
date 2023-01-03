@@ -5,6 +5,13 @@ import io from 'socket.io-client'
 import { Card } from 'card'
 import { LoRDraftClientSocket } from 'socket-msgs'
 
+import {
+  getCodeFromDeck,
+  getDeckFromCode,
+  CardCodeAndCount,
+  Deck,
+} from 'lor-deckcodes-ts'
+
 const MAX_DISPLAY_COST = 8
 
 interface CardComponentProps {
@@ -161,6 +168,29 @@ function DeckList(props: DeckListComponentProps) {
       })}
     </div>
   )
+}
+
+interface DeckCodeComponentProps {
+  cards: Card[]
+}
+
+function DeckCode(props: DeckCodeComponentProps) {
+  const map = props.cards.reduce((map, card) => {
+    if (map.has(card.cardCode)) {
+      map.set(card.cardCode, (map.get(card.cardCode) as number) + 1)
+    } else {
+      map.set(card.cardCode, 1)
+    }
+    return map
+  }, new Map<string, number>())
+
+  const deck: Deck = Array.from(map.entries()).map(([cardCode, count]) => {
+    return { cardCode: cardCode, count: count }
+  })
+
+  const deckCode: string = getCodeFromDeck(deck)
+
+  return <div>{deckCode}</div>
 }
 
 const socket: LoRDraftClientSocket = io()
