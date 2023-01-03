@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 // Empty object type
 export type Empty = Record<string, never>
 
@@ -36,4 +38,8 @@ export const OkStatus: OkStatusT = { status: StatusCode.OK }
 
 export function isOk(status: Status): status is OkStatusT {
   return status.status === StatusCode.OK
+}
+
+export function gen_uuid(): string {
+  return uuidv4()
 }
