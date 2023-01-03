@@ -5,6 +5,7 @@ export interface Card {
   name: string
   regions: string[]
   subtypes: string[]
+  cardCode: string
 }
 
 export interface SetPackCard {

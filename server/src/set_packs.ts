@@ -89,6 +89,7 @@ export function loadSetPack(
         name: card.name,
         regions: card.regions,
         subtypes: card.subtypes,
+        cardCode: card.cardCode
       })
     })
     callback(null, cards)
