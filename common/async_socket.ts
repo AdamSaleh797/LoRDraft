@@ -122,7 +122,7 @@ export class AsyncSocketContext<
     }
   }
 
-  do_call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
+  call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
     callback: ResponseCallbackT<EventName, ListenEvents>,
     ...call_args: ReqParams<EventName, EmitEvents>

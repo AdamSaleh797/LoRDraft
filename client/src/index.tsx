@@ -9,7 +9,7 @@ import { AsyncSocketContext } from 'async_socket'
 const MAX_DISPLAY_COST = 8
 
 interface CardComponentProps {
-  card: Card
+  card: Card | null
   recordCard: (card: Card) => void
   numCards: number
 }
@@ -26,12 +26,22 @@ function CardComponent(props: CardComponentProps) {
   }
 
   const record = () => {
-    props.recordCard(props.card)
+    if (props.card !== null) {
+      props.recordCard(props.card)
+    }
   }
 
   return (
     <div className='card' style={style} onClick={record}>
-      <img src={props.card.imageUrl} alt={props.card.name} style={img_style} />
+      {props.card === null ? (
+        <div />
+      ) : (
+        <img
+          src={props.card.imageUrl}
+          alt={props.card.name}
+          style={img_style}
+        />
+      )}
     </div>
   )
 }
@@ -42,51 +52,70 @@ interface PoolComponentProps {
 }
 
 function PoolComponent(props: PoolComponentProps) {
-  const [cards, setCards] = React.useState<Card[]>([])
-  const [names, setNames] = React.useState<string[]>([
-    'Illaoi',
-    'Norra',
-    'Gwen',
-    'Aphelios',
-  ])
+  const initial_names = ['Illaoi', 'Norra', 'Gwen', 'Aphelios']
+  const num_cards = initial_names.length
 
-  // socket.off('card_res')
-  // socket.on('card_res', (err, card) => {
-  //   console.log('new card time !')
-  //   if (err || card === undefined) {
-  //     console.log(err)
-  //     return
-  //   }
-  //   console.log(cards.concat([card]))
-  //   setCards(cards.concat([card]))
-  //   if (cards.length < names.length - 1) {
-  //     socket.emit('card_req', names[cards.length + 1])
-  //   }
-  // })
+  const [names, setNames, cards, setCards] = new Array(num_cards)
+    .fill(undefined)
+    .reduce<
+      [
+        string[],
+        ((name: string) => void)[],
+        (Card | null)[],
+        ((card: Card | null) => void)[]
+      ]
+    >(
+      ([names, setNames, cards, setCards], _1, idx) => {
+        const [name, setName] = React.useState<string>(initial_names[idx])
+        const [card, setCard] = React.useState<Card | null>(null)
 
-  React.useEffect(() => {
-    // socket.emit('card_req', names[0])
-    props.socket.do_call(
-      'card',
-      (socket_status, err, card) => {
-        console.log(socket_status)
-        console.log(err)
-        console.log(card)
-        if (card === undefined) {
-          console.log('got bad card back!')
-          return
-        }
+        React.useMemo<void>(() => {
+          props.socket.call(
+            'card',
+            (socket_status, err, card) => {
+              if (card === undefined) {
+                console.log('got bad card back!')
+                return
+              }
 
-        setCards([card])
+              addCard.current(card, idx)
+            },
+            name
+          )
+        }, [name])
+
+        return [
+          [...names, name],
+          [...setNames, setName],
+          [...cards, card],
+          [...setCards, setCard],
+        ]
       },
-      'Illaoi'
+      [[], [], [], []]
     )
-  }, [])
+
+  const addCard = React.useRef<(card: Card, idx: number) => void>(
+    () => undefined
+  )
+
+  console.log('RENDER!')
+
+  addCard.current = (card, idx) => {
+    console.log(setCards)
+    console.log(idx, setCards[idx])
+    if (card.name === names[idx]) {
+      setCards[idx](card)
+      console.log('added')
+    } else {
+      console.log(`discarded ${card.name}, found ${names[idx]} as desired card`)
+    }
+  }
 
   const switchPool = () => {
-    setCards([])
-    setNames(['Gravitum', 'Redeemed Prodigy', 'Kindred', 'Chip'])
-    // socket.emit('card_req', 'Gravitum')
+    const new_names = ['Gravitum', 'Redeemed Prodigy', 'Kindred', 'Chip']
+    setNames.forEach((setName, idx) => {
+      setName(new_names[idx])
+    })
   }
 
   return (
