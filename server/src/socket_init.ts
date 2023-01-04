@@ -19,17 +19,17 @@ export function InitSocket(app: http.Server): void {
       } else {
         allCards((err, cards) => {
           if (err || !cards) {
-            resolve(Error('Failed to load cards'))
+            resolve(Error('Failed to load cards'), null)
             return
           }
 
           const card = cards.find((card) => card.name === name)
           if (card === undefined) {
-            resolve(Error('No such card with that name!'), card)
+            resolve(Error('No such card with that name!'), null)
             return
           }
 
-          resolve(undefined, card)
+          resolve(null, card)
         })
       }
     })

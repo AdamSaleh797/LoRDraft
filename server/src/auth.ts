@@ -69,7 +69,7 @@ export function init_auth(socket: LoRDraftSocket): void {
 
     login(login_cred, (status, auth_user) => {
       if (!isOk(status)) {
-        resolve(status)
+        resolve(status, null)
         return
       }
 
@@ -95,7 +95,7 @@ export function init_auth(socket: LoRDraftSocket): void {
       session_cred.token,
       (status, auth_user) => {
         if (!isOk(status)) {
-          resolve(status)
+          resolve(status, null)
           return
         }
         assert(auth_user !== undefined)
