@@ -9,7 +9,7 @@ interface EventsMap {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MakeOptional<T extends any[]> = {
-  [I in keyof T]: T[I] | undefined
+  [I in keyof T]: T[I] | null
 }
 
 type EventNames<Map extends EventsMap> = keyof Map & string

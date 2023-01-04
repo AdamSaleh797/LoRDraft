@@ -41,10 +41,10 @@ export const SessionCredT = Record({
 
 export interface ServerToClientEvents {
   register_res: (status: Status) => void
-  login_res: (status: Status, session_cred?: SessionCred) => void
-  join_session_res: (status: Status, session_cred?: SessionCred) => void
+  login_res: (status: Status, session_cred: SessionCred | null) => void
+  join_session_res: (status: Status, session_cred: SessionCred | null) => void
   logout_res: (status: Status) => void
-  card_res: (err?: Error, card?: Card) => void
+  card_res: (err: Error | null, card: Card | null) => void
 }
 
 export interface ClientToServerEvents {

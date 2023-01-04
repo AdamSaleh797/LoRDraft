@@ -80,7 +80,7 @@ function PoolComponent(props: PoolComponentProps) {
           props.socket.call(
             'card',
             (socket_status, err, card) => {
-              if (card === undefined) {
+              if (card === null) {
                 console.log('got bad card back!')
                 return
               }

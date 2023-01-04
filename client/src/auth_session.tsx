@@ -218,13 +218,13 @@ export function SessionComponent(props: SessionComponentProps) {
       socket.call(
         'join_session',
         (socket_status, status, session_cred) => {
-          if (!isOk(socket_status) || status === undefined) {
+          if (!isOk(socket_status) || status === null) {
             console.log('clearing token session storage')
             clearStorageAuthInfo()
             console.log(socket_status)
             return
           }
-          if (!isOk(status) || session_cred === undefined) {
+          if (!isOk(status) || session_cred === null) {
             if (sessionState === SessionState.LOGIN) {
               console.log('failed to join session')
               console.log(status)
@@ -255,7 +255,7 @@ export function SessionComponent(props: SessionComponentProps) {
             socket.call(
               'register',
               (socket_status, status) => {
-                if (!isOk(socket_status) || status === undefined) {
+                if (!isOk(socket_status) || status === null) {
                   console.log(socket_status)
                   return
                 }
@@ -281,11 +281,11 @@ export function SessionComponent(props: SessionComponentProps) {
         socket.call(
           'login',
           (socket_status, status, session_cred) => {
-            if (!isOk(socket_status) || status === undefined) {
+            if (!isOk(socket_status) || status === null) {
               console.log(socket_status)
               return
             }
-            if (!isOk(status) || session_cred === undefined) {
+            if (!isOk(status) || session_cred === null) {
               console.log(status)
               return
             }
@@ -321,7 +321,7 @@ export function SessionComponent(props: SessionComponentProps) {
           socket.call(
             'logout',
             (socket_status, status) => {
-              if (!isOk(socket_status) || status === undefined) {
+              if (!isOk(socket_status) || status === null) {
                 console.log(socket_status)
                 return
               }
