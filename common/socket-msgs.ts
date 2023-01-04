@@ -1,8 +1,9 @@
 import { Buffer } from 'buffer'
 import { InstanceOf, Record, String } from 'runtypes'
-import { Server, Socket } from 'socket.io'
+import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
+import { AsyncSocketContext } from 'async_socket'
 import { Card } from 'card'
 import { Empty, Status } from 'lor_util'
 
@@ -65,14 +66,24 @@ export type LoRDraftServer = Server<
   SocketData
 >
 
-export type LoRDraftSocket = Socket<
+export type LoRDraftSocketIO = ServerSocket<
   ClientToServerEvents,
   ServerToClientEvents,
   InterServerEvents,
   SocketData
 >
 
-export type LoRDraftClientSocket = ClientSocket<
+export type LoRDraftSocket = AsyncSocketContext<
+  ClientToServerEvents,
+  ServerToClientEvents
+>
+
+export type LoRDraftClientSocketIO = ClientSocket<
+  ServerToClientEvents,
+  ClientToServerEvents
+>
+
+export type LoRDraftClientSocket = AsyncSocketContext<
   ServerToClientEvents,
   ClientToServerEvents
 >

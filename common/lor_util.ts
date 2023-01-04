@@ -1,5 +1,8 @@
+import { v4 as uuidv4 } from 'uuid'
+
 // Empty object type
-export type Empty = Record<string, never>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Empty = Record<any, never>
 
 export enum StatusCode {
   OK = 'OK',
@@ -36,4 +39,8 @@ export const OkStatus: OkStatusT = { status: StatusCode.OK }
 
 export function isOk(status: Status): status is OkStatusT {
   return status.status === StatusCode.OK
+}
+
+export function gen_uuid(): string {
+  return uuidv4()
 }
