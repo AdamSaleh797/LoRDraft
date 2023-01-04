@@ -2,8 +2,10 @@ import { Socket as ClientSocket } from 'socket.io-client'
 import { Socket as ServerSocket } from 'socket.io'
 import { Empty, gen_uuid, OkStatus, Status } from 'lor_util'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type EventsMap = Record<string, (...args: any) => void>
+interface EventsMap {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [event: string]: any
+}
 
 type EventNames<Map extends EventsMap> = keyof Map & string
 
@@ -79,26 +81,9 @@ export class AsyncSocketContext<
     this.outstanding_calls = new Map()
   }
 
-  // private toReqEventName<
-  //   EmitEventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
-  // >(req_event: EmitEventName): ToReqEventName<EmitEventName> {
-  //   return `${req_event}_req`
-  // }
-
-  // private toResEventName<
-  //   EmitEventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
-  // >(req_event: EmitEventName): ToResEventName<EmitEventName> {
-  //   return `${req_event}_res`
-  // }
-
   private _init_callback<
     EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
-  >(
-    event: EventName
-  ): (
-    uuid: string,
-    ...call_args: Parameters<ListenEvents[ToResEventName<EventName>]>
-  ) => void {
+  >(event: EventName): void {
     type CallbackT = (
       uuid: string,
       ...call_args: Parameters<ListenEvents[ToResEventName<EventName>]>
@@ -123,12 +108,12 @@ export class AsyncSocketContext<
 
       this.listeners.set(event, cb)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(this.socket.on as any)(event, cb)
-      return cb
-    } else {
-      return (
-        (this.listeners.get(event) as CallbackT | undefined) ?? (0 as never)
-      )
+      ;(
+        this.socket.on as unknown as (
+          event_name: EventName,
+          callback: CallbackT
+        ) => void
+      )(event, cb)
     }
   }
 
@@ -148,7 +133,7 @@ export class AsyncSocketContext<
     // (https://stackoverflow.com/questions/72704929/typescript-wrong-typechecking-when-remapping-keys-with-as-combined-with-generi)
     ;(
       this.socket.emit as unknown as (
-        event_name: string,
+        event_name: EventName,
         uuid: string,
         ...params: Parameters<EmitEvents[ToReqEventName<EventName>]>
       ) => void
