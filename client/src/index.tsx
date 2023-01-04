@@ -59,7 +59,7 @@ interface PoolComponentProps {
 }
 
 function PoolComponent(props: PoolComponentProps) {
-  const initial_names = ['Illaoi', 'Norra', 'Gwen', 'Aphelios']
+  const initial_names = ['Aurelion Sol', 'Norra', 'Gwen', 'Aphelios']
   const num_cards = initial_names.length
 
   const [names, setNames, cards, setCards] = new Array(num_cards)
@@ -119,7 +119,7 @@ function PoolComponent(props: PoolComponentProps) {
   }
 
   const switchPool = () => {
-    const new_names = ['Gravitum', 'Redeemed Prodigy', 'Kindred', 'Chip']
+    const new_names = ['Rock Hopper', 'Redeemed Prodigy', 'Kindred', 'Chip']
     setNames.forEach((setName, idx) => {
       setName(new_names[idx])
     })
@@ -183,7 +183,7 @@ function ManaCurve(props: ManaCurveComponentProps) {
 
           return (
             <div className='label' style={textStyle}>
-              {count}
+              {count === 8 ? `${count}+` : count}
               {manaValueCount === 0 ? '' : ` (${manaValueCount})`}
             </div>
           )
