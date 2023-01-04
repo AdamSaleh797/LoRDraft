@@ -66,11 +66,16 @@ export type LoRDraftServer = Server<
   SocketData
 >
 
-export type LoRDraftSocket = ServerSocket<
+export type LoRDraftSocketIO = ServerSocket<
   ClientToServerEvents,
   ServerToClientEvents,
   InterServerEvents,
   SocketData
+>
+
+export type LoRDraftSocket = AsyncSocketContext<
+  ClientToServerEvents,
+  ServerToClientEvents
 >
 
 export type LoRDraftClientSocketIO = ClientSocket<

@@ -4,12 +4,11 @@ import { Buffer } from 'buffer'
 import {
   LoginCred,
   LoRDraftClientSocket,
-  LoRDraftClientSocketIO,
   RegisterInfo,
   SessionCred,
   SessionCredT,
 } from 'socket-msgs'
-import { isOk, Status } from 'lor_util'
+import { isOk } from 'lor_util'
 import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
@@ -163,7 +162,7 @@ export function UserComponent(props: UserComponentProps) {
 }
 
 interface SessionComponentProps {
-  socket: LoRDraftClientSocketIO
+  socket: LoRDraftClientSocket
 }
 
 const enum SessionState {
@@ -205,104 +204,46 @@ export function SessionComponent(props: SessionComponentProps) {
     },
   } as const
 
-  const handle_register_res = React.useRef<(status: Status) => void>(
-    () => undefined
-  )
-  const handle_login_res = React.useRef<
-    (status: Status, session_cred?: SessionCred) => void
-  >(() => undefined)
-  const handle_join_session_res = React.useRef<
-    (status: Status, session_cred?: SessionCred) => void
-  >(() => undefined)
-  const handle_logout_res = React.useRef<(status: Status) => void>(
-    () => undefined
-  )
-
   const session_state_machine = new StateMachine(
     machine_def,
     sessionState,
     setSessionState
   )
 
-  handle_register_res.current = (status) => {
-    if (!isOk(status)) {
-      console.log(status)
-      return
-    }
-
-    console.log('registered!')
-    session_state_machine.transition(SessionState.REGISTER, SessionState.LOGIN)
-  }
-
-  handle_login_res.current = (status, session_cred) => {
-    if (!isOk(status) || session_cred === undefined) {
-      console.log(status)
-      return
-    }
-    session_cred.token = Buffer.from(session_cred.token)
-
-    console.log('logged in!')
-    session_state_machine.transition(
-      SessionState.LOGIN,
-      SessionState.SIGNED_IN,
-      session_cred
-    )
-  }
-
-  handle_join_session_res.current = (status, session_cred) => {
-    if (!isOk(status) || session_cred === undefined) {
-      if (sessionState === SessionState.LOGIN) {
-        console.log('failed to join session')
-        console.log(status)
-        console.log('clearing token session storage')
-        clearStorageAuthInfo()
-      }
-      return
-    }
-    session_cred.token = Buffer.from(session_cred.token)
-
-    console.log('joined session')
-    session_state_machine.transition(
-      SessionState.LOGIN,
-      SessionState.SIGNED_IN,
-      session_cred
-    )
-  }
-
-  handle_logout_res.current = (status) => {
-    if (!isOk(status)) {
-      console.log(status)
-      return
-    }
-
-    console.log('logged out!')
-    session_state_machine.transition(SessionState.SIGNED_IN, SessionState.LOGIN)
-  }
-
   const socket = props.socket
-
-  React.useEffect(() => {
-    socket.on('register_res', (status) => {
-      handle_register_res.current(status)
-    })
-
-    socket.on('login_res', (status, session_cred) => {
-      handle_login_res.current(status, session_cred)
-    })
-
-    socket.on('join_session_res', (status, session_cred) => {
-      handle_join_session_res.current(status, session_cred)
-    })
-
-    socket.on('logout_res', (status) => {
-      handle_logout_res.current(status)
-    })
-  }, [])
 
   if (username === null) {
     const auth_info = getStorageAuthInfo()
     if (auth_info !== null) {
-      socket.emit('join_session_req', auth_info)
+      socket.call(
+        'join_session',
+        (socket_status, status, session_cred) => {
+          if (!isOk(socket_status) || status === undefined) {
+            console.log('clearing token session storage')
+            clearStorageAuthInfo()
+            console.log(socket_status)
+            return
+          }
+          if (!isOk(status) || session_cred === undefined) {
+            if (sessionState === SessionState.LOGIN) {
+              console.log('failed to join session')
+              console.log(status)
+              console.log('clearing token session storage')
+              clearStorageAuthInfo()
+            }
+            return
+          }
+          session_cred.token = Buffer.from(session_cred.token)
+
+          console.log('joined session')
+          session_state_machine.transition(
+            SessionState.LOGIN,
+            SessionState.SIGNED_IN,
+            session_cred
+          )
+        },
+        auth_info
+      )
     }
   }
 
@@ -311,14 +252,54 @@ export function SessionComponent(props: SessionComponentProps) {
       return (
         <RegisterComponent
           register_fn={(register_info) => {
-            socket.emit('register_req', register_info)
+            socket.call(
+              'register',
+              (socket_status, status) => {
+                if (!isOk(socket_status) || status === undefined) {
+                  console.log(socket_status)
+                  return
+                }
+                if (!isOk(status)) {
+                  console.log(status)
+                  return
+                }
+
+                console.log('registered!')
+                session_state_machine.transition(
+                  SessionState.REGISTER,
+                  SessionState.LOGIN
+                )
+              },
+              register_info
+            )
           }}
         />
       )
     }
     case SessionState.LOGIN: {
       const login = (login_cred: LoginCred) => {
-        socket.emit('login_req', login_cred)
+        socket.call(
+          'login',
+          (socket_status, status, session_cred) => {
+            if (!isOk(socket_status) || status === undefined) {
+              console.log(socket_status)
+              return
+            }
+            if (!isOk(status) || session_cred === undefined) {
+              console.log(status)
+              return
+            }
+            session_cred.token = Buffer.from(session_cred.token)
+
+            console.log('logged in!')
+            session_state_machine.transition(
+              SessionState.LOGIN,
+              SessionState.SIGNED_IN,
+              session_cred
+            )
+          },
+          login_cred
+        )
       }
 
       return (
@@ -337,7 +318,26 @@ export function SessionComponent(props: SessionComponentProps) {
       const logout = () => {
         const auth_info = getStorageAuthInfo()
         if (auth_info !== null) {
-          socket.emit('logout_req', auth_info)
+          socket.call(
+            'logout',
+            (socket_status, status) => {
+              if (!isOk(socket_status) || status === undefined) {
+                console.log(socket_status)
+                return
+              }
+              if (!isOk(status)) {
+                console.log(status)
+                return
+              }
+
+              console.log('logged out!')
+              session_state_machine.transition(
+                SessionState.SIGNED_IN,
+                SessionState.LOGIN
+              )
+            },
+            auth_info
+          )
         }
       }
 

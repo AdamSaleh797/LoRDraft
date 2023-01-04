@@ -7,6 +7,11 @@ interface EventsMap {
   [event: string]: any
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MakeOptional<T extends any[]> = {
+  [I in keyof T]: T[I] | undefined
+}
+
 type EventNames<Map extends EventsMap> = keyof Map & string
 
 type ToReqEventName<EmitEventName extends string> = `${EmitEventName}_req`
@@ -58,7 +63,14 @@ type AsyncMessage<
 export type ResponseCallbackT<
   EventName extends keyof ToResponseEvents<ListenEvents> & string,
   ListenEvents extends EventsMap
-> = (socket_status: Status, ...args: ResParams<EventName, ListenEvents>) => void
+> = (
+  socket_status: Status,
+  // TypeScript type checker fumbles here, it doesn't seem to like if you
+  // operate on the elements of a tuple type with a mapped type.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  ...args: MakeOptional<ResParams<EventName, ListenEvents>>
+) => void
 
 export class AsyncSocketContext<
   ListenEvents extends EventsMap,
@@ -87,6 +99,14 @@ export class AsyncSocketContext<
     this.socket = socket
     this.listeners = new Map()
     this.outstanding_calls = new Map()
+  }
+
+  private _raw_socket():
+    | ServerSocket<ListenEvents, EmitEvents, Empty, Empty>
+    | ClientSocket<ListenEvents, EmitEvents> {
+    return this.socket as unknown as
+      | ServerSocket<ListenEvents, EmitEvents, Empty, Empty>
+      | ClientSocket<ListenEvents, EmitEvents>
   }
 
   private _init_callback<
@@ -122,6 +142,22 @@ export class AsyncSocketContext<
     }
   }
 
+  emit<EventName extends EventNames<EmitEvents>>(
+    event_name: EventName,
+    ...args: Parameters<EmitEvents[EventName]>
+  ) {
+    this._raw_socket().emit(event_name, ...args)
+  }
+
+  on<EventName extends EventNames<ListenEvents>>(
+    event_name: EventName,
+    callback: ListenEvents[EventName]
+  ) {
+    const on_call: (ev: EventName, cb: ListenEvents[EventName]) => void =
+      this._raw_socket().on
+    on_call(event_name, callback)
+  }
+
   call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
     callback: ResponseCallbackT<EventName, ListenEvents>,
@@ -145,7 +181,7 @@ export class AsyncSocketContext<
     )(event_name, uuid, ...call_args)
   }
 
-  on<EventName extends AsyncCompatibleEvents<EmitEvents, ListenEvents>>(
+  respond<EventName extends AsyncCompatibleEvents<EmitEvents, ListenEvents>>(
     event_name: EventName,
     callback: (
       resolve: (...args: ResParams<EventName, EmitEvents>) => void,

@@ -5,6 +5,7 @@ import io from 'socket.io-client'
 import { Card } from 'card'
 import { LoRDraftClientSocket, LoRDraftClientSocketIO } from 'socket-msgs'
 import { AsyncSocketContext } from 'async_socket'
+import { SessionComponent } from './auth_session'
 
 const MAX_DISPLAY_COST = 8
 
@@ -230,6 +231,9 @@ function Main() {
   }
   return (
     <div>
+      <div>
+        <SessionComponent socket={socket} />
+      </div>
       <div>
         <PoolComponent socket={socket} recordCard={recordCard} />
       </div>

@@ -46,7 +46,7 @@ function logged_in(auth_user: AuthUser): auth_user is LoggedInAuthUser {
 }
 
 export function init_auth(socket: LoRDraftSocket): void {
-  socket.on('register_req', (register_info) => {
+  socket.respond('register', (resolve, register_info) => {
     if (!RegisterInfoT.guard(register_info)) {
       // Invalid input, we can ignore
       console.log('received invalid register input:')
@@ -55,11 +55,11 @@ export function init_auth(socket: LoRDraftSocket): void {
     }
 
     register(register_info, (status) => {
-      socket.emit('register_res', status)
+      resolve(status)
     })
   })
 
-  socket.on('login_req', (login_cred?: LoginCred) => {
+  socket.respond('login', (resolve, login_cred?: LoginCred) => {
     if (!LoginCredT.guard(login_cred)) {
       // Invalid input, we can ignore
       console.log('received invalid login input:')
@@ -69,20 +69,20 @@ export function init_auth(socket: LoRDraftSocket): void {
 
     login(login_cred, (status, auth_user) => {
       if (!isOk(status)) {
-        socket.emit('login_res', status)
+        resolve(status)
         return
       }
 
       assert(auth_user !== undefined && logged_in(auth_user))
 
-      socket.emit('login_res', status, {
+      resolve(status, {
         username: login_cred.username,
         token: auth_user.session_info.token,
       })
     })
   })
 
-  socket.on('join_session_req', (session_cred) => {
+  socket.respond('join_session', (resolve, session_cred) => {
     if (!SessionCredT.guard(session_cred)) {
       // Invalid input, we can ignore
       console.log('received invalid join session input:')
@@ -95,12 +95,12 @@ export function init_auth(socket: LoRDraftSocket): void {
       session_cred.token,
       (status, auth_user) => {
         if (!isOk(status)) {
-          socket.emit('join_session_res', status)
+          resolve(status)
           return
         }
         assert(auth_user !== undefined)
 
-        socket.emit('join_session_res', status, {
+        resolve(status, {
           username: session_cred.username,
           token: auth_user.session_info.token,
         })
@@ -108,7 +108,7 @@ export function init_auth(socket: LoRDraftSocket): void {
     )
   })
 
-  socket.on('logout_req', (session_cred) => {
+  socket.respond('logout', (resolve, session_cred) => {
     if (!SessionCredT.guard(session_cred)) {
       // Invalid input, we can ignore
       console.log('received invalid logout input:')
@@ -121,13 +121,13 @@ export function init_auth(socket: LoRDraftSocket): void {
       session_cred.token,
       (status, auth_user) => {
         if (!isOk(status)) {
-          socket.emit('logout_res', status)
+          resolve(status)
           return
         }
         assert(auth_user !== undefined)
 
         logout(auth_user, (status) => {
-          socket.emit('logout_res', status)
+          resolve(status)
         })
       }
     )
