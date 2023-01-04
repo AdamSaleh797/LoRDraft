@@ -12,42 +12,53 @@ type EventNames<Map extends EventsMap> = keyof Map & string
 type ToReqEventName<EmitEventName extends string> = `${EmitEventName}_req`
 type ToResEventName<EmitEventName extends string> = `${EmitEventName}_res`
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type InternalCallbackT<Params extends Parameters<any>> = (
+  uuid: string,
+  ...args: Params
+) => void
+
 type ToRequestEvents<Events extends EventsMap> = {
-  [Ev in keyof Events as Ev extends `${infer T}_req` ? T & string : never]: (
-    uuid: string,
-    ...data: Parameters<Events[Ev]>
-  ) => void
+  [Ev in keyof Events as Ev extends `${infer T}_req`
+    ? T & string
+    : never]: InternalCallbackT<Parameters<Events[Ev]>>
 }
 
 type ToResponseEvents<Events extends EventsMap> = {
-  [Ev in keyof Events as Ev extends `${infer T}_res` ? T & string : never]: (
-    uuid: string,
-    ...data: Parameters<Events[Ev]>
-  ) => void
+  [Ev in keyof Events as Ev extends `${infer T}_res`
+    ? T & string
+    : never]: InternalCallbackT<Parameters<Events[Ev]>>
 }
 
-// Async compatible events are events that have a *_req form in EmitEvents and
-// a *_res form in ListenEvents.
+type ReqParams<
+  EventName extends keyof Events & string,
+  Events extends EventsMap
+> = Parameters<Events[ToReqEventName<EventName>]>
+
+type ResParams<
+  EventName extends keyof Events & string,
+  Events extends EventsMap
+> = Parameters<Events[ToResEventName<EventName>]>
+
+// Async compatible events are events that have a *_req form in ReqEvents and a
+// *_res form in ResEvents.
 type AsyncCompatibleEvents<
-  ListenEvents extends EventsMap,
-  EmitEvents extends EventsMap
-> = EventNames<ToRequestEvents<EmitEvents>> &
-  EventNames<ToResponseEvents<ListenEvents>>
+  ResEvents extends EventsMap,
+  ReqEvents extends EventsMap
+> = EventNames<ToRequestEvents<ReqEvents>> &
+  EventNames<ToResponseEvents<ResEvents>>
 
 type AsyncMessage<
   ListenEvents extends EventsMap,
   EmitEvents extends EventsMap,
   EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>,
-  Args extends Parameters<ListenEvents[ToResEventName<EventName>]>
+  Args extends ResParams<EventName, ListenEvents>
 > = (status: Status, ...args: Args) => void
 
 export type ResponseCallbackT<
   EventName extends keyof ToResponseEvents<ListenEvents> & string,
   ListenEvents extends EventsMap
-> = (
-  socket_status: Status,
-  ...args: Parameters<ListenEvents[ToResEventName<EventName>]>
-) => void
+> = (socket_status: Status, ...args: ResParams<EventName, ListenEvents>) => void
 
 export class AsyncSocketContext<
   ListenEvents extends EventsMap,
@@ -62,10 +73,7 @@ export class AsyncSocketContext<
       >
     | ClientSocket<ToResponseEvents<ListenEvents>, ToRequestEvents<EmitEvents>>
   // A map from message names to the listeners bound to those messages.
-  private readonly listeners: Map<
-    string,
-    (uuid: string, ...args: never) => void
-  >
+  private readonly listeners: Map<string, InternalCallbackT<never>>
   private readonly outstanding_calls: Map<
     string,
     AsyncMessage<ListenEvents, EmitEvents, never, never>
@@ -84,10 +92,7 @@ export class AsyncSocketContext<
   private _init_callback<
     EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
   >(event: EventName): void {
-    type CallbackT = (
-      uuid: string,
-      ...call_args: Parameters<ListenEvents[ToResEventName<EventName>]>
-    ) => void
+    type CallbackT = InternalCallbackT<ResParams<EventName, ListenEvents>>
 
     if (!this.listeners.has(event)) {
       const cb: CallbackT = (uuid, ...call_args) => {
@@ -101,7 +106,7 @@ export class AsyncSocketContext<
           ListenEvents,
           EmitEvents,
           EventName,
-          Parameters<ListenEvents[ToResEventName<EventName>]>
+          ResParams<EventName, ListenEvents>
         >
         callback(OkStatus, ...call_args)
       }
@@ -120,7 +125,7 @@ export class AsyncSocketContext<
   do_call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
     callback: ResponseCallbackT<EventName, ListenEvents>,
-    ...call_args: Parameters<EmitEvents[ToReqEventName<EventName>]>
+    ...call_args: ReqParams<EventName, EmitEvents>
   ): void {
     this._init_callback(event_name)
 
@@ -135,8 +140,38 @@ export class AsyncSocketContext<
       this.socket.emit as unknown as (
         event_name: EventName,
         uuid: string,
-        ...params: Parameters<EmitEvents[ToReqEventName<EventName>]>
+        ...params: ReqParams<EventName, EmitEvents>
       ) => void
     )(event_name, uuid, ...call_args)
+  }
+
+  on<EventName extends AsyncCompatibleEvents<EmitEvents, ListenEvents>>(
+    event_name: EventName,
+    callback: (
+      resolve: (...args: ResParams<EventName, EmitEvents>) => void,
+      ...args: ReqParams<EventName, ListenEvents>
+    ) => void
+  ): void {
+    type UserCallbackT = InternalCallbackT<ReqParams<EventName, ListenEvents>>
+    ;(
+      this.socket.on as unknown as (
+        event_name: EventName,
+        callback: UserCallbackT
+      ) => void
+    )(
+      event_name,
+      (uuid: string, ...params: ReqParams<EventName, ListenEvents>): void => {
+        callback((...result) => {
+          // prettier-ignore
+          (
+            this.socket.emit as unknown as (
+              event_name: EventName,
+              uuid: string,
+              ...params: ResParams<EventName, EmitEvents>
+            ) => void
+          )(event_name, uuid, ...result)
+        }, ...params)
+      }
+    )
   }
 }

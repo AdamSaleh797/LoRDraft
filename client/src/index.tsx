@@ -3,7 +3,8 @@ import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
 import { Card } from 'card'
-import { LoRDraftClientSocket } from 'socket-msgs'
+import { LoRDraftClientSocket, LoRDraftClientSocketIO } from 'socket-msgs'
+import { AsyncSocketContext } from 'async_socket'
 
 const MAX_DISPLAY_COST = 8
 
@@ -36,6 +37,7 @@ function CardComponent(props: CardComponentProps) {
 }
 
 interface PoolComponentProps {
+  socket: LoRDraftClientSocket
   recordCard: (card: Card) => void
 }
 
@@ -48,28 +50,43 @@ function PoolComponent(props: PoolComponentProps) {
     'Aphelios',
   ])
 
-  socket.off('card_res')
-  socket.on('card_res', (err, card) => {
-    console.log('new card time !')
-    if (err || card === undefined) {
-      console.log(err)
-      return
-    }
-    console.log(cards.concat([card]))
-    setCards(cards.concat([card]))
-    if (cards.length < names.length - 1) {
-      socket.emit('card_req', names[cards.length + 1])
-    }
-  })
+  // socket.off('card_res')
+  // socket.on('card_res', (err, card) => {
+  //   console.log('new card time !')
+  //   if (err || card === undefined) {
+  //     console.log(err)
+  //     return
+  //   }
+  //   console.log(cards.concat([card]))
+  //   setCards(cards.concat([card]))
+  //   if (cards.length < names.length - 1) {
+  //     socket.emit('card_req', names[cards.length + 1])
+  //   }
+  // })
 
   React.useEffect(() => {
-    socket.emit('card_req', names[0])
+    // socket.emit('card_req', names[0])
+    props.socket.do_call(
+      'card',
+      (socket_status, err, card) => {
+        console.log(socket_status)
+        console.log(err)
+        console.log(card)
+        if (card === undefined) {
+          console.log('got bad card back!')
+          return
+        }
+
+        setCards([card])
+      },
+      'Illaoi'
+    )
   }, [])
 
   const switchPool = () => {
     setCards([])
     setNames(['Gravitum', 'Redeemed Prodigy', 'Kindred', 'Chip'])
-    socket.emit('card_req', 'Gravitum')
+    // socket.emit('card_req', 'Gravitum')
   }
 
   return (
@@ -163,10 +180,15 @@ function DeckList(props: DeckListComponentProps) {
   )
 }
 
-const socket: LoRDraftClientSocket = io()
+function createLoRSocket(): LoRDraftClientSocket {
+  return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
+}
 
 function Main() {
   const [cards, setCards] = React.useState<Card[]>([])
+  const socket_ref = React.useRef(createLoRSocket())
+
+  const socket = socket_ref.current
 
   const recordCard = (card: Card) => {
     setCards(cards.concat(card))
@@ -174,7 +196,7 @@ function Main() {
   return (
     <div>
       <div>
-        <PoolComponent recordCard={recordCard} />
+        <PoolComponent socket={socket} recordCard={recordCard} />
       </div>
       <div>
         <ManaCurve cards={cards} />

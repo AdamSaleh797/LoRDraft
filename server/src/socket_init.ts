@@ -4,6 +4,7 @@ import { Server } from 'socket.io'
 import { allCards } from './set_packs'
 import { LoRDraftServer, LoRDraftSocket } from 'socket-msgs'
 import { init_auth } from './auth'
+import { AsyncSocketContext } from 'async_socket'
 
 export function InitSocket(app: http.Server): void {
   const io: LoRDraftServer = new Server(app)
@@ -11,25 +12,48 @@ export function InitSocket(app: http.Server): void {
   io.on('connection', (socket: LoRDraftSocket) => {
     init_auth(socket)
 
-    socket.on('card_req', (name?: string) => {
+    const test_sock = new AsyncSocketContext(socket)
+
+    test_sock.on('card', (resolve, name) => {
       if (name === undefined) {
         console.log('Received bad request!')
       } else {
         allCards((err, cards) => {
           if (err || !cards) {
-            socket.emit('card_res', Error('Failed to load cards'))
+            resolve(Error('Failed to load cards'))
             return
           }
 
           const card = cards.find((card) => card.name === name)
           if (card === undefined) {
-            socket.emit('card_res', Error('No such card with that name!'))
+            resolve(Error('No such card with that name!'), card)
             return
           }
 
-          socket.emit('card_res', undefined, card)
+          resolve(undefined, card)
         })
       }
     })
+
+    // socket.on('card_req', (name?: string) => {
+    //   if (name === undefined) {
+    //     console.log('Received bad request!')
+    //   } else {
+    //     allCards((err, cards) => {
+    //       if (err || !cards) {
+    //         socket.emit('card_res', Error('Failed to load cards'))
+    //         return
+    //       }
+
+    //       const card = cards.find((card) => card.name === name)
+    //       if (card === undefined) {
+    //         socket.emit('card_res', Error('No such card with that name!'))
+    //         return
+    //       }
+
+    //       socket.emit('card_res', undefined, card)
+    //     })
+    //   }
+    // })
   })
 }

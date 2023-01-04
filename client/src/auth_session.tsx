@@ -1,7 +1,12 @@
 import React from 'react'
 
 import { Buffer } from 'buffer'
-import { LoRDraftClientSocket, SessionCred, SessionCredT } from 'socket-msgs'
+import {
+  LoRDraftClientSocket,
+  LoRDraftClientSocketIO,
+  SessionCred,
+  SessionCredT,
+} from 'socket-msgs'
 import { isOk } from 'lor_util'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
@@ -89,7 +94,7 @@ export function UserComponent(props: UserComponentProps) {
 }
 
 interface SessionComponentProps {
-  socket: LoRDraftClientSocket
+  socket: LoRDraftClientSocketIO
 }
 
 export function SessionComponent(props: SessionComponentProps) {
