@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
-export type Empty = Record<string, never>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Empty = Record<any, never>
 
 export enum StatusCode {
   OK = 'OK',
