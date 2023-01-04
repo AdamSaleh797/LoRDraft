@@ -23,6 +23,12 @@ function CardComponent(props: CardComponentProps) {
   const img_style = {
     width: '100%',
     height: '100%',
+    userDrag: 'none',
+    WebkitUserDrag: 'none',
+    UserSelect: 'none',
+    mozUserSelect: 'none',
+    webkitUserSelect: 'none',
+    MsUserSelect: 'none',
   }
 
   const record = () => {
