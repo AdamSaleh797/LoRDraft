@@ -1,6 +1,6 @@
 import { Socket as ClientSocket } from 'socket.io-client'
 import { Socket as ServerSocket } from 'socket.io'
-import { Empty, gen_uuid, Status } from 'lor_util'
+import { Empty, gen_uuid, OkStatus, Status } from 'lor_util'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EventsMap = Record<string, (...args: any) => void>
@@ -39,12 +39,7 @@ type AsyncMessage<
   Args extends Parameters<ListenEvents[ToResEventName<EventName>]>
 > = (status: Status, ...args: Args) => void
 
-type CallbackT<EventName extends keyof Events, Events extends EventsMap> = (
-  uuid: string,
-  ...call_args: Parameters<Events[EventName]>
-) => void
-
-type ResCallbackT<
+export type ResponseCallbackT<
   EventName extends keyof ToResponseEvents<ListenEvents> & string,
   ListenEvents extends EventsMap
 > = (
@@ -123,7 +118,7 @@ export class AsyncSocketContext<
           EventName,
           Parameters<ListenEvents[ToResEventName<EventName>]>
         >
-        callback(call_args)
+        callback(OkStatus, ...call_args)
       }
 
       this.listeners.set(event, cb)
@@ -139,10 +134,7 @@ export class AsyncSocketContext<
 
   do_call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
-    callback: (
-      socket_status: Status,
-      ...args: Parameters<ListenEvents[ToResEventName<EventName>]>
-    ) => void,
+    callback: ResponseCallbackT<EventName, ListenEvents>,
     ...call_args: Parameters<EmitEvents[ToReqEventName<EventName>]>
   ): void {
     this._init_callback(event_name)
@@ -161,6 +153,5 @@ export class AsyncSocketContext<
         ...params: Parameters<EmitEvents[ToReqEventName<EventName>]>
       ) => void
     )(event_name, uuid, ...call_args)
-    this.socket.emit(event_name, uuid, ...call_args)
   }
 }
