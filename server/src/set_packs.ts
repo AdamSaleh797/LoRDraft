@@ -82,14 +82,16 @@ export function loadSetPack(
     const obj = JSON.parse(data)
     const cards: Card[] = []
     obj.forEach((card: SetPackCard) => {
-      cards.push({
-        rarity: card.rarity,
-        imageUrl: card.assets[0].gameAbsolutePath,
-        cost: card.cost,
-        name: card.name,
-        regions: card.regions,
-        subtypes: card.subtypes,
-      })
+      if (card.collectible) {
+        cards.push({
+          rarity: card.rarity,
+          imageUrl: card.assets[0].gameAbsolutePath,
+          cost: card.cost,
+          name: card.name,
+          regions: card.regions,
+          subtypes: card.subtypes,
+        })
+      }
     })
     callback(null, cards)
   })
@@ -111,7 +113,7 @@ export function allCards(
             reject(err)
             return
           }
-          resolve(cards.filter((card) => isCollectable(card)))
+          resolve(cards)
         })
       })
     })
@@ -124,8 +126,4 @@ export function allCards(
       callback(err, null)
     }
   )
-}
-
-export function isCollectable(card: Card) {
-  return card.rarity.toUpperCase() !== 'NONE'
 }
