@@ -217,6 +217,7 @@ export function SessionComponent(props: SessionComponentProps) {
     if (auth_info !== null) {
       socket.call(
         'join_session',
+        auth_info,
         (socket_status, status, session_cred) => {
           if (!isOk(socket_status) || status === null) {
             console.log('clearing token session storage')
@@ -241,8 +242,7 @@ export function SessionComponent(props: SessionComponentProps) {
             SessionState.SIGNED_IN,
             session_cred
           )
-        },
-        auth_info
+        }
       )
     }
   }
@@ -252,26 +252,22 @@ export function SessionComponent(props: SessionComponentProps) {
       return (
         <RegisterComponent
           register_fn={(register_info) => {
-            socket.call(
-              'register',
-              (socket_status, status) => {
-                if (!isOk(socket_status) || status === null) {
-                  console.log(socket_status)
-                  return
-                }
-                if (!isOk(status)) {
-                  console.log(status)
-                  return
-                }
+            socket.call('register', register_info, (socket_status, status) => {
+              if (!isOk(socket_status) || status === null) {
+                console.log(socket_status)
+                return
+              }
+              if (!isOk(status)) {
+                console.log(status)
+                return
+              }
 
-                console.log('registered!')
-                session_state_machine.transition(
-                  SessionState.REGISTER,
-                  SessionState.LOGIN
-                )
-              },
-              register_info
-            )
+              console.log('registered!')
+              session_state_machine.transition(
+                SessionState.REGISTER,
+                SessionState.LOGIN
+              )
+            })
           }}
         />
       )
@@ -280,6 +276,7 @@ export function SessionComponent(props: SessionComponentProps) {
       const login = (login_cred: LoginCred) => {
         socket.call(
           'login',
+          login_cred,
           (socket_status, status, session_cred) => {
             if (!isOk(socket_status) || status === null) {
               console.log(socket_status)
@@ -297,8 +294,7 @@ export function SessionComponent(props: SessionComponentProps) {
               SessionState.SIGNED_IN,
               session_cred
             )
-          },
-          login_cred
+          }
         )
       }
 
@@ -318,26 +314,22 @@ export function SessionComponent(props: SessionComponentProps) {
       const logout = () => {
         const auth_info = getStorageAuthInfo()
         if (auth_info !== null) {
-          socket.call(
-            'logout',
-            (socket_status, status) => {
-              if (!isOk(socket_status) || status === null) {
-                console.log(socket_status)
-                return
-              }
-              if (!isOk(status)) {
-                console.log(status)
-                return
-              }
+          socket.call('logout', auth_info, (socket_status, status) => {
+            if (!isOk(socket_status) || status === null) {
+              console.log(socket_status)
+              return
+            }
+            if (!isOk(status)) {
+              console.log(status)
+              return
+            }
 
-              console.log('logged out!')
-              session_state_machine.transition(
-                SessionState.SIGNED_IN,
-                SessionState.LOGIN
-              )
-            },
-            auth_info
-          )
+            console.log('logged out!')
+            session_state_machine.transition(
+              SessionState.SIGNED_IN,
+              SessionState.LOGIN
+            )
+          })
         }
       }
 

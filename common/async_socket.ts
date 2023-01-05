@@ -160,9 +160,14 @@ export class AsyncSocketContext<
 
   call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
-    callback: ResponseCallbackT<EventName, ListenEvents>,
-    ...call_args: ReqParams<EventName, EmitEvents>
+    ...args: [
+      ...ReqParams<EventName, EmitEvents>,
+      ResponseCallbackT<EventName, ListenEvents>
+    ]
   ): void {
+    const callback = args.at(-1) as ResponseCallbackT<EventName, ListenEvents>
+    const call_args = args.slice(0, -1) as ReqParams<EventName, EmitEvents>
+
     this._init_callback(event_name)
 
     const uuid = gen_uuid()
