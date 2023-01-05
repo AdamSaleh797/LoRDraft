@@ -71,19 +71,21 @@ const draft_states_def = {
   },
 } as const
 
-const draft_states = new StateMachine(
-  draft_states_def,
-  DraftStates.INITIAL_SELECTION as DraftStates
-)
+// const draft_states = new StateMachine(
+//   draft_states_def,
+//   DraftStates.INITIAL_SELECTION as DraftStates
+// )
 
-function randomNonChampCards(deck : DraftDeck, callback : (err : Status, card : Card | null) => void) : void{
+function randomNonChampCards(
+  deck: DraftDeck,
+  callback: (status: Status, card: Card | null) => void
+): void {
   const region = randChoice(deck.regions)
-  regionSets((err, region_sets) => {
-    if(err !== null || region_sets === null){
-      callback(err, null)
+  regionSets((status, region_sets) => {
+    if (status !== null || region_sets === null) {
+      callback(status, null)
       return
     }
     callback(OkStatus, randChoice(region_sets[region].nonChamps))
   })
 }
-

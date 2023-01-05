@@ -12,9 +12,9 @@ const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 const port = 2000
 
 /*
-updateSetPacks((err) => {
-  if (err) {
-    console.log(err)
+updateSetPacks((status) => {
+  if (status) {
+    console.log(status)
     return
   }
   console.log('done downloading!')
@@ -29,9 +29,9 @@ const sets = [
 
 let cnt = 0;
 sets.forEach((set) => {
-  loadSetPack(set, (err, cards) => {
-    if (err || !cards) {
-      console.log(err);
+  loadSetPack(set, (status, cards) => {
+    if (status || !cards) {
+      console.log(status);
       return;
     }
     cards.forEach((card) => {
@@ -58,7 +58,7 @@ const app = http.createServer(function (req, resp) {
   fs.exists(filename, function (exists) {
     if (exists) {
       fs.readFile(filename, function (err, data) {
-        if (err) {
+        if (err !== null) {
           // File exists but is not readable (permissions issue?)
           resp.writeHead(500, { 'Content-Type': 'text/plain' })
           resp.write('Internal server error: could not read file')

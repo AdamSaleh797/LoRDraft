@@ -44,7 +44,7 @@ export interface ServerToClientEvents {
   login_res: (status: Status, session_cred: SessionCred | null) => void
   join_session_res: (status: Status, session_cred: SessionCred | null) => void
   logout_res: (status: Status) => void
-  card_res: (err: Error | null, card: Card | null) => void
+  card_res: (status: Status, card: Card | null) => void
 }
 
 export interface ClientToServerEvents {

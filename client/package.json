@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "check-types": "tsc --noemit",
-    "lint": "npx eslint src",
+    "lint": "cd .. && npx eslint ./client",
     "build-react": "npx webpack --mode development --progress --config webpack.config.js",
     "build-public": "cp -r public/* ../static/",
     "build": "npm run check-types && npm run build-react && npm run build-public && npm run lint"

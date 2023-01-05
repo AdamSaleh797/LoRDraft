@@ -79,9 +79,10 @@ function PoolComponent(props: PoolComponentProps) {
         React.useMemo<void>(() => {
           props.socket.call(
             'card',
-            (socket_status, err, card) => {
+            (socket_status, status, card) => {
               if (card === null) {
                 console.log('got bad card back!')
+                console.log(status)
                 return
               }
 

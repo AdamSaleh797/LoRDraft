@@ -3,6 +3,7 @@ node_modules
 static
 public
 assets
-\.*
+.gitignore
+*.swp
 package.json
 package-lock.json
