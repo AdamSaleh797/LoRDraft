@@ -77,7 +77,7 @@ function PoolComponent(props: PoolComponentProps) {
         const [card, setCard] = React.useState<Card | null>(null)
 
         React.useMemo<void>(() => {
-          props.socket.call('card', name, (socket_status, status, card) => {
+          props.socket.call('card', name, (status, card) => {
             if (card === null) {
               console.log('got bad card back!')
               console.log(status)

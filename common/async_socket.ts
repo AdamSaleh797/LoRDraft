@@ -1,6 +1,6 @@
 import { Socket as ClientSocket } from 'socket.io-client'
 import { Socket as ServerSocket } from 'socket.io'
-import { Empty, gen_uuid, OkStatus, Status } from 'lor_util'
+import { Empty, gen_uuid, Status } from 'lor_util'
 
 interface EventsMap {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,19 +58,18 @@ type AsyncMessage<
   EmitEvents extends EventsMap,
   EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>,
   Args extends ResParams<EventName, ListenEvents>
-> = (status: Status, ...args: Args) => void
+> = (...args: Args) => void
+
+type ResponseCallbackArgsT<
+  Params extends Parameters<(...args: unknown[]) => void>
+> = Params extends Parameters<(status: Status, ...args: infer U) => void>
+  ? Parameters<(status: Status, ...args: MakeOptional<U>) => void>
+  : never
 
 export type ResponseCallbackT<
   EventName extends keyof ToResponseEvents<ListenEvents> & string,
   ListenEvents extends EventsMap
-> = (
-  socket_status: Status,
-  // TypeScript type checker fumbles here, it doesn't seem to like if you
-  // operate on the elements of a tuple type with a mapped type.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  ...args: MakeOptional<ResParams<EventName, ListenEvents>>
-) => void
+> = (...args: ResponseCallbackArgsT<ResParams<EventName, ListenEvents>>) => void
 
 export class AsyncSocketContext<
   ListenEvents extends EventsMap,
@@ -128,7 +127,7 @@ export class AsyncSocketContext<
           EventName,
           ResParams<EventName, ListenEvents>
         >
-        callback(OkStatus, ...call_args)
+        callback(...call_args)
       }
 
       this.listeners.set(event, cb)

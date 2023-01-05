@@ -215,35 +215,25 @@ export function SessionComponent(props: SessionComponentProps) {
   if (username === null) {
     const auth_info = getStorageAuthInfo()
     if (auth_info !== null) {
-      socket.call(
-        'join_session',
-        auth_info,
-        (socket_status, status, session_cred) => {
-          if (!isOk(socket_status) || status === null) {
+      socket.call('join_session', auth_info, (status, session_cred) => {
+        if (!isOk(status) || session_cred === null) {
+          if (sessionState === SessionState.LOGIN) {
+            console.log('failed to join session')
+            console.log(status)
             console.log('clearing token session storage')
             clearStorageAuthInfo()
-            console.log(socket_status)
-            return
           }
-          if (!isOk(status) || session_cred === null) {
-            if (sessionState === SessionState.LOGIN) {
-              console.log('failed to join session')
-              console.log(status)
-              console.log('clearing token session storage')
-              clearStorageAuthInfo()
-            }
-            return
-          }
-          session_cred.token = Buffer.from(session_cred.token)
-
-          console.log('joined session')
-          session_state_machine.transition(
-            SessionState.LOGIN,
-            SessionState.SIGNED_IN,
-            session_cred
-          )
+          return
         }
-      )
+        session_cred.token = Buffer.from(session_cred.token)
+
+        console.log('joined session')
+        session_state_machine.transition(
+          SessionState.LOGIN,
+          SessionState.SIGNED_IN,
+          session_cred
+        )
+      })
     }
   }
 
@@ -252,11 +242,7 @@ export function SessionComponent(props: SessionComponentProps) {
       return (
         <RegisterComponent
           register_fn={(register_info) => {
-            socket.call('register', register_info, (socket_status, status) => {
-              if (!isOk(socket_status) || status === null) {
-                console.log(socket_status)
-                return
-              }
+            socket.call('register', register_info, (status) => {
               if (!isOk(status)) {
                 console.log(status)
                 return
@@ -274,28 +260,20 @@ export function SessionComponent(props: SessionComponentProps) {
     }
     case SessionState.LOGIN: {
       const login = (login_cred: LoginCred) => {
-        socket.call(
-          'login',
-          login_cred,
-          (socket_status, status, session_cred) => {
-            if (!isOk(socket_status) || status === null) {
-              console.log(socket_status)
-              return
-            }
-            if (!isOk(status) || session_cred === null) {
-              console.log(status)
-              return
-            }
-            session_cred.token = Buffer.from(session_cred.token)
-
-            console.log('logged in!')
-            session_state_machine.transition(
-              SessionState.LOGIN,
-              SessionState.SIGNED_IN,
-              session_cred
-            )
+        socket.call('login', login_cred, (status, session_cred) => {
+          if (!isOk(status) || session_cred === null) {
+            console.log(status)
+            return
           }
-        )
+          session_cred.token = Buffer.from(session_cred.token)
+
+          console.log('logged in!')
+          session_state_machine.transition(
+            SessionState.LOGIN,
+            SessionState.SIGNED_IN,
+            session_cred
+          )
+        })
       }
 
       return (
@@ -314,11 +292,7 @@ export function SessionComponent(props: SessionComponentProps) {
       const logout = () => {
         const auth_info = getStorageAuthInfo()
         if (auth_info !== null) {
-          socket.call('logout', auth_info, (socket_status, status) => {
-            if (!isOk(socket_status) || status === null) {
-              console.log(socket_status)
-              return
-            }
+          socket.call('logout', auth_info, (status) => {
             if (!isOk(status)) {
               console.log(status)
               return
