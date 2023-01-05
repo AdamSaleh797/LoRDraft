@@ -52,17 +52,20 @@ export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>
 export interface ErrStatusT {
   status: ErrStatusCode
   message: string
+  from_statuses?: ErrStatusT[]
 }
 
 export type Status = OkStatusT | ErrStatusT
 
 export function MakeErrStatus(
   status: ErrStatusCode,
-  message: string
+  message: string,
+  from_statuses?: ErrStatusT[]
 ): ErrStatusT {
   return {
     status: status,
     message: message,
+    from_statuses: from_statuses,
   }
 }
 
@@ -115,6 +118,12 @@ export function rejectedResults(
   )
 }
 
+export function rejectedResultReasons<T>(
+  promise_results: PromiseSettledResult<unknown>[]
+): T[] {
+  return rejectedResults(promise_results).map((res) => res.reason)
+}
+
 export function allFullfilled<T>(
   promise_results: PromiseSettledResult<T>[]
 ): promise_results is PromiseFulfilledResult<T>[] {
@@ -133,4 +142,29 @@ export function gen_uuid(): string {
 
 export function randChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+/**
+ * Randomly sample `samples` elements from `arr` without replacement.
+ * @param arr The array to sample from.
+ * @param samples The number of elements to sample.
+ *
+ * @return A list of the randomly sampled elements of `arr`.
+ */
+export function randSample<T>(arr: T[], samples: number): T[] {
+  if (samples > arr.length) {
+    return []
+  }
+
+  const sample_idx = new Array<number>(samples).fill(-1)
+
+  sample_idx.forEach((_1, idx, self) => {
+    let rand_idx
+    do {
+      rand_idx = Math.floor(Math.random() * arr.length)
+    } while (self.includes(rand_idx))
+    self[idx] = rand_idx
+  })
+
+  return sample_idx.map((idx) => arr[idx])
 }

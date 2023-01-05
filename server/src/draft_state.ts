@@ -1,10 +1,16 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { Card, Region } from 'card'
+import { allRegions, Card, Region } from 'card'
+import { POOL_SIZE } from 'draft'
 import {
+  allFullfilled,
+  ErrStatusT,
   isOk,
   MakeErrStatus,
   OkStatus,
   randChoice,
+  randSample,
+  rejectedResultReasons,
+  rejectedResults,
   Status,
   StatusCode,
 } from 'lor_util'
@@ -36,20 +42,50 @@ const draft_states_def = {
       draft_state_info: DraftStateInfo,
       callback: (status: Status, champ_cards: Card[] | null) => void
     ) => {
-      randomChampCards(draft_state_info.deck, (status, card) => {
-        if (!isOk(status) || card === null) {
-          // error!
+      const regions = randSample(draft_state_info.deck.regions, POOL_SIZE)
+
+      Promise.allSettled(
+        regions.map(
+          (region) =>
+            new Promise(
+              (
+                resolve: (card: Card) => void,
+                reject: (status: Status) => void
+              ) => {
+                randomChampCards(region, 1, (status, card) => {
+                  if (!isOk(status) || card === null) {
+                    // error!
+                    reject(status)
+                    return
+                  }
+                  resolve(card[0])
+                })
+              }
+            )
+        )
+      ).then((statuses) => {
+        if (!allFullfilled(statuses)) {
           draft_state_info.draft_state.undo_transition(
             DraftStates.INITIAL_SELECTION,
             DraftStates.INIT
           )
-          callback(status, null)
+          const err_statuses: ErrStatusT[] = rejectedResultReasons(statuses)
+          callback(
+            MakeErrStatus(
+              StatusCode.RETRIEVE_CARD_ERROR,
+              'Failed to retrieve card',
+              err_statuses
+            ),
+            null
+          )
           return
         }
 
-        draft_state_info.pending_cards = [card]
+        const cards = statuses.map((status) => status.value)
+        draft_state_info.pending_cards = cards
 
-        callback(OkStatus, [card])
+        callback(OkStatus, cards)
+        return
       })
     },
   },
@@ -180,16 +216,16 @@ export function initDraftState(socket: LoRDraftSocket) {
 }
 
 function randomChampCards(
-  deck: DraftDeck,
-  callback: (status: Status, card: Card | null) => void
+  region: Region,
+  num_champs: number,
+  callback: (status: Status, cards: Card[] | null) => void
 ): void {
-  const region = randChoice(deck.regions)
   regionSets((status, region_sets) => {
     if (!isOk(status) || region_sets === null) {
       callback(status, null)
       return
     }
-    callback(OkStatus, randChoice(region_sets[region].champs))
+    callback(OkStatus, randSample(region_sets[region].champs, num_champs))
   })
 }
 
@@ -216,7 +252,7 @@ export function enterDraft(session_info: SessionInfo) {
   session_info.draft_state_info = {
     draft_state: draft_state,
     deck: {
-      regions: ['BandleCity', 'Targon'],
+      regions: allRegions().slice(),
       cards: [],
     },
     pending_cards: [],

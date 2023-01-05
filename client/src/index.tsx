@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
 import { Card } from 'card'
+import { POOL_SIZE } from 'draft'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
@@ -13,7 +14,6 @@ import { getStorageAuthInfo, SessionComponent } from './auth_session'
 import { isOk } from 'lor_util'
 
 const MAX_DISPLAY_COST = 8
-const POOL_SIZE = 4
 
 interface CardComponentProps {
   card: Card | null
@@ -88,7 +88,6 @@ function PoolComponent(props: PoolComponentProps) {
   }
 
   function joinDraft() {
-    console.log('here!')
     const auth_info = getStorageAuthInfo()
     if (auth_info !== null) {
       props.socket.call('join_draft', auth_info, (status) => {
