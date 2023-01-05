@@ -81,11 +81,14 @@ function PoolComponent(props: PoolComponentProps) {
         console.log(status)
         return
       }
-      setCardsRef.current(champs)
+      setCardsRef.current(
+        champs.concat(new Array(POOL_SIZE - champs.length).fill(null))
+      )
     })
   }
 
   function joinDraft() {
+    console.log('here!')
     const auth_info = getStorageAuthInfo()
     if (auth_info !== null) {
       props.socket.call('join_draft', auth_info, (status) => {

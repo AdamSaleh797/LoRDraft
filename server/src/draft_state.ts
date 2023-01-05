@@ -185,7 +185,7 @@ function randomChampCards(
 ): void {
   const region = randChoice(deck.regions)
   regionSets((status, region_sets) => {
-    if (status !== null || region_sets === null) {
+    if (!isOk(status) || region_sets === null) {
       callback(status, null)
       return
     }
@@ -199,7 +199,7 @@ function randomNonChampCards(
 ): void {
   const region = randChoice(deck.regions)
   regionSets((status, region_sets) => {
-    if (status !== null || region_sets === null) {
+    if (!isOk(status) || region_sets === null) {
       callback(status, null)
       return
     }
