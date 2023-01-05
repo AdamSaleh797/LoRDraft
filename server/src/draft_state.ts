@@ -223,6 +223,7 @@ function randomChampCards(
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function randomNonChampCards(
   deck: DraftDeck,
   callback: (status: Status, card: Card | null) => void
