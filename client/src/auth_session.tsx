@@ -13,7 +13,7 @@ import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
 
-function getStorageAuthInfo(): SessionCred | null {
+export function getStorageAuthInfo(): SessionCred | null {
   const auth_info_str = window.sessionStorage.getItem(STORAGE_AUTH_INFO_KEY)
   if (auth_info_str === null) {
     return null
@@ -215,35 +215,25 @@ export function SessionComponent(props: SessionComponentProps) {
   if (username === null) {
     const auth_info = getStorageAuthInfo()
     if (auth_info !== null) {
-      socket.call(
-        'join_session',
-        (socket_status, status, session_cred) => {
-          if (!isOk(socket_status) || status === null) {
+      socket.call('join_session', auth_info, (status, session_cred) => {
+        if (!isOk(status) || session_cred === null) {
+          if (sessionState === SessionState.LOGIN) {
+            console.log('failed to join session')
+            console.log(status)
             console.log('clearing token session storage')
             clearStorageAuthInfo()
-            console.log(socket_status)
-            return
           }
-          if (!isOk(status) || session_cred === null) {
-            if (sessionState === SessionState.LOGIN) {
-              console.log('failed to join session')
-              console.log(status)
-              console.log('clearing token session storage')
-              clearStorageAuthInfo()
-            }
-            return
-          }
-          session_cred.token = Buffer.from(session_cred.token)
+          return
+        }
+        session_cred.token = Buffer.from(session_cred.token)
 
-          console.log('joined session')
-          session_state_machine.transition(
-            SessionState.LOGIN,
-            SessionState.SIGNED_IN,
-            session_cred
-          )
-        },
-        auth_info
-      )
+        console.log('joined session')
+        session_state_machine.transition(
+          SessionState.LOGIN,
+          SessionState.SIGNED_IN,
+          session_cred
+        )
+      })
     }
   }
 
@@ -252,54 +242,38 @@ export function SessionComponent(props: SessionComponentProps) {
       return (
         <RegisterComponent
           register_fn={(register_info) => {
-            socket.call(
-              'register',
-              (socket_status, status) => {
-                if (!isOk(socket_status) || status === null) {
-                  console.log(socket_status)
-                  return
-                }
-                if (!isOk(status)) {
-                  console.log(status)
-                  return
-                }
+            socket.call('register', register_info, (status) => {
+              if (!isOk(status)) {
+                console.log(status)
+                return
+              }
 
-                console.log('registered!')
-                session_state_machine.transition(
-                  SessionState.REGISTER,
-                  SessionState.LOGIN
-                )
-              },
-              register_info
-            )
+              console.log('registered!')
+              session_state_machine.transition(
+                SessionState.REGISTER,
+                SessionState.LOGIN
+              )
+            })
           }}
         />
       )
     }
     case SessionState.LOGIN: {
       const login = (login_cred: LoginCred) => {
-        socket.call(
-          'login',
-          (socket_status, status, session_cred) => {
-            if (!isOk(socket_status) || status === null) {
-              console.log(socket_status)
-              return
-            }
-            if (!isOk(status) || session_cred === null) {
-              console.log(status)
-              return
-            }
-            session_cred.token = Buffer.from(session_cred.token)
+        socket.call('login', login_cred, (status, session_cred) => {
+          if (!isOk(status) || session_cred === null) {
+            console.log(status)
+            return
+          }
+          session_cred.token = Buffer.from(session_cred.token)
 
-            console.log('logged in!')
-            session_state_machine.transition(
-              SessionState.LOGIN,
-              SessionState.SIGNED_IN,
-              session_cred
-            )
-          },
-          login_cred
-        )
+          console.log('logged in!')
+          session_state_machine.transition(
+            SessionState.LOGIN,
+            SessionState.SIGNED_IN,
+            session_cred
+          )
+        })
       }
 
       return (
@@ -318,26 +292,18 @@ export function SessionComponent(props: SessionComponentProps) {
       const logout = () => {
         const auth_info = getStorageAuthInfo()
         if (auth_info !== null) {
-          socket.call(
-            'logout',
-            (socket_status, status) => {
-              if (!isOk(socket_status) || status === null) {
-                console.log(socket_status)
-                return
-              }
-              if (!isOk(status)) {
-                console.log(status)
-                return
-              }
+          socket.call('logout', auth_info, (status) => {
+            if (!isOk(status)) {
+              console.log(status)
+              return
+            }
 
-              console.log('logged out!')
-              session_state_machine.transition(
-                SessionState.SIGNED_IN,
-                SessionState.LOGIN
-              )
-            },
-            auth_info
-          )
+            console.log('logged out!')
+            session_state_machine.transition(
+              SessionState.SIGNED_IN,
+              SessionState.LOGIN
+            )
+          })
         }
       }
 

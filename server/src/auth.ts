@@ -5,11 +5,13 @@ import {
   LoRDraftSocket,
   RegisterInfo,
   RegisterInfoT,
+  SessionCred,
   SessionCredT,
 } from 'socket-msgs'
 
 import { isOk, MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 import assert from 'assert'
+import { SessionInfo } from 'session'
 
 // Expiration time of sessions in milliseconds.
 const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000
@@ -27,11 +29,11 @@ export interface AuthUser {
   email: string
   logged_in: boolean
   // Defined only when logged in.
-  session_info?: SessionAuthInfo
+  session_info?: SessionInfo
 }
 
 export interface LoggedInAuthUser extends AuthUser {
-  session_info: SessionAuthInfo
+  session_info: SessionInfo
 }
 
 type AuthUserDict = Map<string, AuthUser>
@@ -77,60 +79,38 @@ export function init_auth(socket: LoRDraftSocket): void {
 
       resolve(status, {
         username: login_cred.username,
-        token: auth_user.session_info.token,
+        token: auth_user.session_info.auth_info.token,
       })
     })
   })
 
   socket.respond('join_session', (resolve, session_cred) => {
-    if (!SessionCredT.guard(session_cred)) {
-      // Invalid input, we can ignore
-      console.log('received invalid join session input:')
-      console.log(session_cred)
-      return
-    }
-
-    join_session(
-      session_cred.username,
-      session_cred.token,
-      (status, auth_user) => {
-        if (!isOk(status)) {
-          resolve(status, null)
-          return
-        }
-        assert(auth_user !== undefined)
-
-        resolve(status, {
-          username: session_cred.username,
-          token: auth_user.session_info.token,
-        })
+    join_session(session_cred, (status, auth_user) => {
+      if (!isOk(status)) {
+        resolve(status, null)
+        return
       }
-    )
+      assert(auth_user !== undefined)
+
+      resolve(status, {
+        username: auth_user.username,
+        token: auth_user.session_info.auth_info.token,
+      })
+    })
   })
 
   socket.respond('logout', (resolve, session_cred) => {
-    if (!SessionCredT.guard(session_cred)) {
-      // Invalid input, we can ignore
-      console.log('received invalid logout input:')
-      console.log(session_cred)
-      return
-    }
-
-    join_session(
-      session_cred.username,
-      session_cred.token,
-      (status, auth_user) => {
-        if (!isOk(status)) {
-          resolve(status)
-          return
-        }
-        assert(auth_user !== undefined)
-
-        logout(auth_user, (status) => {
-          resolve(status)
-        })
+    join_session(session_cred, (status, auth_user) => {
+      if (!isOk(status)) {
+        resolve(status)
+        return
       }
-    )
+      assert(auth_user !== undefined)
+
+      logout(auth_user, (status) => {
+        resolve(status)
+      })
+    })
   })
 }
 
@@ -209,8 +189,10 @@ export function login(
 
   auth_user.logged_in = true
   auth_user.session_info = {
-    token: token,
-    login_time: now,
+    auth_info: {
+      token: token,
+      login_time: now,
+    },
   }
   callback(OkStatus, auth_user)
 }
@@ -225,10 +207,23 @@ export function logout(
 }
 
 export function join_session(
-  username: string,
-  token: Buffer,
+  session_cred: SessionCred | undefined,
   callback: (status: Status, auth_user?: LoggedInAuthUser) => void
 ): void {
+  if (!SessionCredT.guard(session_cred)) {
+    // Invalid input, we can ignore
+    callback(
+      MakeErrStatus(
+        StatusCode.INVALID_CLIENT_REQ,
+        'Received invalid join session input'
+      )
+    )
+    return
+  }
+
+  const username = session_cred.username
+  const token = session_cred.token
+
   const auth_user = users.get(username)
   if (auth_user === undefined) {
     callback(MakeErrStatus(StatusCode.UNKNOWN_USER, `Unknown user ${username}`))
@@ -246,8 +241,8 @@ export function join_session(
   }
 
   if (
-    token.length !== auth_user.session_info.token.length ||
-    !crypto.timingSafeEqual(token, auth_user.session_info.token)
+    token.length !== auth_user.session_info.auth_info.token.length ||
+    !crypto.timingSafeEqual(token, auth_user.session_info.auth_info.token)
   ) {
     callback(
       MakeErrStatus(
@@ -259,7 +254,10 @@ export function join_session(
   }
 
   const now = new Date().getTime()
-  if (now - auth_user.session_info.login_time > SESSION_EXPIRATION_TIME) {
+  if (
+    now - auth_user.session_info.auth_info.login_time >
+    SESSION_EXPIRATION_TIME
+  ) {
     // This session is expired.
     logout(auth_user, (status) => {
       if (!isOk(status)) {

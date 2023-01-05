@@ -1,4 +1,15 @@
-import { Card, SetPackCard } from 'card'
+import { allRegions, Card, Region, SetPackCardT } from 'card'
+import {
+  allFullfilled,
+  ErrStatusT,
+  isOk,
+  MakeErrStatus,
+  OkStatus,
+  OkStatusT,
+  rejectedResults,
+  Status,
+  StatusCode,
+} from 'lor_util'
 import path from 'path'
 
 import {
@@ -9,7 +20,11 @@ import {
 } from './bundle'
 import bundles from './config/bundles.json'
 
-type callback_fn = (err: PromiseRejectedResult[] | null) => void
+interface RegionSet {
+  champs: Card[]
+  nonChamps: Card[]
+}
+type RegionSetMap = Record<Region, RegionSet>
 
 const g_set_packs = [
   'set1-en_us.json',
@@ -21,49 +36,51 @@ const g_set_packs = [
   'set6cde-en_us.json',
 ]
 
-let g_cards: Card[] | undefined
+let g_region_sets: RegionSetMap | undefined
 
-export function updateSetPacks(callback: callback_fn = () => undefined) {
-  console.log(bundles)
+export function updateSetPacks(
+  callback: (rejected_results: PromiseRejectedResult[] | null) => void = () =>
+    undefined
+) {
   const promiseList = bundles.map((bundle) => {
-    return new Promise((resolve, reject) => {
-      console.log(bundle.setName)
-      downloadZipAsset(bundle.url, bundle.setName, (err) => {
-        if (err) {
-          reject(err)
-          return
-        }
+    return new Promise(
+      (
+        resolve: (value: OkStatusT) => void,
+        reject: (reason: ErrStatusT) => void
+      ) => {
+        downloadZipAsset(bundle.url, bundle.setName, (status) => {
+          if (!isOk(status)) {
+            reject(status)
+            return
+          }
 
-        extractFromBundle(
-          bundle.setName,
-          bundle.configPath,
-          path.basename(bundle.configPath),
-          (err) => {
-            if (err) {
-              reject(err)
-              return
-            }
-            removeBundle(bundle.setName, (err) => {
-              if (err) {
-                reject(err)
+          extractFromBundle(
+            bundle.setName,
+            bundle.configPath,
+            path.basename(bundle.configPath),
+            (status) => {
+              if (!isOk(status)) {
+                reject(status)
                 return
               }
-              resolve(0)
-            })
-          }
-        )
-      })
-    })
+
+              removeBundle(bundle.setName, (status) => {
+                if (!isOk(status)) {
+                  reject(status)
+                  return
+                }
+                resolve(status)
+              })
+            }
+          )
+        })
+      }
+    )
   })
 
   Promise.allSettled(promiseList).then((results) => {
-    const err_list = results.filter(
-      (
-        result: PromiseSettledResult<unknown>
-      ): result is PromiseRejectedResult => result.status === 'rejected'
-    )
-    if (err_list.length !== 0) {
-      callback(err_list)
+    if (!allFullfilled(results)) {
+      callback(rejectedResults(results))
     } else {
       callback(null)
     }
@@ -72,58 +89,99 @@ export function updateSetPacks(callback: callback_fn = () => undefined) {
 
 export function loadSetPack(
   bundle: string,
-  callback: (err: Error | null, cards: Card[] | null) => void = () => undefined
+  callback: (status: Status, cards: Card[] | null) => void = () => undefined
 ): void {
-  readBundle(bundle, (err: Error | null, data: string | null) => {
-    if (err || !data) {
-      callback(err, null)
+  readBundle(bundle, (status: Status, data: string | null) => {
+    if (!isOk(status) || data === null) {
+      callback(status, null)
       return
     }
     const obj = JSON.parse(data)
     const cards: Card[] = []
-    obj.forEach((card: SetPackCard) => {
+    obj.forEach((card: unknown) => {
+      if (!SetPackCardT.guard(card)) {
+        console.log(`Parse error, found card with invalid format.`)
+        return
+      }
+
       if (card.collectible) {
         cards.push({
           rarity: card.rarity,
           imageUrl: card.assets[0].gameAbsolutePath,
           cost: card.cost,
           name: card.name,
-          regions: card.regions,
+          regions: card.regionRefs,
           subtypes: card.subtypes,
         })
       }
     })
-    callback(null, cards)
+    callback(status, cards)
   })
 }
 
-export function allCards(
-  callback: (err: Error | null, cards: Card[] | null) => void
+export function regionSets(
+  callback: (status: Status, cards: RegionSetMap | null) => void
 ): void {
-  if (g_cards !== undefined) {
-    callback(null, g_cards)
+  if (g_region_sets !== undefined) {
+    callback(OkStatus, g_region_sets)
     return
   }
+  const region_sets: RegionSetMap = allRegions().reduce<Partial<RegionSetMap>>(
+    (region_sets, region) => {
+      return {
+        ...region_sets,
+        [region]: {
+          champs: [],
+          nonChamps: [],
+        },
+      }
+    },
+    {}
+  ) as RegionSetMap
 
-  Promise.all(
+  Promise.allSettled(
     g_set_packs.map((set) => {
       return new Promise<Card[]>((resolve, reject) => {
-        loadSetPack(set, (err, cards) => {
-          if (err || !cards) {
-            reject(err)
+        loadSetPack(set, (status, cards) => {
+          if (!isOk(status) || cards === null) {
+            reject(status)
             return
           }
           resolve(cards)
         })
       })
     })
-  ).then(
-    (cards) => {
-      g_cards = cards.flat(1)
-      callback(null, g_cards)
-    },
-    (err) => {
-      callback(err, null)
+  ).then((set_pack_results) => {
+    if (!allFullfilled(set_pack_results)) {
+      callback(
+        MakeErrStatus(
+          StatusCode.SET_PACK_UPDATE_ERROR,
+          rejectedResults(set_pack_results)
+            .map(
+              (rejected_result) =>
+                `${rejected_result.reason.status}: ${rejected_result.reason.message}`
+            )
+            .join(', ')
+        ),
+        null
+      )
+      return
     }
-  )
+
+    const set_packs = set_pack_results.map((result) => result.value)
+
+    set_packs.forEach((cards) => {
+      cards.forEach((card) => {
+        card.regions.forEach((region) => {
+          if (card.rarity === 'Champion') {
+            region_sets[region].champs.push(card)
+          } else {
+            region_sets[region].nonChamps.push(card)
+          }
+        })
+      })
+    })
+    g_region_sets = region_sets
+    callback(OkStatus, g_region_sets)
+  })
 }

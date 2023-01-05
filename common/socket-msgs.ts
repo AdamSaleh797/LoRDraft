@@ -1,17 +1,18 @@
 import { Buffer } from 'buffer'
-import { InstanceOf, Record, String } from 'runtypes'
+import { Array, InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
 import { AsyncSocketContext } from 'async_socket'
-import { Card } from 'card'
+import { Card, CardT, RegionT } from 'card'
 import { Empty, Status } from 'lor_util'
 
-export interface RegisterInfo {
-  username: string
-  password: string
-  email: string
-}
+export const DraftDeckT = Record({
+  regions: Array(RegionT),
+  cards: Array(CardT),
+})
+
+export type DraftDeck = Static<typeof DraftDeckT>
 
 export const RegisterInfoT = Record({
   username: String,
@@ -19,32 +20,31 @@ export const RegisterInfoT = Record({
   email: String,
 })
 
-export interface LoginCred {
-  username: string
-  password: string
-}
+export type RegisterInfo = Static<typeof RegisterInfoT>
 
 export const LoginCredT = Record({
   username: String,
   password: String,
 })
 
-export interface SessionCred {
-  username: string
-  token: Buffer
-}
+export type LoginCred = Static<typeof LoginCredT>
 
 export const SessionCredT = Record({
   username: String,
   token: InstanceOf(Buffer),
 })
 
+export type SessionCred = Static<typeof SessionCredT>
+
 export interface ServerToClientEvents {
   register_res: (status: Status) => void
   login_res: (status: Status, session_cred: SessionCred | null) => void
   join_session_res: (status: Status, session_cred: SessionCred | null) => void
   logout_res: (status: Status) => void
-  card_res: (err: Error | null, card: Card | null) => void
+  card_res: (status: Status, card: Card | null) => void
+  join_draft_res: (status: Status) => void
+  initial_selection_res: (status: Status, champs: Card[] | null) => void
+  current_draft_res: (status: Status, draft_deck: DraftDeck | null) => void
 }
 
 export interface ClientToServerEvents {
@@ -53,6 +53,9 @@ export interface ClientToServerEvents {
   join_session_req: (session_cred?: SessionCred) => void
   logout_req: (session_cred?: SessionCred) => void
   card_req: (name?: string) => void
+  join_draft_req: (session_cred?: SessionCred) => void
+  initial_selection_req: (session_cred?: SessionCred) => void
+  current_draft_req: (session_cred?: SessionCred) => void
 }
 
 export type InterServerEvents = Empty
