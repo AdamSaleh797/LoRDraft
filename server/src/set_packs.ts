@@ -1,4 +1,4 @@
-import { allRegions, Card, Region, SetPackCard, SetPackCardT } from 'card'
+import { allRegions, Card, Region, SetPackCardT } from 'card'
 import {
   allFullfilled,
   ErrStatusT,

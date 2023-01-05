@@ -69,14 +69,15 @@ const draft_states_def = {
       return
     },
   },
+  [DraftStates.GENERATE_CODE]: {},
 } as const
 
-// const draft_states = new StateMachine(
-//   draft_states_def,
-//   DraftStates.INITIAL_SELECTION as DraftStates
-// )
+const draft_states = new StateMachine(
+  draft_states_def,
+  DraftStates.INITIAL_SELECTION as DraftStates
+)
 
-function randomNonChampCards(
+export function randomNonChampCards(
   deck: DraftDeck,
   callback: (status: Status, card: Card | null) => void
 ): void {
