@@ -6,23 +6,34 @@ export type Empty = Record<any, never>
 
 export enum StatusCode {
   OK = 'OK',
+
+  // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
   LOGGED_IN = 'LOGGED_IN',
   NOT_LOGGED_IN = 'NOT_LOGGED_IN',
   INCORRECT_PASSWORD = 'INCORRECT_PASSWORD',
   INVALID_TOKEN = 'INVALID_TOKEN',
   USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
+
+  // Internal file io errors
   UNZIP_ERROR = 'UNZIP_ERROR',
   FILE_ERROR = 'FILE_ERROR',
   FILE_READ_ERROR = 'FILE_READ_ERROR',
   FILE_CP_ERROR = 'FILE_CP_ERROR',
   FILE_RM_ERROR = 'FILE_RM_ERROR',
+
+  // Internal child process errors.
   CHILD_PROCESS_EXEC_ERROR = 'CHILD_PROCESS_EXEC_ERROR',
+
+  // Generic error for failure to update the set packs.
   SET_PACK_UPDATE_ERROR = 'SET_PACK_UPDATE_ERROR',
 
   // Generic error when retrieving a Card, used to mask internal errors.
   RETRIEVE_CARD_ERROR = 'RETRIEVE_CARD_ERROR',
   UNKNOWN_CARD = 'UNKNOWN_CARD',
+
+  // Async socket errors
+  MESSAGE_TIMEOUT = 'MESSAGE_TIMEOUT',
 }
 
 export interface OkStatusT {

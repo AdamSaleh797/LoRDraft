@@ -1,6 +1,6 @@
 import { Socket as ClientSocket } from 'socket.io-client'
 import { Socket as ServerSocket } from 'socket.io'
-import { Empty, gen_uuid, Status } from 'lor_util'
+import { Empty, gen_uuid, MakeErrStatus, Status, StatusCode } from 'lor_util'
 
 interface EventsMap {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,12 +53,15 @@ type AsyncCompatibleEvents<
 > = EventNames<ToRequestEvents<ReqEvents>> &
   EventNames<ToResponseEvents<ResEvents>>
 
-type AsyncMessage<
+interface AsyncMessage<
   ListenEvents extends EventsMap,
   EmitEvents extends EventsMap,
   EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>,
   Args extends ResParams<EventName, ListenEvents>
-> = (...args: Args) => void
+> {
+  timeout_id: NodeJS.Timeout
+  callback: (...args: Args) => void
+}
 
 type ResponseCallbackArgsT<
   Params extends Parameters<(...args: unknown[]) => void>
@@ -89,6 +92,7 @@ export class AsyncSocketContext<
     string,
     AsyncMessage<ListenEvents, EmitEvents, never, never>
   >
+  private timeout: number
 
   constructor(
     socket: // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,6 +102,7 @@ export class AsyncSocketContext<
     this.socket = socket
     this.listeners = new Map()
     this.outstanding_calls = new Map()
+    this.timeout = 1000
   }
 
   private _raw_socket():
@@ -121,13 +126,14 @@ export class AsyncSocketContext<
           return
         }
 
-        const callback = this.outstanding_calls.get(uuid) as AsyncMessage<
+        const message_info = this.outstanding_calls.get(uuid) as AsyncMessage<
           ListenEvents,
           EmitEvents,
           EventName,
           ResParams<EventName, ListenEvents>
         >
-        callback(...call_args)
+        clearTimeout(message_info.timeout_id)
+        message_info.callback(...call_args)
       }
 
       this.listeners.set(event, cb)
@@ -139,6 +145,30 @@ export class AsyncSocketContext<
         ) => void
       )(event, cb)
     }
+  }
+
+  private _add_timeout<
+    EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
+  >(
+    event_name: string,
+    uuid: string,
+    timeout_ms: number,
+    callback: ResponseCallbackT<EventName, ListenEvents>
+  ): NodeJS.Timeout {
+    return setTimeout(() => {
+      this.outstanding_calls.delete(uuid)
+
+      const cb = callback as (status: Status, ...args: null[]) => void
+      cb(
+        MakeErrStatus(
+          StatusCode.MESSAGE_TIMEOUT,
+          `Async socket call ${event_name} timed out after ${
+            timeout_ms / 1000
+          } second${timeout_ms === 1000 ? '' : 's'}`
+        ),
+        ...new Array(callback.length - 1).fill(null)
+      )
+    }, timeout_ms)
   }
 
   emit<EventName extends EventNames<EmitEvents>>(
@@ -171,7 +201,17 @@ export class AsyncSocketContext<
 
     const uuid = gen_uuid()
 
-    this.outstanding_calls.set(uuid, callback)
+    const timeout_id = this._add_timeout(
+      event_name,
+      uuid,
+      this.timeout,
+      callback
+    )
+
+    this.outstanding_calls.set(uuid, {
+      timeout_id: timeout_id,
+      callback: callback,
+    })
 
     // const args: ToRequestEvents<EmitEvents>[EventName] = [uuid, ...call_args]
     // Disappointing, but this seems to be a limitation in the typescript type checker
