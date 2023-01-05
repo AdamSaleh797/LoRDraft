@@ -13,7 +13,7 @@ import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
 
-function getStorageAuthInfo(): SessionCred | null {
+export function getStorageAuthInfo(): SessionCred | null {
   const auth_info_str = window.sessionStorage.getItem(STORAGE_AUTH_INFO_KEY)
   if (auth_info_str === null) {
     return null

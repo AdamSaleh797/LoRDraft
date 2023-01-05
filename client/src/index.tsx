@@ -3,11 +3,17 @@ import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
 import { Card } from 'card'
-import { LoRDraftClientSocket, LoRDraftClientSocketIO } from 'socket-msgs'
+import {
+  LoRDraftClientSocket,
+  LoRDraftClientSocketIO,
+  SessionCred,
+} from 'socket-msgs'
 import { AsyncSocketContext } from 'async_socket'
-import { SessionComponent } from './auth_session'
+import { getStorageAuthInfo, SessionComponent } from './auth_session'
+import { isOk } from 'lor_util'
 
 const MAX_DISPLAY_COST = 8
+const POOL_SIZE = 4
 
 interface CardComponentProps {
   card: Card | null
@@ -59,71 +65,41 @@ interface PoolComponentProps {
 }
 
 function PoolComponent(props: PoolComponentProps) {
-  const initial_names = ['Aurelion Sol', 'Norra', 'Gwen', 'Aphelios']
-  const num_cards = initial_names.length
+  const [cards, setCards] = React.useState<(Card | null)[]>(
+    new Array(POOL_SIZE).fill(null)
+  )
 
-  const [names, setNames, cards, setCards] = new Array(num_cards)
-    .fill(undefined)
-    .reduce<
-      [
-        string[],
-        ((name: string) => void)[],
-        (Card | null)[],
-        ((card: Card | null) => void)[]
-      ]
-    >(
-      ([names, setNames, cards, setCards], _1, idx) => {
-        const [name, setName] = React.useState<string>(initial_names[idx])
-        const [card, setCard] = React.useState<Card | null>(null)
-
-        React.useMemo<void>(() => {
-          props.socket.call('card', name, (status, card) => {
-            if (card === null) {
-              console.log('got bad card back!')
-              console.log(status)
-              return
-            }
-
-            addCard.current(card, idx)
-          })
-        }, [name])
-
-        return [
-          [...names, name],
-          [...setNames, setName],
-          [...cards, card],
-          [...setCards, setCard],
-        ]
-      },
-      [[], [], [], []]
-    )
-
-  const addCard = React.useRef<(card: Card, idx: number) => void>(
+  const setCardsRef = React.useRef<(cards: (Card | null)[]) => void>(
     () => undefined
   )
 
-  console.log('RENDER!')
+  setCardsRef.current = setCards
 
-  addCard.current = (card, idx) => {
-    console.log(setCards)
-    console.log(idx, setCards[idx])
-    if (card.name === names[idx]) {
-      setCards[idx](card)
-      console.log('added')
-    } else {
-      console.log(`discarded ${card.name}, found ${names[idx]} as desired card`)
-    }
-  }
-
-  const switchPool = () => {
-    const new_names = ['Rock Hopper', 'Redeemed Prodigy', 'Kindred', 'Chip']
-    setNames.forEach((setName, idx) => {
-      setName(new_names[idx])
+  function getInitialPool(auth_info: SessionCred) {
+    props.socket.call('initial_selection', auth_info, (status, champs) => {
+      if (!isOk(status) || champs === null) {
+        console.log(status)
+        return
+      }
+      setCardsRef.current(champs)
     })
   }
 
+  function joinDraft() {
+    const auth_info = getStorageAuthInfo()
+    if (auth_info !== null) {
+      props.socket.call('join_draft', auth_info, (status) => {
+        if (!isOk(status)) {
+          console.log(status)
+          return
+        }
+        getInitialPool(auth_info)
+      })
+    }
+  }
+
   return (
-    <div onClick={switchPool}>
+    <div onClick={joinDraft}>
       {cards.map((card) => {
         return (
           <CardComponent
@@ -133,6 +109,7 @@ function PoolComponent(props: PoolComponentProps) {
           />
         )
       })}
+      <button onClick={joinDraft}>DRAFT!</button>
     </div>
   )
 }
