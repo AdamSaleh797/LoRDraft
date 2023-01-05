@@ -7,6 +7,10 @@ export type Empty = Record<any, never>
 export enum StatusCode {
   OK = 'OK',
 
+  // Generic errors.
+  INVALID_CLIENT_REQ = 'INVALID_CLIENT_REQ',
+  INVALID_STATE_TRANSITION = 'INVALID_STATE_TRANSITION',
+
   // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
   LOGGED_IN = 'LOGGED_IN',
@@ -34,6 +38,9 @@ export enum StatusCode {
 
   // Async socket errors
   MESSAGE_TIMEOUT = 'MESSAGE_TIMEOUT',
+
+  // Draft state errors
+  NOT_IN_DRAFT_SESSION = 'NOT_IN_DRAFT_SESSION',
 }
 
 export interface OkStatusT {

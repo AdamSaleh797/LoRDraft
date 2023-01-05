@@ -1,4 +1,6 @@
-type KeyT = string | number | symbol
+import { MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
+
+type KeyT = string | number
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFn = (...args: any) => void
 
@@ -14,18 +16,22 @@ export class StateMachine<
   MachineDef extends StateMachineDef<State>,
   State extends KeyT
 > {
-  state_machine_def: MachineDef
-  state: State
-  state_update_fn?: (state: State) => void
+  private state_machine_def_: MachineDef
+  private state_: State
+  private state_update_fn_?: (state: State) => void
 
   constructor(
     state_machine_def: MachineDef,
     initial_state: State,
     state_update_fn?: (state: State) => void
   ) {
-    this.state_machine_def = state_machine_def
-    this.state = initial_state
-    this.state_update_fn = state_update_fn
+    this.state_machine_def_ = state_machine_def
+    this.state_ = initial_state
+    this.state_update_fn_ = state_update_fn
+  }
+
+  state() {
+    return this.state_
   }
 
   transition<
@@ -38,19 +44,37 @@ export class StateMachine<
           : never
         : never
       : never
-  >(from: FromT, to: ToT, ...args: Parameters<UpdateFnT>): boolean {
-    if (this.state !== from) {
-      return false
+  >(from: FromT, to: ToT, ...args: Parameters<UpdateFnT>): Status {
+    if (this.state_ !== from) {
+      return MakeErrStatus(
+        StatusCode.INVALID_STATE_TRANSITION,
+        `Cannot transition from state ${from} to state ${to}, currently in state ${this.state_}`
+      )
     }
 
-    const state_def = this.state_machine_def[from]
+    const state_def = this.state_machine_def_[from]
     const transition_fn = state_def[to] as UpdateFnT
     ;(transition_fn as AnyFn)(...args)
 
-    if (this.state_update_fn !== undefined) {
-      this.state_update_fn(to)
+    if (this.state_update_fn_ !== undefined) {
+      this.state_update_fn_(to)
     }
-    this.state = to
-    return true
+    this.state_ = to
+    return OkStatus
+  }
+
+  undo_transition<
+    FromT extends State,
+    ToT extends MachineDef extends Record<FromT, infer U> ? keyof U : never
+  >(current_state: ToT, prior_state: FromT): Status {
+    if (this.state_ !== (current_state as unknown as State)) {
+      return MakeErrStatus(
+        StatusCode.INVALID_STATE_TRANSITION,
+        `Cannot undo transition from state ${current_state} back to state ${prior_state}, currently in state ${this.state_}`
+      )
+    }
+
+    this.state_ = prior_state
+    return OkStatus
   }
 }

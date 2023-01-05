@@ -13,6 +13,7 @@ import {
   statusSanitizeError,
 } from 'lor_util'
 import { allRegions } from 'card'
+import { initDraftState } from './draft_state'
 
 export function InitSocket(app: http.Server): void {
   const io: LoRDraftServer = new Server(app)
@@ -20,6 +21,7 @@ export function InitSocket(app: http.Server): void {
   io.on('connection', (io_socket: LoRDraftSocketIO) => {
     const socket = new AsyncSocketContext(io_socket)
     init_auth(socket)
+    initDraftState(socket)
 
     socket.respond('card', (resolve, name) => {
       if (name === undefined) {
