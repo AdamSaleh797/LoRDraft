@@ -10,7 +10,6 @@ import {
   randChoice,
   randSample,
   rejectedResultReasons,
-  rejectedResults,
   Status,
   StatusCode,
 } from 'lor_util'
