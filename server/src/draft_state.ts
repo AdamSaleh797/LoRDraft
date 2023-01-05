@@ -15,7 +15,7 @@ import {
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
-import { LoRDraftSocket } from 'socket-msgs'
+import { DraftDeck, LoRDraftSocket } from 'socket-msgs'
 import { StateMachine } from 'state_machine'
 
 const enum DraftStates {
@@ -31,10 +31,6 @@ const enum DraftStates {
   GENERATE_CODE = 'GENERATE_CODE',
 }
 
-interface DraftDeck {
-  regions: Region[]
-  cards: Card[]
-}
 const draft_states_def = {
   [DraftStates.INIT]: {
     [DraftStates.INITIAL_SELECTION]: (
@@ -173,8 +169,7 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      enterDraft(auth_user.session_info)
-      resolve(OkStatus)
+      resolve(enterDraft(auth_user.session_info))
     })
   })
 
@@ -242,7 +237,13 @@ function randomNonChampCards(
   })
 }
 
-export function enterDraft(session_info: SessionInfo) {
+export function enterDraft(session_info: SessionInfo): Status {
+  if (inDraft(session_info)) {
+    return MakeErrStatus(
+      StatusCode.ALREADY_IN_DRAFT_SESSION,
+      'Already in draft session siwwy'
+    )
+  }
   const draft_state = new StateMachine(
     draft_states_def,
     DraftStates.INIT as DraftStates
@@ -256,4 +257,9 @@ export function enterDraft(session_info: SessionInfo) {
     },
     pending_cards: [],
   }
+  return OkStatus
+}
+
+function inDraft(session_info: SessionInfo) {
+  return session_info.draft_state_info !== undefined
 }

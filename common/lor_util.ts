@@ -41,6 +41,7 @@ export enum StatusCode {
 
   // Draft state errors
   NOT_IN_DRAFT_SESSION = 'NOT_IN_DRAFT_SESSION',
+  ALREADY_IN_DRAFT_SESSION = 'ALREADY_IN_DRAFT_SESSION',
 }
 
 export interface OkStatusT {

@@ -1,11 +1,18 @@
 import { Buffer } from 'buffer'
-import { InstanceOf, Record, Static, String } from 'runtypes'
+import { Array, InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
 import { AsyncSocketContext } from 'async_socket'
-import { Card } from 'card'
+import { Card, CardT, RegionT } from 'card'
 import { Empty, Status } from 'lor_util'
+
+export const DraftDeckT = Record({
+  regions: Array(RegionT),
+  cards: Array(CardT),
+})
+
+export type DraftDeck = Static<typeof DraftDeckT>
 
 export const RegisterInfoT = Record({
   username: String,
@@ -37,6 +44,7 @@ export interface ServerToClientEvents {
   card_res: (status: Status, card: Card | null) => void
   join_draft_res: (status: Status) => void
   initial_selection_res: (status: Status, champs: Card[] | null) => void
+  current_draft_res: (status: Status, draft_deck: DraftDeck | null) => void
 }
 
 export interface ClientToServerEvents {
@@ -47,6 +55,7 @@ export interface ClientToServerEvents {
   card_req: (name?: string) => void
   join_draft_req: (session_cred?: SessionCred) => void
   initial_selection_req: (session_cred?: SessionCred) => void
+  current_draft_req: (session_cred?: SessionCred) => void
 }
 
 export type InterServerEvents = Empty

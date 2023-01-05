@@ -28,7 +28,7 @@ export type Region = typeof g_regions[number]
 const region_literals: Literal<Region>[] = g_regions.map((region) =>
   Literal(region)
 )
-export const RegionsT = Union(region_literals[0], ...region_literals.slice(1))
+export const RegionT = Union(region_literals[0], ...region_literals.slice(1))
 
 export function allRegions(): readonly Region[] {
   return g_regions
@@ -44,7 +44,7 @@ export const SetPackCardT = Record({
     })
   ),
   regions: Array(String),
-  regionRefs: Array(RegionsT),
+  regionRefs: Array(RegionT),
   attack: Number,
   cost: Number,
   health: Number,
@@ -71,11 +71,13 @@ export const SetPackCardT = Record({
 
 export type SetPackCard = Static<typeof SetPackCardT>
 
-export interface Card {
-  rarity: string
-  imageUrl: string
-  cost: number
-  name: string
-  regions: Region[]
-  subtypes: string[]
-}
+export const CardT = Record({
+  rarity: String,
+  imageUrl: String,
+  cost: Number,
+  name: String,
+  regions: Array(RegionT),
+  subtypes: Array(String),
+})
+
+export type Card = Static<typeof CardT>
