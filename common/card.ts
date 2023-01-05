@@ -1,9 +1,25 @@
+export const g_regions = [
+  'Demacia',
+  'Noxus',
+  'Shurima',
+  'PiltoverZaun',
+  'Freljord',
+  'Targon',
+  'ShadowIsles',
+  'BandleCity',
+  'Runterra',
+  'Bilgewater',
+  'Ionia',
+] as const
+
+export type Region = typeof g_regions[number]
+
 export interface Card {
   rarity: string
   imageUrl: string
   cost: number
   name: string
-  regions: string[]
+  regions: Region[]
   subtypes: string[]
 }
 
@@ -17,7 +33,7 @@ export interface SetPackCard {
     }
   ]
   regions: string[]
-  regionRefs: string[]
+  regionRefs: Region[]
   attack: number
   cost: number
   health: number

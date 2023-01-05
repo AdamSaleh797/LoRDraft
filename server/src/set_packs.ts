@@ -1,4 +1,4 @@
-import { Card, SetPackCard } from 'card'
+import { Card, g_regions, Region, SetPackCard } from 'card'
 import path from 'path'
 
 import {
@@ -9,7 +9,13 @@ import {
 } from './bundle'
 import bundles from './config/bundles.json'
 
-type callback_fn = (err: PromiseRejectedResult[] | null) => void
+type CallbackFn = (err: PromiseRejectedResult[] | null) => void
+
+interface RegionSet {
+  champs: Card[]
+  nonChamps: Card[]
+}
+type RegionSetMap = Record<Region, RegionSet>
 
 const g_set_packs = [
   'set1-en_us.json',
@@ -21,9 +27,9 @@ const g_set_packs = [
   'set6cde-en_us.json',
 ]
 
-let g_cards: Card[] | undefined
+let g_region_sets: RegionSetMap | undefined
 
-export function updateSetPacks(callback: callback_fn = () => undefined) {
+export function updateSetPacks(callback: CallbackFn = () => undefined) {
   console.log(bundles)
   const promiseList = bundles.map((bundle) => {
     return new Promise((resolve, reject) => {
@@ -88,7 +94,7 @@ export function loadSetPack(
           imageUrl: card.assets[0].gameAbsolutePath,
           cost: card.cost,
           name: card.name,
-          regions: card.regions,
+          regions: card.regionRefs,
           subtypes: card.subtypes,
         })
       }
@@ -97,13 +103,25 @@ export function loadSetPack(
   })
 }
 
-export function allCards(
-  callback: (err: Error | null, cards: Card[] | null) => void
+export function regionSets(
+  callback: (err: Error | null, cards: RegionSetMap | null) => void
 ): void {
-  if (g_cards !== undefined) {
-    callback(null, g_cards)
+  if (g_region_sets !== undefined) {
+    callback(null, g_region_sets)
     return
   }
+  const region_sets: RegionSetMap = g_regions.reduce<Partial<RegionSetMap>>(
+    (region_sets, region) => {
+      return {
+        ...region_sets,
+        [region]: {
+          champs: [],
+          nonChamps: [],
+        },
+      }
+    },
+    {}
+  ) as RegionSetMap
 
   Promise.all(
     g_set_packs.map((set) => {
@@ -118,9 +136,20 @@ export function allCards(
       })
     })
   ).then(
-    (cards) => {
-      g_cards = cards.flat(1)
-      callback(null, g_cards)
+    (set_packs) => {
+      set_packs.forEach((cards) => {
+        cards.forEach((card) => {
+          card.regions.forEach((region) => {
+            if (card.rarity === 'Champion') {
+              region_sets[region].champs.push(card)
+            } else {
+              region_sets[region].nonChamps.push(card)
+            }
+          })
+        })
+      })
+      g_region_sets = region_sets
+      callback(null, g_region_sets)
     },
     (err) => {
       callback(err, null)

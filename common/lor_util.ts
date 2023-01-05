@@ -44,3 +44,7 @@ export function isOk(status: Status): status is OkStatusT {
 export function gen_uuid(): string {
   return uuidv4()
 }
+
+export function randChoice<T>(arr : T[]) : T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}

@@ -1,7 +1,7 @@
 import http from 'http'
 import { Server } from 'socket.io'
 
-import { allCards } from './set_packs'
+import { regionSets } from './set_packs'
 import { LoRDraftServer, LoRDraftSocketIO } from 'socket-msgs'
 import { init_auth } from './auth'
 import { AsyncSocketContext } from 'async_socket'
@@ -17,7 +17,7 @@ export function InitSocket(app: http.Server): void {
       if (name === undefined) {
         console.log('Received bad request!')
       } else {
-        allCards((err, cards) => {
+        regionSets((err, cards) => {
           if (err || !cards) {
             resolve(Error('Failed to load cards'), null)
             return

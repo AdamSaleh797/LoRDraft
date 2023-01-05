@@ -164,7 +164,7 @@ function ManaCurve(props: ManaCurveComponentProps) {
           const barStyle = {
             width: `calc(${100 / histogram.length}% - 4px)`,
             height: `${(manaValueCount / maxCount) * 200}px`,
-            backgroundColor: 'blue',
+            backgroundColor: '#1E2F97',
             display: 'inline-block',
             borderStyle: 'solid',
             borderWidth: '2px',
