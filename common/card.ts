@@ -9,7 +9,7 @@ import {
   Union,
 } from 'runtypes'
 
-const g_regions = [
+const g_main_regions = [
   'Demacia',
   'Noxus',
   'Shurima',
@@ -23,15 +23,55 @@ const g_regions = [
   'Ionia',
 ] as const
 
-export type Region = typeof g_regions[number]
-
-const region_literals: Literal<Region>[] = g_regions.map((region) =>
-  Literal(region)
+export type MainRegion = typeof g_main_regions[number]
+const main_region_literals = g_main_regions.map((region) => Literal(region))
+export const MainRegionT = Union(
+  main_region_literals[0],
+  ...main_region_literals.slice(1)
 )
-export const RegionT = Union(region_literals[0], ...region_literals.slice(1))
+
+const g_origins = {
+  Jax: (card: Card): boolean => {
+    return card.subtypes.includes('weaponmaster')
+  },
+} as const
+
+export type OriginsDef = {
+  [champion in keyof typeof g_origins]: (card: Card) => boolean
+}
+// Assertion that g_origins satisfies its type
+g_origins satisfies OriginsDef
+
+export type Origin = keyof typeof g_origins
+const origin_literals = Object.keys(g_origins).map((region) => Literal(region))
+export const OriginT = Union(origin_literals[0], ...origin_literals.slice(1))
+
+export const RegionT = Union(MainRegionT, OriginT)
+export type Region = MainRegion | Origin
+
+const g_all_regions: Region[] = [
+  ...(g_main_regions as ReadonlyArray<Region>),
+  ...(Object.keys(g_origins) as Region[]),
+]
 
 export function allRegions(): readonly Region[] {
-  return g_regions
+  return g_all_regions
+}
+
+export function isMainRegion(region: Region): region is MainRegion {
+  return g_main_regions.includes(region as MainRegion)
+}
+
+export function isOrigin(region: Region): region is Origin {
+  return Object.keys(g_origins).includes(region as Origin)
+}
+
+export function regionContains(region: Region, card: Card) {
+  if (isMainRegion(region)) {
+    return card.regions.includes(region)
+  } else {
+    return g_origins[region](card)
+  }
 }
 
 export const SetPackCardT = Record({
@@ -44,7 +84,7 @@ export const SetPackCardT = Record({
     })
   ),
   regions: Array(String),
-  regionRefs: Array(RegionT),
+  regionRefs: Array(MainRegionT),
   attack: Number,
   cost: Number,
   health: Number,
@@ -76,7 +116,7 @@ export const CardT = Record({
   imageUrl: String,
   cost: Number,
   name: String,
-  regions: Array(RegionT),
+  regions: Array(MainRegionT),
   subtypes: Array(String),
 })
 
