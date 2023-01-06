@@ -1,5 +1,5 @@
 import { Record } from 'runtypes'
-import { Static } from 'runtypes/lib/runtype'
+import { Runtype, Static } from 'runtypes/lib/runtype'
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
@@ -173,23 +173,30 @@ export function randSample<T>(arr: T[], samples: number): T[] {
   return sample_idx.map((idx) => arr[idx])
 }
 
+/**
+ * Narrows an object to include only fields of the type `type`, discarding the other fields.
+ * @param type
+ * @param obj
+ * @returns
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function narrowType<T extends Record<any, false>>(
+export function narrowType<T extends Record<any, false>, U extends Static<T>>(
   type: T,
-  obj: object
+  obj: U
 ): Static<T> | null {
-  const optional_type = type.asPartial()
-  const res: Static<typeof optional_type> = {}
+  const res: Static<T> = {}
+  console.log(Object.keys(type.fields))
 
-  for (const [key, val] of Object.entries(obj)) {
-    const partial_obj = {
-      [key]: val,
-    }
-    if (!optional_type.guard(partial_obj)) {
+  for (const [key, runtype] of Object.entries<Runtype>(type.fields)) {
+    const val = obj[key]
+    if (!runtype.guard(val)) {
       return null
     }
 
-    res[key] = val
+    if (val !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res[key as keyof Static<T>] = val as any
+    }
   }
 
   return res as Static<T>
