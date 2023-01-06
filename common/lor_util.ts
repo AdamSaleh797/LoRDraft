@@ -1,3 +1,5 @@
+import { Record } from 'runtypes'
+import { Static } from 'runtypes/lib/runtype'
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
@@ -10,6 +12,7 @@ export enum StatusCode {
   // Generic errors.
   INVALID_CLIENT_REQ = 'INVALID_CLIENT_REQ',
   INVALID_STATE_TRANSITION = 'INVALID_STATE_TRANSITION',
+  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
 
   // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
@@ -168,4 +171,26 @@ export function randSample<T>(arr: T[], samples: number): T[] {
   })
 
   return sample_idx.map((idx) => arr[idx])
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function narrowType<T extends Record<any, false>>(
+  type: T,
+  obj: object
+): Static<T> | null {
+  const optional_type = type.asPartial()
+  const res: Static<typeof optional_type> = {}
+
+  for (const [key, val] of Object.entries(obj)) {
+    const partial_obj = {
+      [key]: val,
+    }
+    if (!optional_type.guard(partial_obj)) {
+      return null
+    }
+
+    res[key] = val
+  }
+
+  return res as Static<T>
 }
