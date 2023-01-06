@@ -76,6 +76,7 @@ export const CardT = Record({
   imageUrl: String,
   cost: Number,
   name: String,
+  cardCode: String,
   regions: Array(RegionT),
   subtypes: Array(String),
 })

@@ -5,6 +5,7 @@ import { DraftStateInfo, LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { getStorageAuthInfo } from './auth_session'
 import { isOk, Status } from 'lor_util'
 import { CardComponent } from './CardComponent'
+import { createReadStream } from 'fs'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
@@ -18,9 +19,9 @@ export interface PoolComponentProps {
 }
 
 export function PoolComponent(props: PoolComponentProps) {
-  console.log('uber pooly')
-  console.log(props.draftState?.pending_cards)
-  const cards: Card[] =
+  const [selected, setSelected] = React.useState<string[]>([])
+
+  const cards: (Card | null)[] =
     props.draftState?.pending_cards ?? new Array(POOL_SIZE).fill(null)
 
   const setPendingCardsRef = React.useRef<typeof props.setPendingCards>(
@@ -52,21 +53,45 @@ export function PoolComponent(props: PoolComponentProps) {
     }
   }
 
-  function select() {}
+  function confirm() {
+    const revertedCards = selected.map(
+      (cardCode) =>
+        cards.find(
+          (card) => card !== null && card.cardCode === cardCode
+        ) as Card
+    )
+
+    props.setPendingCards([])
+    props.addToDeck(revertedCards)
+  }
 
   return (
     <div>
       {cards.map((card) => {
+        function select() {
+          if (card === null) {
+            return
+          }
+          selected.includes(card.cardCode)
+            ? setSelected(
+                selected.filter((cardCode) => cardCode !== card.cardCode)
+              )
+            : setSelected(selected.concat(card.cardCode))
+        }
+
+        console.log(card?.cardCode)
         return (
           <CardComponent
             card={card}
             numCards={cards.length}
-            addToDeck={props.addToDeck}
-            isSelected={false}
+            isSelected={
+              card !== null && selected.includes(card.cardCode) ? true : false
+            }
             select={select}
           />
         )
       })}
+      <button onClick={confirm}>CONFIRM!</button>
       <button onClick={joinDraft}>DRAFT!</button>
     </div>
   )

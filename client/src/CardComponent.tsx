@@ -5,7 +5,6 @@ import { DraftDeck } from 'socket-msgs'
 export interface CardComponentProps {
   card: Card | null
   numCards: number
-  addToDeck: (cards: Card[]) => void
   isSelected: boolean
   select: () => void
 }

@@ -110,6 +110,7 @@ export function loadSetPack(
           imageUrl: card.assets[0].gameAbsolutePath,
           cost: card.cost,
           name: card.name,
+          cardCode: card.cardCode,
           regions: card.regionRefs,
           subtypes: card.subtypes,
         })
