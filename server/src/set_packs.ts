@@ -1,4 +1,4 @@
-import { allRegions, Card, Region, SetPackCardT } from 'card'
+import { allRegions, Card, Region, regionContains, SetPackCardT } from 'card'
 import {
   allFullfilled,
   ErrStatusT,
@@ -106,13 +106,13 @@ export function loadSetPack(
 
       if (card.collectible) {
         cards.push({
-          rarity: card.rarity,
+          rarity: card.rarityRef,
           imageUrl: card.assets[0].gameAbsolutePath,
           cost: card.cost,
           name: card.name,
           cardCode: card.cardCode,
           regions: card.regionRefs,
-          subtypes: card.subtypes,
+          subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
         })
       }
     })
@@ -127,6 +127,7 @@ export function regionSets(
     callback(OkStatus, g_region_sets)
     return
   }
+
   const region_sets: RegionSetMap = allRegions().reduce<Partial<RegionSetMap>>(
     (region_sets, region) => {
       return {
@@ -173,11 +174,13 @@ export function regionSets(
 
     set_packs.forEach((cards) => {
       cards.forEach((card) => {
-        card.regions.forEach((region) => {
-          if (card.rarity === 'Champion') {
-            region_sets[region].champs.push(card)
-          } else {
-            region_sets[region].nonChamps.push(card)
+        allRegions().forEach((region) => {
+          if (regionContains(region, card)) {
+            if (card.rarity === 'Champion') {
+              region_sets[region].champs.push(card)
+            } else {
+              region_sets[region].nonChamps.push(card)
+            }
           }
         })
       })
