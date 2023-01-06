@@ -1,7 +1,7 @@
 import { SessionAuthInfo } from 'auth'
-import { DraftStateInfo } from 'draft_state'
+import { ServerDraftStateInfo } from 'draft_state'
 
 export interface SessionInfo {
   auth_info: SessionAuthInfo
-  draft_state_info?: DraftStateInfo
+  draft_state_info?: ServerDraftStateInfo
 }
