@@ -4,7 +4,7 @@ import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
 import { AsyncSocketContext } from 'async_socket'
-import { Card, CardT, RegionT } from 'card'
+import { Card, CardT, Region, RegionT } from 'card'
 import { Empty, Status } from 'lor_util'
 
 export const DraftDeckT = Record({
@@ -12,14 +12,20 @@ export const DraftDeckT = Record({
   cards: Array(CardT),
 })
 
-export type DraftDeck = Static<typeof DraftDeckT>
+export interface DraftDeck {
+  regions: Region[]
+  cards: Card[]
+}
 
 export const DraftStateInfoT = Record({
   deck: DraftDeckT,
   pending_cards: Array(CardT),
 })
 
-export type DraftStateInfo = Static<typeof DraftStateInfoT>
+export interface DraftStateInfo {
+  deck: DraftDeck
+  pending_cards: Card[]
+}
 
 export const RegisterInfoT = Record({
   username: String,

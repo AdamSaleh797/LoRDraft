@@ -180,7 +180,10 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      const draft_info = narrowType(DraftStateInfoT, draft_state_info)
+      const draft_info = narrowType(
+        DraftStateInfoT,
+        draft_state_info
+      ) as DraftStateInfo | null
       if (draft_info === null) {
         resolve(
           MakeErrStatus(
