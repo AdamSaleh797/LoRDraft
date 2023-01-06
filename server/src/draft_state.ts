@@ -6,6 +6,7 @@ import {
   ErrStatusT,
   isOk,
   MakeErrStatus,
+  narrowType,
   OkStatus,
   randChoice,
   randSample,
@@ -15,8 +16,21 @@ import {
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
-import { DraftDeck, LoRDraftSocket } from 'socket-msgs'
+import {
+  DraftDeck,
+  DraftStateInfo,
+  DraftStateInfoT,
+  LoRDraftSocket,
+} from 'socket-msgs'
 import { StateMachine } from 'state_machine'
+
+export interface ServerDraftStateInfo extends DraftStateInfo {
+  draft_state: StateMachine<typeof draft_states_def, DraftStates>
+}
+
+interface InDraftSessionInfo extends SessionInfo {
+  draft_state_info: ServerDraftStateInfo
+}
 
 const enum DraftStates {
   INIT = 'INIT',
@@ -34,7 +48,7 @@ const enum DraftStates {
 const draft_states_def = {
   [DraftStates.INIT]: {
     [DraftStates.INITIAL_SELECTION]: (
-      draft_state_info: DraftStateInfo,
+      draft_state_info: ServerDraftStateInfo,
       callback: (status: Status, champ_cards: Card[] | null) => void
     ) => {
       const regions = randSample(draft_state_info.deck.regions, POOL_SIZE)
@@ -139,29 +153,49 @@ const draft_states_def = {
   [DraftStates.GENERATE_CODE]: {},
 } as const
 
-export interface DraftStateInfo {
-  draft_state: StateMachine<typeof draft_states_def, DraftStates>
-  deck: DraftDeck
-  pending_cards: Card[]
-}
-
 function draftStateInfo(
   auth_user: LoggedInAuthUser
-): [Status, DraftStateInfo | null] {
-  if (!('draft_state_info' in auth_user.session_info)) {
+): [Status, ServerDraftStateInfo | null] {
+  if (!inDraft(auth_user.session_info)) {
     return [
       MakeErrStatus(StatusCode.NOT_IN_DRAFT_SESSION, 'No draft session found.'),
       null,
     ]
   } else {
-    return [
-      OkStatus,
-      auth_user.session_info.draft_state_info ?? (null as never),
-    ]
+    return [OkStatus, auth_user.session_info.draft_state_info]
   }
 }
 
 export function initDraftState(socket: LoRDraftSocket) {
+  socket.respond('current_draft', (resolve, session_cred) => {
+    join_session(session_cred, (status, auth_user) => {
+      if (!isOk(status) || auth_user === undefined) {
+        resolve(status, null)
+        return
+      }
+
+      const [draft_status, draft_state_info] = draftStateInfo(auth_user)
+      if (!isOk(draft_status) || draft_state_info === null) {
+        resolve(draft_status, null)
+        return
+      }
+
+      const draft_info = narrowType(DraftStateInfoT, draft_state_info)
+      if (draft_info === null) {
+        resolve(
+          MakeErrStatus(
+            StatusCode.INTERNAL_SERVER_ERROR,
+            'Failed narrow draft info from ServerDraftInfo'
+          ),
+          null
+        )
+        return
+      }
+
+      resolve(draft_status, draft_info)
+    })
+  })
+
   socket.respond('join_draft', (resolve, session_cred) => {
     join_session(session_cred, (status, auth_user) => {
       if (!isOk(status) || auth_user === undefined) {
@@ -261,6 +295,8 @@ export function enterDraft(session_info: SessionInfo): Status {
   return OkStatus
 }
 
-function inDraft(session_info: SessionInfo) {
+function inDraft(
+  session_info: SessionInfo
+): session_info is InDraftSessionInfo {
   return session_info.draft_state_info !== undefined
 }

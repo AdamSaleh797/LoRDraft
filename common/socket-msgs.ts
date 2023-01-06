@@ -14,6 +14,13 @@ export const DraftDeckT = Record({
 
 export type DraftDeck = Static<typeof DraftDeckT>
 
+export const DraftStateInfoT = Record({
+  deck: DraftDeckT,
+  pending_cards: Array(CardT),
+})
+
+export type DraftStateInfo = Static<typeof DraftStateInfoT>
+
 export const RegisterInfoT = Record({
   username: String,
   password: String,
@@ -44,7 +51,10 @@ export interface ServerToClientEvents {
   card_res: (status: Status, card: Card | null) => void
   join_draft_res: (status: Status) => void
   initial_selection_res: (status: Status, champs: Card[] | null) => void
-  current_draft_res: (status: Status, draft_deck: DraftDeck | null) => void
+  current_draft_res: (
+    status: Status,
+    draft_state_info: DraftStateInfo | null
+  ) => void
 }
 
 export interface ClientToServerEvents {
