@@ -33,6 +33,7 @@ export enum StatusCode {
 
   // Generic error for failure to update the set packs.
   SET_PACK_UPDATE_ERROR = 'SET_PACK_UPDATE_ERROR',
+  MISSING_RUNETERRAN_CHAMP = 'MISSING_RUNETERRAN_CHAMP',
 
   // Generic error when retrieving a Card, used to mask internal errors.
   RETRIEVE_CARD_ERROR = 'RETRIEVE_CARD_ERROR',
@@ -44,6 +45,7 @@ export enum StatusCode {
   // Draft state errors
   NOT_IN_DRAFT_SESSION = 'NOT_IN_DRAFT_SESSION',
   ALREADY_IN_DRAFT_SESSION = 'ALREADY_IN_DRAFT_SESSION',
+  DRAFT_COMPLETE = 'DRAFT_COMPLETE',
 }
 
 export interface OkStatusT {
@@ -70,6 +72,17 @@ export function MakeErrStatus(
     message: message,
     from_statuses: from_statuses,
   }
+}
+
+export function AddSubStatuses(
+  status: ErrStatusT,
+  from_statuses: ErrStatusT[]
+): ErrStatusT {
+  return MakeErrStatus(
+    status.status,
+    status.message,
+    status.from_statuses?.concat(from_statuses) ?? from_statuses
+  )
 }
 
 export function StatusFromError<E extends Error>(
