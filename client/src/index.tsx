@@ -5,6 +5,7 @@ import io from 'socket.io-client'
 import { Card } from 'card'
 import {
   DraftDeck,
+  DraftStateInfo,
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
@@ -21,7 +22,9 @@ function createLoRSocket(): LoRDraftClientSocket {
 }
 
 function Main() {
-  const [deck, setDeck] = React.useState<DraftDeck | null>(null)
+  const [draftState, setDraftState] = React.useState<DraftStateInfo | null>(
+    null
+  )
   const socket_ref = React.useRef(createLoRSocket())
 
   const socket = socket_ref.current
@@ -30,14 +33,40 @@ function Main() {
     session_cred: SessionCred,
     callback: (status: Status) => void
   ) => {
-    socket.call('current_draft', session_cred, (status, draft_deck) => {
-      if (!isOk(status) || draft_deck === null) {
+    socket.call('current_draft', session_cred, (status, draft_state_info) => {
+      if (!isOk(status) || draft_state_info === null) {
         callback(status)
         return
       }
-      setDeck(draft_deck)
+      setDraftState(draft_state_info)
       callback(status)
     })
+  }
+
+  const addToDeck = (cards: Card[]) => {
+    if (draftState !== null) {
+      const newDraftState = { ...draftState }
+      newDraftState.deck.cards.push(...cards)
+      setDraftState(newDraftState)
+    }
+  }
+
+  const setPendingCards = (cards: Card[]) => {
+    if (draftState !== null) {
+      const newDraftState = { ...draftState }
+      newDraftState.pending_cards = cards
+      setDraftState(newDraftState)
+      console.log('test y')
+    } else {
+      const newDraftState: DraftStateInfo = {
+        deck: {
+          regions: [],
+          cards: [],
+        },
+        pending_cards: cards,
+      }
+      setDraftState(newDraftState)
+    }
   }
 
   return (
@@ -46,13 +75,19 @@ function Main() {
         <SessionComponent socket={socket} />
       </div>
       <div>
-        <PoolComponent socket={socket} refreshDraft={refreshDraft} />
+        <PoolComponent
+          socket={socket}
+          refreshDraft={refreshDraft}
+          draftState={draftState}
+          addToDeck={addToDeck}
+          setPendingCards={setPendingCards}
+        />
       </div>
       <div>
-        <ManaCurve deck={deck} />
+        <ManaCurve draftState={draftState} />
       </div>
       <div>
-        <DeckList deck={deck} />
+        <DeckList draftState={draftState} />
       </div>
     </div>
   )

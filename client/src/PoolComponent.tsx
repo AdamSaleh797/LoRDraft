@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card } from 'card'
 import { POOL_SIZE } from 'draft'
-import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
+import { DraftStateInfo, LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { getStorageAuthInfo } from './auth_session'
 import { isOk, Status } from 'lor_util'
 import { CardComponent } from './CardComponent'
@@ -12,18 +12,21 @@ export interface PoolComponentProps {
     session_cred: SessionCred,
     callback: (status: Status) => void
   ) => void
+  draftState: DraftStateInfo | null
+  addToDeck: (cards: Card[]) => void
+  setPendingCards: (cards: Card[]) => void
 }
 
 export function PoolComponent(props: PoolComponentProps) {
-  const [cards, setCards] = React.useState<(Card | null)[]>(
-    new Array(POOL_SIZE).fill(null)
-  )
+  console.log('uber pooly')
+  console.log(props.draftState?.pending_cards)
+  const cards: Card[] =
+    props.draftState?.pending_cards ?? new Array(POOL_SIZE).fill(null)
 
-  const setCardsRef = React.useRef<(cards: (Card | null)[]) => void>(
+  const setPendingCardsRef = React.useRef<typeof props.setPendingCards>(
     () => undefined
   )
-
-  setCardsRef.current = setCards
+  setPendingCardsRef.current = props.setPendingCards
 
   function getInitialPool(auth_info: SessionCred) {
     props.socket.call('initial_selection', auth_info, (status, champs) => {
@@ -31,9 +34,9 @@ export function PoolComponent(props: PoolComponentProps) {
         console.log(status)
         return
       }
-      setCardsRef.current(
-        champs.concat(new Array(POOL_SIZE - champs.length).fill(null))
-      )
+      setPendingCardsRef.current(champs)
+      console.log('grabink')
+      console.log(champs)
     })
   }
 
@@ -49,10 +52,20 @@ export function PoolComponent(props: PoolComponentProps) {
     }
   }
 
+  function select() {}
+
   return (
-    <div onClick={joinDraft}>
+    <div>
       {cards.map((card) => {
-        return <CardComponent card={card} numCards={cards.length} />
+        return (
+          <CardComponent
+            card={card}
+            numCards={cards.length}
+            addToDeck={props.addToDeck}
+            isSelected={false}
+            select={select}
+          />
+        )
       })}
       <button onClick={joinDraft}>DRAFT!</button>
     </div>

@@ -6,6 +6,7 @@ import { Socket as ClientSocket } from 'socket.io-client'
 import { AsyncSocketContext } from 'async_socket'
 import { Card, CardT, RegionT } from 'card'
 import { Empty, Status } from 'lor_util'
+import { DraftStates } from 'draft'
 
 export const DraftDeckT = Record({
   regions: Array(RegionT),
@@ -55,6 +56,7 @@ export interface ServerToClientEvents {
     status: Status,
     draft_state_info: DraftStateInfo | null
   ) => void
+  choose_cards_res: (status: Status, draft_state: DraftStates | null) => void
 }
 
 export interface ClientToServerEvents {
@@ -66,6 +68,7 @@ export interface ClientToServerEvents {
   join_draft_req: (session_cred?: SessionCred) => void
   initial_selection_req: (session_cred?: SessionCred) => void
   current_draft_req: (session_cred?: SessionCred) => void
+  choose_cards_req: (session_cred?: SessionCred, cards?: Card[]) => void
 }
 
 export type InterServerEvents = Empty

@@ -1,17 +1,17 @@
 import { Card } from 'card'
 import React from 'react'
-import { DraftDeck } from 'socket-msgs'
+import { DraftDeck, DraftStateInfo } from 'socket-msgs'
 
 export interface DeckListComponentProps {
-  deck: DraftDeck | null
+  draftState: DraftStateInfo | null
 }
 
 export function DeckList(props: DeckListComponentProps) {
   let map
-  if (props.deck === null) {
+  if (props.draftState === null) {
     map = new Map<string, number>()
   } else {
-    map = props.deck.cards.reduce((map, card) => {
+    map = props.draftState.deck.cards.reduce((map, card) => {
       if (map.has(card.name)) {
         map.set(card.name, (map.get(card.name) as number) + 1)
       } else {
