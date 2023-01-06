@@ -63,7 +63,7 @@ export interface ServerToClientEvents {
   ) => void
   next_pool_res: (
     status: Status,
-    champs: Card[] | null,
+    cards: Card[] | null,
     draft_state: DraftState | null
   ) => void
   choose_cards_res: (status: Status) => void
