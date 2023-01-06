@@ -1,16 +1,14 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { allRegions, Card, Region } from 'card'
+import { allRegions, Card, Region, regionContains } from 'card'
 import { DraftState, POOL_SIZE } from 'draft'
 import {
-  allFullfilled,
+  AddSubStatuses,
   ErrStatusT,
   isOk,
   MakeErrStatus,
   narrowType,
   OkStatus,
   randChoice,
-  randSample,
-  rejectedResultReasons,
   Status,
   StatusCode,
 } from 'lor_util'
@@ -24,6 +22,12 @@ import {
 } from 'socket-msgs'
 import { StateMachine } from 'state_machine'
 
+const MAX_CARD_REPICK_ITERATIONS = 100
+
+const RANDOM_SELECTION_1_CARD_CUTOFF = 20
+const RANDOM_SELECTION_2_CARD_CUTOFF = 37
+const RANDOM_SELECTION_3_CARD_CUTOFF = 43
+
 export interface ServerDraftStateInfo extends DraftStateInfo {
   draft_state: StateMachine<typeof draft_states_def, DraftState>
 }
@@ -32,108 +36,92 @@ interface InDraftSessionInfo extends SessionInfo {
   draft_state_info: ServerDraftStateInfo
 }
 
+function choose_champ_cards(
+  draft_state_info: ServerDraftStateInfo,
+  prev_state: DraftState,
+  callback: (status: Status, champ_cards: Card[] | null) => void,
+  allow_same_region = true
+) {
+  randomChampCards(
+    draft_state_info.deck.regions,
+    POOL_SIZE,
+    allow_same_region,
+    (status, cards) => {
+      if (!isOk(status) || cards === null) {
+        const undo_status = draft_state_info.draft_state.undo_transition_any(
+          draft_state_info.draft_state.state(),
+          prev_state
+        )
+
+        let err_statuses = [status as ErrStatusT]
+        if (!isOk(undo_status)) {
+          err_statuses = [AddSubStatuses(undo_status, err_statuses)]
+        }
+
+        callback(
+          MakeErrStatus(
+            StatusCode.RETRIEVE_CARD_ERROR,
+            'Failed to retrieve card',
+            err_statuses
+          ),
+          null
+        )
+        return
+      }
+
+      draft_state_info.pending_cards = cards
+
+      callback(OkStatus, cards)
+    }
+  )
+}
+
+function choose_non_champ_cards(
+  draft_state_info: ServerDraftStateInfo,
+  prev_state: DraftState,
+  callback: (status: Status, cards: Card[] | null) => void
+) {
+  return
+}
+
 const draft_states_def = {
   [DraftState.INIT]: {
     [DraftState.INITIAL_SELECTION]: (
       draft_state_info: ServerDraftStateInfo,
+      prev_state: DraftState,
       callback: (status: Status, champ_cards: Card[] | null) => void
     ) => {
-      const regions = randSample(draft_state_info.deck.regions, POOL_SIZE)
-
-      Promise.allSettled(
-        regions.map(
-          (region) =>
-            new Promise(
-              (
-                resolve: (card: Card) => void,
-                reject: (status: Status) => void
-              ) => {
-                randomChampCards(region, 1, (status, card) => {
-                  if (!isOk(status) || card === null) {
-                    // error!
-                    reject(status)
-                    return
-                  }
-                  resolve(card[0])
-                })
-              }
-            )
-        )
-      ).then((statuses) => {
-        if (!allFullfilled(statuses)) {
-          draft_state_info.draft_state.undo_transition(
-            DraftState.INITIAL_SELECTION,
-            DraftState.INIT
-          )
-          const err_statuses: ErrStatusT[] = rejectedResultReasons(statuses)
-          callback(
-            MakeErrStatus(
-              StatusCode.RETRIEVE_CARD_ERROR,
-              'Failed to retrieve card',
-              err_statuses
-            ),
-            null
-          )
-          return
-        }
-
-        const cards = statuses.map((status) => status.value)
-        draft_state_info.pending_cards = cards
-
-        callback(OkStatus, cards)
-        return
-      })
+      choose_champ_cards(draft_state_info, prev_state, callback, false)
     },
   },
   [DraftState.INITIAL_SELECTION]: {
-    // [DraftStates.RANDOM_SELECTION_1]: (draft: DraftDeck) => {
-    //   return
-    // },
-    [DraftState.GENERATE_CODE]: (draft: DraftDeck) => {
-      console.log(draft)
-    },
+    [DraftState.RANDOM_SELECTION_1]: choose_non_champ_cards,
   },
   [DraftState.RANDOM_SELECTION_1]: {
-    // [DraftStates.CHAMP_ROUND_1]: (draft: DraftDeck) => {
-    //   return
-    // },
-    // [DraftStates.RANDOM_SELECTION_1]: (draft: DraftDeck) => {
-    //   return
-    // },
+    [DraftState.CHAMP_ROUND_1]: choose_champ_cards,
+    [DraftState.RANDOM_SELECTION_1]: choose_non_champ_cards,
   },
   [DraftState.CHAMP_ROUND_1]: {
-    // [DraftStates.RANDOM_SELECTION_2]: (draft: DraftDeck) => {
-    //   return
-    // },
+    [DraftState.RANDOM_SELECTION_2]: choose_non_champ_cards,
   },
   [DraftState.RANDOM_SELECTION_2]: {
-    // [DraftStates.CHAMP_ROUND_2]: (draft: DraftDeck) => {
-    //   return
-    // },
-    // [DraftStates.RANDOM_SELECTION_2]: (draft: DraftDeck) => {
-    //   return
-    // },
+    [DraftState.CHAMP_ROUND_2]: choose_champ_cards,
+    [DraftState.RANDOM_SELECTION_2]: choose_non_champ_cards,
   },
   [DraftState.CHAMP_ROUND_2]: {
-    // [DraftStates.RANDOM_SELECTION_3]: (draft: DraftDeck) => {
-    //   return
-    // },
+    [DraftState.RANDOM_SELECTION_3]: choose_non_champ_cards,
   },
   [DraftState.RANDOM_SELECTION_3]: {
-    // [DraftStates.CHAMP_ROUND_3]: (draft: DraftDeck) => {
-    //   return
-    // },
-    // [DraftStates.RANDOM_SELECTION_3]: (draft: DraftDeck) => {
-    //   return
-    // },
+    [DraftState.CHAMP_ROUND_3]: choose_champ_cards,
+    [DraftState.RANDOM_SELECTION_3]: choose_non_champ_cards,
   },
   [DraftState.CHAMP_ROUND_3]: {
-    // [DraftStates.TRIM_DECK]: (draft: DraftDeck) => {
+    // [DraftState.TRIM_DECK]: (draft: DraftDeck) => {
     //   return
     // },
   },
   [DraftState.TRIM_DECK]: {
-    // [DraftStates.GENERATE_CODE]: (draft: DraftDeck) => {
+    // [DraftState.GENERATE_CODE]: (draft: DraftDeck) => {
     //   return
     // },
   },
@@ -150,6 +138,50 @@ function draftStateInfo(
     ]
   } else {
     return [OkStatus, auth_user.session_info.draft_state_info]
+  }
+}
+
+/**
+ * @param draft_state_info Current draft state info of the draft.
+ * @returns The next state of the draft.
+ */
+function nextDraftState(
+  state: DraftState,
+  draft_state_info: ServerDraftStateInfo
+): DraftState | null {
+  switch (state) {
+    case DraftState.INIT:
+      return DraftState.INITIAL_SELECTION
+    case DraftState.INITIAL_SELECTION:
+      return DraftState.RANDOM_SELECTION_1
+    case DraftState.RANDOM_SELECTION_1:
+      if (draft_state_info.deck.cards.length < RANDOM_SELECTION_1_CARD_CUTOFF) {
+        return DraftState.RANDOM_SELECTION_1
+      } else {
+        return DraftState.CHAMP_ROUND_1
+      }
+    case DraftState.CHAMP_ROUND_1:
+      return DraftState.RANDOM_SELECTION_2
+    case DraftState.RANDOM_SELECTION_2:
+      if (draft_state_info.deck.cards.length < RANDOM_SELECTION_2_CARD_CUTOFF) {
+        return DraftState.RANDOM_SELECTION_2
+      } else {
+        return DraftState.CHAMP_ROUND_2
+      }
+    case DraftState.CHAMP_ROUND_2:
+      return DraftState.RANDOM_SELECTION_3
+    case DraftState.RANDOM_SELECTION_3:
+      if (draft_state_info.deck.cards.length < RANDOM_SELECTION_3_CARD_CUTOFF) {
+        return DraftState.RANDOM_SELECTION_3
+      } else {
+        return DraftState.CHAMP_ROUND_3
+      }
+    case DraftState.CHAMP_ROUND_3:
+      return DraftState.TRIM_DECK
+    case DraftState.TRIM_DECK:
+      return DraftState.GENERATE_CODE
+    case DraftState.GENERATE_CODE:
+      return null
   }
 }
 
@@ -211,17 +243,41 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
 
       const state = draft_info.draft_state
-      const trans_status = state.transition(
-        DraftState.INIT,
-        DraftState.INITIAL_SELECTION,
+
+      // If there are still pending cards, then one hasn't been chosen yet.
+      // Re-return the current card pool.
+      if (draft_info.pending_cards.length !== 0) {
+        resolve(OkStatus, draft_info.pending_cards, state.state())
+        return
+      }
+
+      const cur_state = state.state()
+      const next_draft_state = nextDraftState(cur_state, draft_info)
+
+      if (next_draft_state === null) {
+        resolve(
+          MakeErrStatus(
+            StatusCode.DRAFT_COMPLETE,
+            'The draft is complete, no more pools to choose from.'
+          ),
+          null,
+          null
+        )
+        return
+      }
+
+      const trans_status = state.transition_any(
+        cur_state,
+        next_draft_state,
         draft_info,
-        (status, champ_cards) => {
-          if (!isOk(status) || champ_cards === null) {
+        cur_state,
+        (status: Status, cards: Card[]) => {
+          if (!isOk(status) || cards === null) {
             resolve(status, null, null)
             return
           }
 
-          resolve(status, champ_cards, DraftState.INITIAL_SELECTION)
+          resolve(status, cards, next_draft_state)
         }
       )
 
@@ -234,8 +290,9 @@ export function initDraftState(socket: LoRDraftSocket) {
 }
 
 function randomChampCards(
-  region: Region,
+  region_pool: Region[],
   num_champs: number,
+  allow_same_region: boolean,
   callback: (status: Status, cards: Card[] | null) => void
 ): void {
   regionSets((status, region_sets) => {
@@ -243,7 +300,58 @@ function randomChampCards(
       callback(status, null)
       return
     }
-    callback(OkStatus, randSample(region_sets[region].champs, num_champs))
+
+    const cards: Card[] = []
+    let iterations = 0
+
+    do {
+      iterations++
+
+      const region = randChoice(region_pool)
+      const card = randChoice(region_sets[region].champs)
+
+      if (cards.includes(card) && iterations < MAX_CARD_REPICK_ITERATIONS) {
+        continue
+      }
+
+      // Find all regions this card matches from the region_pool.
+      const regions = region_pool.filter((region) =>
+        regionContains(region, card)
+      )
+
+      console.log(card)
+      console.log(region_pool)
+      console.log(regions)
+
+      if (regions.length > 1) {
+        // For multi-region cards, only take it with 1/num_regions probability.
+        if (Math.random() * regions.length >= 1) {
+          continue
+        }
+
+        // TODO: check how this distribution compares to a weighted average
+        // over 1/region_size, i.e. take the card with 1/region_size / (sum over 1/region_size from region_pool)
+        /*
+        const region_size = region_sets[region].champs.length
+        const weighted_sizes = regions.reduce<number>(
+          (total, region) => 1 / region_sets[region].champs.length,
+          0
+        )
+        if (Math.random() * region_size * weighted_sizes > 1) {
+          continue
+        }
+        */
+      }
+
+      cards.push(card)
+      if (!allow_same_region) {
+        // If allow_same_region is not set, filter out all regions that match
+        // this card.
+        region_pool = region_pool.filter((region) => !regions.includes(region))
+      }
+    } while (cards.length < num_champs)
+
+    callback(OkStatus, cards)
   })
 }
 

@@ -63,6 +63,23 @@ export class StateMachine<
     return OkStatus
   }
 
+  transition_any(
+    from: State,
+    to: State,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...args: any
+  ): Status {
+    if (this.state_machine_def_[from][to] === undefined) {
+      return MakeErrStatus(
+        StatusCode.INVALID_STATE_TRANSITION,
+        `transition from state ${from} to state ${to}, illegal transition`
+      )
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.transition(from, to as any, ...args)
+  }
+
   undo_transition<
     FromT extends State,
     ToT extends MachineDef extends Record<FromT, infer U> ? keyof U : never
@@ -71,6 +88,25 @@ export class StateMachine<
       return MakeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
         `Cannot undo transition from state ${current_state} back to state ${prior_state}, currently in state ${this.state_}`
+      )
+    }
+
+    this.state_ = prior_state
+    return OkStatus
+  }
+
+  undo_transition_any(current_state: State, prior_state: State): Status {
+    if (this.state_ !== current_state) {
+      return MakeErrStatus(
+        StatusCode.INVALID_STATE_TRANSITION,
+        `Cannot undo transition from state ${current_state} back to state ${prior_state}, currently in state ${this.state_}`
+      )
+    }
+
+    if (this.state_machine_def_[prior_state][current_state] === undefined) {
+      return MakeErrStatus(
+        StatusCode.INVALID_STATE_TRANSITION,
+        `Cannot undo transition from state ${current_state} back to state ${prior_state}, illegal transition`
       )
     }
 

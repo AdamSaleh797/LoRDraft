@@ -18,7 +18,6 @@ const g_main_regions = [
   'Targon',
   'ShadowIsles',
   'BandleCity',
-  'Runeterra',
   'Bilgewater',
   'Ionia',
 ] as const
@@ -31,8 +30,29 @@ export const MainRegionT = Union(
 )
 
 const g_origins = {
+  Evelynn: (card: Card): boolean => {
+    return card.name === 'Evelynn'
+  },
+  Bard: (card: Card): boolean => {
+    return card.name === 'Bard'
+  },
+  Jhin: (card: Card): boolean => {
+    return card.name === 'Jhin'
+  },
   Jax: (card: Card): boolean => {
     return card.subtypes.includes('weaponmaster')
+  },
+  Ryze: (card: Card): boolean => {
+    return card.name === 'Ryze'
+  },
+  Kayn: (card: Card): boolean => {
+    return card.name === 'Kayn'
+  },
+  Aatrox: (card: Card): boolean => {
+    return card.name === 'Aatrox'
+  },
+  Varus: (card: Card): boolean => {
+    return card.name === 'Varus'
   },
 } as const
 
@@ -58,12 +78,25 @@ export function allRegions(): readonly Region[] {
   return g_all_regions
 }
 
-export function isMainRegion(region: Region): region is MainRegion {
+export function isMainRegion(region: string): region is MainRegion {
   return g_main_regions.includes(region as MainRegion)
 }
 
-export function isOrigin(region: Region): region is Origin {
+export function isOrigin(region: string): region is Origin {
   return Object.keys(g_origins).includes(region as Origin)
+}
+
+export function isRuneterran(regions: string[]): boolean {
+  return regions.includes('Runeterra')
+}
+
+export function runeterranOrigin(
+  card_name: Origin,
+  regions: string[]
+): Region[] {
+  return regions
+    .filter((region) => region === 'Runeterra')
+    .concat(card_name) as Region[]
 }
 
 export function regionContains(region: Region, card: Card) {
@@ -84,7 +117,7 @@ export const SetPackCardT = Record({
     })
   ),
   regions: Array(String),
-  regionRefs: Array(RegionT),
+  regionRefs: Array(Union(RegionT, Literal('Runeterra'))),
   attack: Number,
   cost: Number,
   health: Number,
@@ -110,6 +143,10 @@ export const SetPackCardT = Record({
 })
 
 export type SetPackCard = Static<typeof SetPackCardT>
+
+export function filterRegions(regions: (Region | 'Runeterra')[]): Region[] {
+  return regions.filter((region) => region !== 'Runeterra') as Region[]
+}
 
 export const CardT = Record({
   rarity: String,

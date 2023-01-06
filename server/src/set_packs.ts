@@ -1,4 +1,13 @@
-import { allRegions, Card, Region, regionContains, SetPackCardT } from 'card'
+import {
+  allRegions,
+  Card,
+  isOrigin,
+  isRuneterran,
+  Region,
+  regionContains,
+  runeterranOrigin,
+  SetPackCardT,
+} from 'card'
 import {
   allFullfilled,
   ErrStatusT,
@@ -105,13 +114,33 @@ export function loadSetPack(
       }
 
       if (card.collectible) {
+        const regionRefs = card.regionRefs
+        let regions: Region[]
+
+        if (isRuneterran(regionRefs)) {
+          if (!isOrigin(card.name)) {
+            callback(
+              MakeErrStatus(
+                StatusCode.MISSING_RUNETERRAN_CHAMP,
+                `The Runeterran champion ${card.name} is not configured, please add a custom origin filter.`
+              ),
+              null
+            )
+            return
+          }
+
+          regions = runeterranOrigin(card.name, regionRefs)
+        } else {
+          regions = regionRefs as Region[]
+        }
+
         cards.push({
           rarity: card.rarityRef,
           imageUrl: card.assets[0].gameAbsolutePath,
           cost: card.cost,
           name: card.name,
           cardCode: card.cardCode,
-          regions: card.regionRefs as Region[],
+          regions: regions,
           subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
         })
       }
@@ -158,12 +187,10 @@ export function regionSets(
       callback(
         MakeErrStatus(
           StatusCode.SET_PACK_UPDATE_ERROR,
-          rejectedResults(set_pack_results)
-            .map(
-              (rejected_result) =>
-                `${rejected_result.reason.status}: ${rejected_result.reason.message}`
-            )
-            .join(', ')
+          'Set pack update error',
+          rejectedResults(set_pack_results).map(
+            (rejected_result) => rejected_result.reason as ErrStatusT
+          )
         ),
         null
       )
