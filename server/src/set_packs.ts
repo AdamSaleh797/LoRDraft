@@ -111,7 +111,7 @@ export function loadSetPack(
           cost: card.cost,
           name: card.name,
           cardCode: card.cardCode,
-          regions: card.regionRefs,
+          regions: card.regionRefs as Region[],
           subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
         })
       }
