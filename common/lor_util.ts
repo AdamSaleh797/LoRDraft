@@ -16,7 +16,6 @@ export enum StatusCode {
 
   // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
-  LOGGED_IN = 'LOGGED_IN',
   NOT_LOGGED_IN = 'NOT_LOGGED_IN',
   INCORRECT_PASSWORD = 'INCORRECT_PASSWORD',
   INVALID_TOKEN = 'INVALID_TOKEN',
