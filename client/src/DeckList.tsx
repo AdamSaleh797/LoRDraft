@@ -1,4 +1,3 @@
-import { Card } from 'card'
 import React from 'react'
 import { DraftStateInfo } from 'socket-msgs'
 

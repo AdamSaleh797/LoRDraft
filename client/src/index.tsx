@@ -4,7 +4,6 @@ import io from 'socket.io-client'
 
 import { Card } from 'card'
 import {
-  DraftDeck,
   DraftStateInfo,
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
