@@ -1,6 +1,6 @@
 import { join_session, LoggedInAuthUser } from './auth'
 import { allRegions, Card, Region } from 'card'
-import { DraftStates, POOL_SIZE } from 'draft'
+import { DraftState, POOL_SIZE } from 'draft'
 import {
   allFullfilled,
   ErrStatusT,
@@ -25,7 +25,7 @@ import {
 import { StateMachine } from 'state_machine'
 
 export interface ServerDraftStateInfo extends DraftStateInfo {
-  draft_state: StateMachine<typeof draft_states_def, DraftStates>
+  draft_state: StateMachine<typeof draft_states_def, DraftState>
 }
 
 interface InDraftSessionInfo extends SessionInfo {
@@ -33,8 +33,8 @@ interface InDraftSessionInfo extends SessionInfo {
 }
 
 const draft_states_def = {
-  [DraftStates.INIT]: {
-    [DraftStates.INITIAL_SELECTION]: (
+  [DraftState.INIT]: {
+    [DraftState.INITIAL_SELECTION]: (
       draft_state_info: ServerDraftStateInfo,
       callback: (status: Status, champ_cards: Card[] | null) => void
     ) => {
@@ -62,8 +62,8 @@ const draft_states_def = {
       ).then((statuses) => {
         if (!allFullfilled(statuses)) {
           draft_state_info.draft_state.undo_transition(
-            DraftStates.INITIAL_SELECTION,
-            DraftStates.INIT
+            DraftState.INITIAL_SELECTION,
+            DraftState.INIT
           )
           const err_statuses: ErrStatusT[] = rejectedResultReasons(statuses)
           callback(
@@ -85,15 +85,15 @@ const draft_states_def = {
       })
     },
   },
-  [DraftStates.INITIAL_SELECTION]: {
+  [DraftState.INITIAL_SELECTION]: {
     // [DraftStates.RANDOM_SELECTION_1]: (draft: DraftDeck) => {
     //   return
     // },
-    [DraftStates.GENERATE_CODE]: (draft: DraftDeck) => {
+    [DraftState.GENERATE_CODE]: (draft: DraftDeck) => {
       console.log(draft)
     },
   },
-  [DraftStates.RANDOM_SELECTION_1]: {
+  [DraftState.RANDOM_SELECTION_1]: {
     // [DraftStates.CHAMP_ROUND_1]: (draft: DraftDeck) => {
     //   return
     // },
@@ -101,12 +101,12 @@ const draft_states_def = {
     //   return
     // },
   },
-  [DraftStates.CHAMP_ROUND_1]: {
+  [DraftState.CHAMP_ROUND_1]: {
     // [DraftStates.RANDOM_SELECTION_2]: (draft: DraftDeck) => {
     //   return
     // },
   },
-  [DraftStates.RANDOM_SELECTION_2]: {
+  [DraftState.RANDOM_SELECTION_2]: {
     // [DraftStates.CHAMP_ROUND_2]: (draft: DraftDeck) => {
     //   return
     // },
@@ -114,12 +114,12 @@ const draft_states_def = {
     //   return
     // },
   },
-  [DraftStates.CHAMP_ROUND_2]: {
+  [DraftState.CHAMP_ROUND_2]: {
     // [DraftStates.RANDOM_SELECTION_3]: (draft: DraftDeck) => {
     //   return
     // },
   },
-  [DraftStates.RANDOM_SELECTION_3]: {
+  [DraftState.RANDOM_SELECTION_3]: {
     // [DraftStates.CHAMP_ROUND_3]: (draft: DraftDeck) => {
     //   return
     // },
@@ -127,17 +127,17 @@ const draft_states_def = {
     //   return
     // },
   },
-  [DraftStates.CHAMP_ROUND_3]: {
+  [DraftState.CHAMP_ROUND_3]: {
     // [DraftStates.TRIM_DECK]: (draft: DraftDeck) => {
     //   return
     // },
   },
-  [DraftStates.TRIM_DECK]: {
+  [DraftState.TRIM_DECK]: {
     // [DraftStates.GENERATE_CODE]: (draft: DraftDeck) => {
     //   return
     // },
   },
-  [DraftStates.GENERATE_CODE]: {},
+  [DraftState.GENERATE_CODE]: {},
 } as const
 
 function draftStateInfo(
@@ -197,36 +197,36 @@ export function initDraftState(socket: LoRDraftSocket) {
     })
   })
 
-  socket.respond('initial_selection', (resolve, session_cred) => {
+  socket.respond('next_pool', (resolve, session_cred) => {
     join_session(session_cred, (status, auth_user) => {
       if (!isOk(status) || auth_user === undefined) {
-        resolve(status, null)
+        resolve(status, null, null)
         return
       }
 
       const [draft_info_status, draft_info] = draftStateInfo(auth_user)
       if (!isOk(draft_info_status) || draft_info === null) {
-        resolve(draft_info_status, null)
+        resolve(draft_info_status, null, null)
         return
       }
 
       const state = draft_info.draft_state
       const trans_status = state.transition(
-        DraftStates.INIT,
-        DraftStates.INITIAL_SELECTION,
+        DraftState.INIT,
+        DraftState.INITIAL_SELECTION,
         draft_info,
         (status, champ_cards) => {
           if (!isOk(status) || champ_cards === null) {
-            resolve(status, null)
+            resolve(status, null, null)
             return
           }
 
-          resolve(status, champ_cards)
+          resolve(status, champ_cards, DraftState.INITIAL_SELECTION)
         }
       )
 
       if (!isOk(trans_status)) {
-        resolve(trans_status, null)
+        resolve(trans_status, null, null)
         return
       }
     })
@@ -271,7 +271,7 @@ export function enterDraft(session_info: SessionInfo): Status {
   }
   const draft_state = new StateMachine(
     draft_states_def,
-    DraftStates.INIT as DraftStates
+    DraftState.INIT as DraftState
   )
 
   session_info.draft_state_info = {
