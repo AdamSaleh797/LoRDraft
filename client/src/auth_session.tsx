@@ -8,7 +8,7 @@ import {
   SessionCred,
   SessionCredT,
 } from 'socket-msgs'
-import { isOk } from 'lor_util'
+import { isOk, StatusCode } from 'lor_util'
 import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
@@ -276,16 +276,71 @@ export function SessionComponent(props: SessionComponentProps) {
         })
       }
 
-      return (
-        <LoginComponent
-          to_register_fn={() => {
+      const auto_login = () => {
+        const username = 'test'
+        const password = 'test'
+        const email = 'test@mail.com'
+
+        const trans_status = session_state_machine.transition(
+          SessionState.LOGIN,
+          SessionState.REGISTER as const
+        )
+        if (!isOk(trans_status)) {
+          console.log(trans_status)
+          return
+        }
+
+        socket.call(
+          'register',
+          { username: username, password: password, email: email },
+          (status) => {
+            if (
+              !isOk(status) &&
+              status.status !== StatusCode.USER_ALREADY_EXISTS
+            ) {
+              console.log(status)
+              return
+            }
+
             session_state_machine.transition(
-              SessionState.LOGIN,
-              SessionState.REGISTER as const
+              SessionState.REGISTER,
+              SessionState.LOGIN
             )
-          }}
-          login_fn={login}
-        />
+
+            socket.call(
+              'login',
+              { username: username, password: password },
+              (status, session_cred) => {
+                if (!isOk(status) || session_cred === null) {
+                  console.log(status)
+                  return
+                }
+                session_cred.token = Buffer.from(session_cred.token)
+
+                session_state_machine.transition(
+                  SessionState.LOGIN,
+                  SessionState.SIGNED_IN,
+                  session_cred
+                )
+              }
+            )
+          }
+        )
+      }
+
+      return (
+        <div>
+          <button onClick={auto_login}>Auto login</button>
+          <LoginComponent
+            to_register_fn={() => {
+              session_state_machine.transition(
+                SessionState.LOGIN,
+                SessionState.REGISTER as const
+              )
+            }}
+            login_fn={login}
+          />
+        </div>
       )
     }
     case SessionState.SIGNED_IN: {

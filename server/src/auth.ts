@@ -107,9 +107,7 @@ export function init_auth(socket: LoRDraftSocket): void {
       }
       assert(auth_user !== undefined)
 
-      logout(auth_user, (status) => {
-        resolve(status)
-      })
+      resolve(logout(auth_user))
     })
   })
 }
@@ -171,14 +169,14 @@ export function login(
     return
   }
 
-  if (auth_user.logged_in) {
-    callback(
-      MakeErrStatus(
-        StatusCode.LOGGED_IN,
-        `User ${login_cred.username} is already logged in`
-      )
-    )
-    return
+  // If the user is already logged in, log them out to erase the ephemeral
+  // information associated with the old login session.
+  if (logged_in(auth_user)) {
+    const status = logout(auth_user)
+    if (!isOk(status)) {
+      callback(status)
+      return
+    }
   }
 
   // Generate a token that the client can use for authentication on all future
@@ -197,13 +195,10 @@ export function login(
   callback(OkStatus, auth_user)
 }
 
-export function logout(
-  auth_user: LoggedInAuthUser,
-  callback: (status: Status) => void
-): void {
+export function logout(auth_user: LoggedInAuthUser): Status {
   auth_user.logged_in = false
   ;(auth_user as AuthUser).session_info = undefined
-  callback(OkStatus)
+  return OkStatus
 }
 
 export function join_session(
@@ -259,18 +254,17 @@ export function join_session(
     SESSION_EXPIRATION_TIME
   ) {
     // This session is expired.
-    logout(auth_user, (status) => {
-      if (!isOk(status)) {
-        callback(status)
-      } else {
-        callback(
-          MakeErrStatus(
-            StatusCode.NOT_LOGGED_IN,
-            `User ${username} is not logged in`
-          )
+    const status = logout(auth_user)
+    if (!isOk(status)) {
+      callback(status)
+    } else {
+      callback(
+        MakeErrStatus(
+          StatusCode.NOT_LOGGED_IN,
+          `User ${username} is not logged in`
         )
-      }
-    })
+      )
+    }
     return
   }
 
