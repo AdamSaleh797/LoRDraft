@@ -1,16 +1,19 @@
 import { Card } from 'card'
 import React from 'react'
+import { DraftStateInfo } from 'socket-msgs'
 
 export const MAX_DISPLAY_COST = 8
 
 export interface ManaCurveComponentProps {
-  cards: Card[]
+  draftState: DraftStateInfo | null
 }
 
 export function ManaCurve(props: ManaCurveComponentProps) {
   const histogram: number[] = new Array(MAX_DISPLAY_COST + 1).fill(0)
 
-  props.cards.forEach((card: Card) => {
+  const deck_cards: Card[] = props.draftState?.deck.cards ?? []
+
+  deck_cards.forEach((card: Card) => {
     histogram[Math.min(card.cost, MAX_DISPLAY_COST)]++
   })
 

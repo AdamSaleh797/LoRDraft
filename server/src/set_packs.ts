@@ -110,7 +110,8 @@ export function loadSetPack(
           imageUrl: card.assets[0].gameAbsolutePath,
           cost: card.cost,
           name: card.name,
-          regions: card.regionRefs,
+          cardCode: card.cardCode,
+          regions: card.regionRefs as Region[],
           subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
         })
       }

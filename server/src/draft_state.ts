@@ -1,6 +1,6 @@
 import { join_session, LoggedInAuthUser } from './auth'
 import { allRegions, Card, Region } from 'card'
-import { POOL_SIZE } from 'draft'
+import { DraftStates, POOL_SIZE } from 'draft'
 import {
   allFullfilled,
   ErrStatusT,
@@ -30,19 +30,6 @@ export interface ServerDraftStateInfo extends DraftStateInfo {
 
 interface InDraftSessionInfo extends SessionInfo {
   draft_state_info: ServerDraftStateInfo
-}
-
-const enum DraftStates {
-  INIT = 'INIT',
-  INITIAL_SELECTION = 'INITIAL_SELECTION',
-  RANDOM_SELECTION_1 = 'RANDOM_SELECTION_1',
-  CHAMP_ROUND_1 = 'CHAMP_ROUND_1',
-  RANDOM_SELECTION_2 = 'RANDOM_SELECTION_2',
-  CHAMP_ROUND_2 = 'CHAMP_ROUND_2',
-  RANDOM_SELECTION_3 = 'RANDOM_SELECTION_3',
-  CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
-  TRIM_DECK = 'TRIM_DECK',
-  GENERATE_CODE = 'GENERATE_CODE',
 }
 
 const draft_states_def = {

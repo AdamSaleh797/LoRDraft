@@ -3,8 +3,9 @@ import React from 'react'
 
 export interface CardComponentProps {
   card: Card | null
-  recordCard: (card: Card) => void
   numCards: number
+  isSelected: boolean
+  select: () => void
 }
 
 export function CardComponent(props: CardComponentProps) {
@@ -22,16 +23,14 @@ export function CardComponent(props: CardComponentProps) {
     mozUserSelect: 'none',
     webkitUserSelect: 'none',
     MsUserSelect: 'none',
-  }
 
-  const record = () => {
-    if (props.card !== null) {
-      props.recordCard(props.card)
-    }
+    filter: props.isSelected
+      ? 'sepia(100%) saturate(300%) brightness(70%) hue-rotate(180deg)'
+      : '',
   }
 
   return (
-    <div className='card' style={style} onClick={record}>
+    <div className='card' style={style} onClick={props.select}>
       {props.card === null ? (
         <div />
       ) : (
@@ -39,7 +38,7 @@ export function CardComponent(props: CardComponentProps) {
           src={props.card.imageUrl}
           alt={props.card.name}
           style={img_style}
-        />
+        ></img>
       )}
     </div>
   )

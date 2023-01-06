@@ -84,7 +84,7 @@ export const SetPackCardT = Record({
     })
   ),
   regions: Array(String),
-  regionRefs: Array(MainRegionT),
+  regionRefs: Array(RegionT),
   attack: Number,
   cost: Number,
   health: Number,
@@ -116,8 +116,18 @@ export const CardT = Record({
   imageUrl: String,
   cost: Number,
   name: String,
-  regions: Array(MainRegionT),
+  cardCode: String,
+  regions: Array(RegionT),
   subtypes: Array(String),
 })
 
-export type Card = Static<typeof CardT>
+// export type Card = Static<typeof CardT>
+export interface Card {
+  rarity: string
+  imageUrl: string
+  cost: number
+  name: string
+  cardCode: string
+  regions: Region[]
+  subtypes: string[]
+}
