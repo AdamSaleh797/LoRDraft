@@ -5,7 +5,6 @@ import { DraftStateInfo, LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { getStorageAuthInfo } from './auth_session'
 import { isOk, Status } from 'lor_util'
 import { CardComponent } from './CardComponent'
-import { createReadStream } from 'fs'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
