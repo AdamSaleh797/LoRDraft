@@ -77,8 +77,11 @@ function choose_champ_cards(
 }
 
 function choose_non_champ_cards(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   draft_state_info: ServerDraftStateInfo,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   prev_state: DraftState,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   callback: (status: Status, cards: Card[] | null) => void
 ) {
   return
