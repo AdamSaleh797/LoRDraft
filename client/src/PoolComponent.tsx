@@ -29,7 +29,7 @@ export function PoolComponent(props: PoolComponentProps) {
   setPendingCardsRef.current = props.setPendingCards
 
   function getInitialPool(auth_info: SessionCred) {
-    props.socket.call('initial_selection', auth_info, (status, champs) => {
+    props.socket.call('next_pool', auth_info, (status, champs) => {
       if (!isOk(status) || champs === null) {
         console.log(status)
         return

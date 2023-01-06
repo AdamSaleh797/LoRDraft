@@ -1,6 +1,6 @@
 export const POOL_SIZE = 4
 
-export const enum DraftStates {
+export const enum DraftState {
   INIT = 'INIT',
   INITIAL_SELECTION = 'INITIAL_SELECTION',
   RANDOM_SELECTION_1 = 'RANDOM_SELECTION_1',
