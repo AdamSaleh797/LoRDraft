@@ -1,9 +1,9 @@
 import { Card } from 'card'
 import React from 'react'
+import { DraftDeck } from 'socket-msgs'
 
 export interface CardComponentProps {
   card: Card | null
-  recordCard: (card: Card) => void
   numCards: number
 }
 
@@ -24,14 +24,8 @@ export function CardComponent(props: CardComponentProps) {
     MsUserSelect: 'none',
   }
 
-  const record = () => {
-    if (props.card !== null) {
-      props.recordCard(props.card)
-    }
-  }
-
   return (
-    <div className='card' style={style} onClick={record}>
+    <div className='card' style={style}>
       {props.card === null ? (
         <div />
       ) : (

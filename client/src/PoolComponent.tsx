@@ -3,12 +3,15 @@ import { Card } from 'card'
 import { POOL_SIZE } from 'draft'
 import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { getStorageAuthInfo } from './auth_session'
-import { isOk } from 'lor_util'
+import { isOk, Status } from 'lor_util'
 import { CardComponent } from './CardComponent'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
-  recordCard: (card: Card) => void
+  refreshDraft: (
+    session_cred: SessionCred,
+    callback: (status: Status) => void
+  ) => void
 }
 
 export function PoolComponent(props: PoolComponentProps) {
@@ -39,8 +42,7 @@ export function PoolComponent(props: PoolComponentProps) {
     if (auth_info !== null) {
       props.socket.call('join_draft', auth_info, (status) => {
         if (!isOk(status)) {
-          console.log(status)
-          return
+          return status
         }
         getInitialPool(auth_info)
       })
@@ -50,13 +52,7 @@ export function PoolComponent(props: PoolComponentProps) {
   return (
     <div onClick={joinDraft}>
       {cards.map((card) => {
-        return (
-          <CardComponent
-            card={card}
-            recordCard={props.recordCard}
-            numCards={cards.length}
-          />
-        )
+        return <CardComponent card={card} numCards={cards.length} />
       })}
       <button onClick={joinDraft}>DRAFT!</button>
     </div>
