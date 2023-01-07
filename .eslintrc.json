@@ -11,6 +11,7 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "eqeqeq": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/strict-boolean-expressions": [
       "error",
