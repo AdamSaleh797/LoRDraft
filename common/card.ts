@@ -22,6 +22,30 @@ const g_main_regions = [
   'Ionia',
 ] as const
 
+// burst/focus speed spell cards that do not say
+// prettier-ignore
+export const ryzeOrigin = [
+  '01DE019', '01DE017', '01DE027', '02DE007', '04DE012', '06DE042',
+  '06DE030', '06DE026', '06DE040', '01NX039', '04NX002', '06NX037',
+  '04SH035', '04SH120', '04SH099', '04SH037', '04SH083', '04SH092',
+  '04SH110', '04SH106', '05SH018', '05SH020', '06SH048', '06SH042',
+  '06SH050', '06SH049', '01PZ028', '01PZ010', '01PZ049', '01PZ016',
+  '02PZ009', '03PZ014', '03PZ025', '04PZ007', '05PZ010', '05PZ030',
+  '06PZ032', '06PZ043', '06PZ027', '06PZ006', '06PZ022', '01FR029',
+  '01FR016', '01FR012', '02FR010', '02FR003', '03FR018', '03FR019',
+  '04FR017', '04FR010', '05FR016', '06FR034', '06FR032', '03MT015',
+  '03MT042', '03MT091', '03MT017', '03MT215', '03MT003', '03MT218',
+  '04MT006', '04MT015', '06MT045', '06MT043', '02SI005', '02SI009',
+  '03SI004', '03SI014', '03SI007', '03SI013', '06SI037', '06SI030',
+  '05BC223', '05BC026', '05BC218', '05BC217', '05BC040', '06BC045',
+  '06BC040', '06BC043', '06BC017', '06BC011', '06BC032', '02BW023',
+  '02BW029', '02BW049', '02BW020', '02BW044', '04BW014', '04BW008',
+  '04BW004', '06BW030', '06BW037', '06BW041', '06BW043', '06BW039',
+  '01IO029', '01IO054', '02IO009', '05IO006', '06IO036'
+]
+
+export const jhinOrigin = []
+
 export type MainRegion = typeof g_main_regions[number]
 const main_region_literals = g_main_regions.map((region) => Literal(region))
 export const MainRegionT = Union(
@@ -31,28 +55,34 @@ export const MainRegionT = Union(
 
 const g_origins = {
   Evelynn: (card: Card): boolean => {
-    return card.name === 'Evelynn'
+    return card.description.includes('husk')
   },
   Bard: (card: Card): boolean => {
-    return card.name === 'Bard'
+    return card.description.includes('link=card.chime')
   },
   Jhin: (card: Card): boolean => {
-    return card.name === 'Jhin'
+    return (
+      card.description.includes('attackskill') ||
+      card.description.includes('playskill')
+    )
   },
   Jax: (card: Card): boolean => {
     return card.subtypes.includes('weaponmaster')
   },
   Ryze: (card: Card): boolean => {
-    return card.name === 'Ryze'
+    return ryzeOrigin.includes(card.cardCode)
   },
   Kayn: (card: Card): boolean => {
-    return card.name === 'Kayn'
+    return card.subtypes.includes('cultist')
   },
   Aatrox: (card: Card): boolean => {
-    return card.name === 'Aatrox'
+    return (
+      card.subtypes.includes('darkin') &&
+      (card.name === 'Aatrox' || card.rarity !== 'Champion')
+    )
   },
   Varus: (card: Card): boolean => {
-    return card.name === 'Varus'
+    return card.subtypes.includes('cultist')
   },
 } as const
 
@@ -154,8 +184,11 @@ export const CardT = Record({
   cost: Number,
   name: String,
   cardCode: String,
+  description: String,
   regions: Array(RegionT),
   subtypes: Array(String),
+  keywords: Array(String),
+  type: String,
 })
 
 // export type Card = Static<typeof CardT>
@@ -165,6 +198,9 @@ export interface Card {
   cost: number
   name: string
   cardCode: string
+  description: string
   regions: Region[]
   subtypes: string[]
+  keywords: string[]
+  type: string
 }
