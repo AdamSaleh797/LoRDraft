@@ -29,8 +29,6 @@ export function PoolComponent(props: PoolComponentProps) {
   )
   const setMinMaxRef = React.useRef<typeof setMinMax>(() => undefined)
 
-  const auth_info = getStorageAuthInfo()
-
   setMinMaxRef.current = setMinMax
   setPendingCardsRef.current = props.setPendingCards
 
@@ -48,6 +46,7 @@ export function PoolComponent(props: PoolComponentProps) {
   }
 
   function joinDraft() {
+    const auth_info = getStorageAuthInfo()
     if (auth_info !== null) {
       props.socket.call('join_draft', auth_info, (status) => {
         if (!isOk(status)) {
@@ -70,6 +69,8 @@ export function PoolComponent(props: PoolComponentProps) {
 
   function transitionSocketCalls(revertedCards: Card[]) {
     props.setPendingCards([])
+
+    const auth_info = getStorageAuthInfo()
     if (auth_info === null) {
       return
     }
