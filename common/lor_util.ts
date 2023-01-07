@@ -281,7 +281,7 @@ export function containsDuplicates<T>(
 export function containsNoNull<T>(
   arr: readonly T[]
 ): arr is Exclude<T, null>[] {
-  return arr.some((val) => val === null)
+  return !arr.some((val) => val === null)
 }
 
 export function unionLists<T>(arr1: readonly T[], arr2: readonly T[]): T[] {
