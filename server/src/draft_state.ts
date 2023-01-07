@@ -1,10 +1,19 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { allRegions, Card, Region, regionContains } from 'card'
-import { DraftState, POOL_SIZE } from 'draft'
+import { allRegions, Card, CardT, regionContains } from 'card'
+import {
+  canAddToDeck,
+  DraftDeck,
+  DraftState,
+  draftStateCardLimits,
+  DraftStateInfo,
+  DraftStateInfoT,
+  POOL_SIZE,
+} from 'draft'
 import {
   AddSubStatuses,
   binarySearch,
   containsDuplicates,
+  containsNoNull,
   ErrStatusT,
   isOk,
   MakeErrStatus,
@@ -17,13 +26,9 @@ import {
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
-import {
-  DraftDeck,
-  DraftStateInfo,
-  DraftStateInfoT,
-  LoRDraftSocket,
-} from 'socket-msgs'
+import { LoRDraftSocket } from 'socket-msgs'
 import { StateMachine } from 'state_machine'
+import { Array } from 'runtypes'
 
 const MAX_CARD_REPICK_ITERATIONS = 100
 
@@ -46,7 +51,7 @@ function choose_champ_cards(
   allow_same_region = true
 ) {
   randomChampCards(
-    draft_state_info.deck.regions,
+    draft_state_info.deck,
     POOL_SIZE,
     allow_same_region,
     (status, cards) => {
@@ -316,10 +321,94 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
     })
   })
+
+  socket.respond('choose_cards', (resolve, session_cred, cards) => {
+    const CardListT = Array(CardT)
+    if (!CardListT.guard(cards)) {
+      resolve(
+        MakeErrStatus(
+          StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
+          `Argument \`cards\` to 'choose_cards' is not of the correct type.`
+        )
+      )
+      return
+    }
+
+    join_session(session_cred, (status, auth_user) => {
+      if (!isOk(status) || auth_user === undefined) {
+        resolve(status)
+        return
+      }
+
+      const [draft_info_status, draft_info] = draftStateInfo(auth_user)
+      if (!isOk(draft_info_status) || draft_info === null) {
+        resolve(draft_info_status)
+        return
+      }
+
+      if (draft_info.pending_cards.length === 0) {
+        resolve(
+          MakeErrStatus(
+            StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
+            'Draft state is not currently waiting for pending cards from the client.'
+          )
+        )
+        return
+      }
+
+      const min_max_cards = draftStateCardLimits(draft_info.draft_state.state())
+      if (min_max_cards === null) {
+        resolve(
+          MakeErrStatus(
+            StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
+            'Draft state is not currently waiting for pending cards from the client.'
+          )
+        )
+        return
+      }
+      const [min_cards, max_cards] = min_max_cards
+
+      if (cards.length < min_cards || cards.length > max_cards) {
+        resolve(
+          MakeErrStatus(
+            StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
+            `Cannot choose ${
+              cards.length
+            } cards in state ${draft_info.draft_state.state()}, must choose from ${min_cards} to ${max_cards} cards`
+          )
+        )
+      }
+
+      const pending_cards = draft_info.pending_cards
+      const chosen_cards = cards.map((card) => {
+        return (
+          pending_cards.find(
+            (pending_card) => pending_card.cardCode === card.cardCode
+          ) ?? null
+        )
+      })
+
+      if (!containsNoNull(chosen_cards)) {
+        resolve(
+          MakeErrStatus(
+            StatusCode.NOT_PENDING_CARD,
+            `Some chosen cards are not pending cards`
+          )
+        )
+        return
+      }
+
+      // Add the chosen cards to the deck.
+      chosen_cards.forEach((card) => {
+        draft_info.deck.cards.push(card)
+      })
+      draft_info.pending_cards = []
+    })
+  })
 }
 
 function randomChampCards(
-  region_pool: Region[],
+  deck: DraftDeck,
   num_champs: number,
   allow_same_region: boolean,
   callback: (status: Status, cards: Card[] | null) => void
@@ -330,6 +419,7 @@ function randomChampCards(
       return
     }
 
+    const region_pool = deck.regions
     const [region_count, cumulative_totals] = region_pool.reduce<
       [number, number[]]
     >(
@@ -359,7 +449,11 @@ function randomChampCards(
       containsDuplicates(
         region_and_set_indexes,
         (region_and_set_idx) => region_and_set_idx[0]
-      )
+      ) ||
+      region_and_set_indexes.some(([region_idx, idx]) => {
+        const champ = region_sets[region_pool[region_idx]].champs[idx]
+        return !canAddToDeck(deck, champ)
+      })
     )
 
     const champs = region_and_set_indexes.map(([region_idx, idx]) => {
@@ -422,6 +516,13 @@ function randomNonChampCards(
         if (Math.random() * region_size * weighted_sizes > 1) {
           continue
         }
+      }
+
+      // Despite a card being in one of the potential regions of the deck, it is
+      // possible for it to be incompatible, so we have to verify that the card
+      // can be added to the deck with a full compatibility check.
+      if (!canAddToDeck(deck, card)) {
+        continue
       }
 
       cards.push(card)

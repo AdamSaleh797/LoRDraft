@@ -1,6 +1,6 @@
 import { Card } from 'card'
+import { DraftStateInfo } from 'draft'
 import React from 'react'
-import { DraftStateInfo } from 'socket-msgs'
 
 export const MAX_DISPLAY_COST = 8
 

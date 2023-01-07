@@ -12,6 +12,7 @@ export enum StatusCode {
   INVALID_CLIENT_REQ = 'INVALID_CLIENT_REQ',
   INVALID_STATE_TRANSITION = 'INVALID_STATE_TRANSITION',
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  INCORRECT_MESSAGE_ARGUMENTS = 'INCORRECT_MESSAGE_ARGUMENTS',
 
   // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
@@ -45,6 +46,9 @@ export enum StatusCode {
   NOT_IN_DRAFT_SESSION = 'NOT_IN_DRAFT_SESSION',
   ALREADY_IN_DRAFT_SESSION = 'ALREADY_IN_DRAFT_SESSION',
   DRAFT_COMPLETE = 'DRAFT_COMPLETE',
+  NOT_WAITING_FOR_CARD_SELECTION = 'NOT_WAITING_FOR_CARD_SELECTION',
+  NOT_PENDING_CARD = 'NOT_PENDING_CARD',
+  INCORRECT_NUM_CHOSEN_CARDS = 'INCORRECT_NUM_CHOSEN_CARDS',
 }
 
 export interface OkStatusT {
@@ -155,7 +159,7 @@ export function gen_uuid(): string {
   return uuidv4()
 }
 
-export function randChoice<T>(arr: T[]): T {
+export function randChoice<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
@@ -166,7 +170,7 @@ export function randChoice<T>(arr: T[]): T {
  *
  * @return A list of the randomly sampled elements of `arr`.
  */
-export function randSample<T>(arr: T[], samples: number): T[] {
+export function randSample<T>(arr: readonly T[], samples: number): T[] {
   return randSampleNumbers(arr.length, samples).map((idx) => arr[idx])
 }
 
@@ -233,7 +237,7 @@ export function narrowType<T extends Record<any, false>, U extends Static<T>>(
  * of `arr`. If there are multiple equal elements which are all return
  * candidates, the one with largest index is returned.
  */
-export function binarySearch<T>(arr: T[], el: T): number {
+export function binarySearch<T>(arr: readonly T[], el: T): number {
   let l = 0
   let r = arr.length
 
@@ -260,7 +264,7 @@ export function binarySearch<T>(arr: T[], el: T): number {
  *   if no `key_fn` is supplied).
  */
 export function containsDuplicates<T>(
-  arr: T[],
+  arr: readonly T[],
   key_fn: (val: T) => any = (val) => val
 ): boolean {
   const sorted_keys = arr.map(key_fn).sort()
@@ -272,4 +276,20 @@ export function containsDuplicates<T>(
   }
 
   return false
+}
+
+export function containsNoNull<T>(
+  arr: readonly T[]
+): arr is Exclude<T, null>[] {
+  return arr.some((val) => val === null)
+}
+
+export function unionLists<T>(arr1: readonly T[], arr2: readonly T[]): T[] {
+  return arr1.concat(...arr2.map((el2) => (arr1.includes(el2) ? [] : [el2])))
+}
+
+export function intersectLists<T>(arr1: readonly T[], arr2: readonly T[]): T[] {
+  return ([] as T[]).concat(
+    ...arr1.map((el1) => (arr2.includes(el1) ? [el1] : []))
+  )
 }

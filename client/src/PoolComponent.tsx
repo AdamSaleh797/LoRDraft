@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card } from 'card'
-import { draftStateCardLimits, POOL_SIZE } from 'draft'
-import { DraftStateInfo, LoRDraftClientSocket, SessionCred } from 'socket-msgs'
+import { draftStateCardLimits, DraftStateInfo, POOL_SIZE } from 'draft'
+import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { getStorageAuthInfo } from './auth_session'
 import { isOk, Status } from 'lor_util'
 import { CardComponent } from './CardComponent'
@@ -37,7 +37,7 @@ export function PoolComponent(props: PoolComponentProps) {
   function getInitialPool(auth_info: SessionCred) {
     props.socket.call('next_pool', auth_info, (status, champs, draft_state) => {
       if (draft_state !== null) {
-        setMinMaxRef.current(draftStateCardLimits(draft_state))
+        setMinMaxRef.current(draftStateCardLimits(draft_state) ?? [0, 0])
       }
       if (!isOk(status) || champs === null) {
         console.log(status)
@@ -74,6 +74,8 @@ export function PoolComponent(props: PoolComponentProps) {
       return
     }
 
+    console.log(min_max, revertedCards.length)
+
     if (
       min_max[0] > revertedCards.length &&
       min_max[1] < revertedCards.length
@@ -99,7 +101,7 @@ export function PoolComponent(props: PoolComponentProps) {
   function socketPoolCall(auth_info: SessionCred) {
     props.socket.call('next_pool', auth_info, (status, cards, draft_state) => {
       if (draft_state !== null) {
-        setMinMaxRef.current(draftStateCardLimits(draft_state))
+        setMinMaxRef.current(draftStateCardLimits(draft_state) ?? [0, 0])
       }
       if (!isOk(status) || cards === null) {
         console.log(status)

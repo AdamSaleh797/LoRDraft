@@ -4,7 +4,6 @@ import io from 'socket.io-client'
 
 import { Card } from 'card'
 import {
-  DraftStateInfo,
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
@@ -15,6 +14,7 @@ import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
+import { DraftStateInfo, makeDraftDeck } from 'draft'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -58,10 +58,7 @@ function Main() {
       console.log('test y')
     } else {
       const newDraftState: DraftStateInfo = {
-        deck: {
-          regions: [],
-          cards: [],
-        },
+        deck: makeDraftDeck(),
         pending_cards: cards,
       }
       setDraftState(newDraftState)

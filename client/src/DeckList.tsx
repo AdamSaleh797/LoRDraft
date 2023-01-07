@@ -1,5 +1,5 @@
+import { DraftStateInfo } from 'draft'
 import React from 'react'
-import { DraftStateInfo } from 'socket-msgs'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null
