@@ -39,6 +39,16 @@ export function makeDraftDeck(cards: Card[] = []): DraftDeck {
   return deck
 }
 
+/**
+ * Calculates all possible regions that the list of cards can be compatible with
+ * by taking the union of all sets of pairs of regions from `regions` that are
+ * valid with `cards`.
+ *
+ * @param cards The list of cards in the deck.
+ * @param possible_regions The list of possible regions that the deck can be in.
+ * @returns A narrowed list of regions for the cards given, or `null` if the
+ * cards do not make a valid deck.
+ */
 function possibleRegionsForCards(
   cards: Card[],
   possible_regions: readonly Region[]
@@ -99,11 +109,26 @@ function possibleRegionsForCards(
   return Array.from(region_set.values())
 }
 
+/**
+ * Checks if `card` can be added to `deck` without breaking the rule that decks
+ * can be from at most two regions, and each card in the deck must be from at
+ * least one of those two regions.
+ * @param deck The deck to check.
+ * @param card The card to be added.
+ * @returns True if `card` can be added to `deck`.
+ */
 export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
   const cards = deck.cards.concat(card)
   return possibleRegionsForCards(cards, deck.regions) !== null
 }
 
+/**
+ * Adds a card to the deck.
+ * @param deck The deck to add `card` to.
+ * @param card The card to be added.
+ * @returns True if the card was successfully added, or false if the card could
+ * not be added because adding it would violate a rule of deck building.
+ */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   const cards = deck.cards.concat(card)
   const new_regions = possibleRegionsForCards(cards, deck.regions)
