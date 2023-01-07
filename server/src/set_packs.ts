@@ -31,8 +31,8 @@ import {
 import bundles from './config/bundles.json'
 
 interface RegionSet {
-  champs: Card[]
-  nonChamps: Card[]
+  champs: readonly Card[]
+  nonChamps: readonly Card[]
 }
 type RegionSetMap = Record<Region, RegionSet>
 
@@ -212,9 +212,11 @@ export function regionSets(
         allRegions().forEach((region) => {
           if (regionContains(region, card)) {
             if (card.rarity === 'Champion') {
-              region_sets[region].champs.push(card)
+              // prettier-ignore
+              (region_sets[region].champs as Card[]).push(card)
             } else {
-              region_sets[region].nonChamps.push(card)
+              // prettier-ignore
+              (region_sets[region].nonChamps as Card[]).push(card)
             }
           }
         })
