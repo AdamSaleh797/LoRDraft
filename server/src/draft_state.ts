@@ -323,7 +323,8 @@ export function initDraftState(socket: LoRDraftSocket) {
   })
 
   socket.respond('choose_cards', (resolve, session_cred, cards) => {
-    const CardListT = Array(CardT)
+    const CardListT = Array(CardT).asReadonly()
+
     if (!CardListT.guard(cards)) {
       resolve(
         MakeErrStatus(

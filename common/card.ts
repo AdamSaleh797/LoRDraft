@@ -24,7 +24,7 @@ const g_main_regions = [
 
 // burst/focus speed spell cards that do not say
 // prettier-ignore
-export const ryzeOrigin = [
+const ryzeOrigin = [
   '01DE019', '01DE017', '01DE027', '02DE007', '04DE012', '06DE042',
   '06DE030', '06DE026', '06DE040', '01NX039', '04NX002', '06NX037',
   '04SH035', '04SH120', '04SH099', '04SH037', '04SH083', '04SH092',
@@ -43,8 +43,6 @@ export const ryzeOrigin = [
   '04BW004', '06BW030', '06BW037', '06BW041', '06BW043', '06BW039',
   '01IO029', '01IO054', '02IO009', '05IO006', '06IO036'
 ]
-
-export const jhinOrigin = []
 
 export type MainRegion = typeof g_main_regions[number]
 const main_region_literals = g_main_regions.map((region) => Literal(region))
