@@ -140,8 +140,11 @@ export function loadSetPack(
           cost: card.cost,
           name: card.name,
           cardCode: card.cardCode,
+          description: card.description.toLowerCase(),
           regions: regions,
           subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
+          keywords: card.keywordRefs,
+          type: card.type.toLowerCase(),
         })
       }
     })
