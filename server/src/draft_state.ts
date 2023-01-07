@@ -404,6 +404,8 @@ export function initDraftState(socket: LoRDraftSocket) {
         draft_info.deck.cards.push(card)
       })
       draft_info.pending_cards = []
+
+      resolve(OkStatus)
     })
   })
 }
