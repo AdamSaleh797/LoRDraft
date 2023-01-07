@@ -3,11 +3,9 @@ import { Socket as ServerSocket } from 'socket.io'
 import { Empty, gen_uuid, MakeErrStatus, Status, StatusCode } from 'lor_util'
 
 interface EventsMap {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [event: string]: any
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MakeOptional<T extends any[]> = {
   [I in keyof T]: T[I] | null
 }
@@ -17,7 +15,6 @@ type EventNames<Map extends EventsMap> = keyof Map & string
 type ToReqEventName<EmitEventName extends string> = `${EmitEventName}_req`
 type ToResEventName<EmitEventName extends string> = `${EmitEventName}_res`
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type InternalCallbackT<Params extends Parameters<any>> = (
   uuid: string,
   ...args: Params
@@ -95,8 +92,8 @@ export class AsyncSocketContext<
   private timeout: number
 
   constructor(
-    socket: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    | ServerSocket<ListenEvents, EmitEvents, Empty, Empty>
+    socket:
+      | ServerSocket<ListenEvents, EmitEvents, Empty, Empty>
       | ClientSocket<ListenEvents, EmitEvents>
   ) {
     this.socket = socket
@@ -137,7 +134,6 @@ export class AsyncSocketContext<
       }
 
       this.listeners.set(event, cb)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(
         this.socket.on as unknown as (
           event_name: EventName,

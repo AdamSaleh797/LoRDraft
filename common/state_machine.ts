@@ -1,7 +1,6 @@
 import { MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 
 type KeyT = string | number
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFn = (...args: any) => void
 
 export type StateMachineStateDef<State extends KeyT> = Partial<
@@ -63,12 +62,7 @@ export class StateMachine<
     return OkStatus
   }
 
-  transition_any(
-    from: State,
-    to: State,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...args: any
-  ): Status {
+  transition_any(from: State, to: State, ...args: any): Status {
     if (this.state_machine_def_[from][to] === undefined) {
       return MakeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
@@ -76,7 +70,6 @@ export class StateMachine<
       )
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.transition(from, to as any, ...args)
   }
 

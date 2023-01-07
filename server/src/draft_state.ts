@@ -3,12 +3,15 @@ import { allRegions, Card, Region, regionContains } from 'card'
 import { DraftState, POOL_SIZE } from 'draft'
 import {
   AddSubStatuses,
+  binarySearch,
+  containsDuplicates,
   ErrStatusT,
   isOk,
   MakeErrStatus,
   narrowType,
   OkStatus,
   randChoice,
+  randSampleNumbers,
   Status,
   StatusCode,
 } from 'lor_util'
@@ -61,7 +64,7 @@ function choose_champ_cards(
         callback(
           MakeErrStatus(
             StatusCode.RETRIEVE_CARD_ERROR,
-            'Failed to retrieve card',
+            'Failed to retrieve cards',
             err_statuses
           ),
           null
@@ -77,14 +80,37 @@ function choose_champ_cards(
 }
 
 function choose_non_champ_cards(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   draft_state_info: ServerDraftStateInfo,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   prev_state: DraftState,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   callback: (status: Status, cards: Card[] | null) => void
 ) {
-  return
+  randomNonChampCards(draft_state_info.deck, POOL_SIZE, (status, cards) => {
+    if (!isOk(status) || cards === null) {
+      const undo_status = draft_state_info.draft_state.undo_transition_any(
+        draft_state_info.draft_state.state(),
+        prev_state
+      )
+
+      let err_statuses = [status as ErrStatusT]
+      if (!isOk(undo_status)) {
+        err_statuses = [AddSubStatuses(undo_status, err_statuses)]
+      }
+
+      callback(
+        MakeErrStatus(
+          StatusCode.RETRIEVE_CARD_ERROR,
+          'Failed to retrieve cards',
+          err_statuses
+        ),
+        null
+      )
+      return
+    }
+
+    draft_state_info.pending_cards = cards
+
+    callback(OkStatus, cards)
+  })
 }
 
 const draft_states_def = {
@@ -304,7 +330,59 @@ function randomChampCards(
       return
     }
 
+    const [region_count, cumulative_totals] = region_pool.reduce<
+      [number, number[]]
+    >(
+      ([region_count, cumulative_totals], region) => {
+        const num_champs = region_sets[region].champs.length
+        return [
+          region_count + num_champs,
+          cumulative_totals.concat([region_count]),
+        ]
+      },
+      [0, []]
+    )
+
+    // List of pairs of [region_idx, set_idx], where region_idx is the index of
+    // the region of the champ card chosen, and set_idx is the index of the
+    // champ card within that region.
+    let region_and_set_indexes: [number, number][]
+    do {
+      region_and_set_indexes = randSampleNumbers(region_count, num_champs).map(
+        (index) => {
+          const region_idx = binarySearch(cumulative_totals, index)
+          return [region_idx, index - cumulative_totals[region_idx]]
+        }
+      )
+    } while (
+      allow_same_region ||
+      containsDuplicates(
+        region_and_set_indexes,
+        (region_and_set_idx) => region_and_set_idx[0]
+      )
+    )
+
+    const champs = region_and_set_indexes.map(([region_idx, idx]) => {
+      return region_sets[region_pool[region_idx]].champs[idx]
+    })
+
+    callback(OkStatus, champs)
+  })
+}
+
+function randomNonChampCards(
+  deck: DraftDeck,
+  num_champs: number,
+  callback: (status: Status, cards: Card[] | null) => void
+): void {
+  regionSets((status, region_sets) => {
+    if (!isOk(status) || region_sets === null) {
+      callback(status, null)
+      return
+    }
+
     const cards: Card[] = []
+    const region_pool = deck.regions
     let iterations = 0
 
     do {
@@ -328,48 +406,28 @@ function randomChampCards(
 
       if (regions.length > 1) {
         // For multi-region cards, only take it with 1/num_regions probability.
+        /*
         if (Math.random() * regions.length >= 1) {
           continue
         }
+        */
 
         // TODO: check how this distribution compares to a weighted average
         // over 1/region_size, i.e. take the card with 1/region_size / (sum over 1/region_size from region_pool)
-        /*
         const region_size = region_sets[region].champs.length
         const weighted_sizes = regions.reduce<number>(
-          (total, region) => 1 / region_sets[region].champs.length,
+          (_1, region) => 1 / region_sets[region].champs.length,
           0
         )
         if (Math.random() * region_size * weighted_sizes > 1) {
           continue
         }
-        */
       }
 
       cards.push(card)
-      if (!allow_same_region) {
-        // If allow_same_region is not set, filter out all regions that match
-        // this card.
-        region_pool = region_pool.filter((region) => !regions.includes(region))
-      }
     } while (cards.length < num_champs)
 
     callback(OkStatus, cards)
-  })
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function randomNonChampCards(
-  deck: DraftDeck,
-  callback: (status: Status, card: Card | null) => void
-): void {
-  const region = randChoice(deck.regions)
-  regionSets((status, region_sets) => {
-    if (!isOk(status) || region_sets === null) {
-      callback(status, null)
-      return
-    }
-    callback(OkStatus, randChoice(region_sets[region].nonChamps))
   })
 }
 

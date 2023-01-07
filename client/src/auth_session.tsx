@@ -177,7 +177,6 @@ export function SessionComponent(props: SessionComponentProps) {
     SessionState.LOGIN
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const machine_def = {
     [SessionState.LOGIN]: {
       [SessionState.REGISTER]: () => {
