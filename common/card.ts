@@ -9,6 +9,8 @@ import {
   Union,
 } from 'runtypes'
 
+export const MAX_CARD_COPIES = 3
+
 const g_main_regions = [
   'Demacia',
   'Noxus',
@@ -53,29 +55,40 @@ export const MainRegionT = Union(
 
 const g_origins = {
   Evelynn: (card: Card): boolean => {
-    return card.description.includes('husk') || card.cardCode === '06RU025'
+    return (
+      (card.description.includes('husk') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU025'
+    )
   },
   Bard: (card: Card): boolean => {
     return (
-      card.description.includes('link=card.chime') ||
+      (card.description.includes('link=card.chime') &&
+        card.rarity !== 'Champion') ||
       card.cardCode === '06RU001'
     )
   },
   Jhin: (card: Card): boolean => {
     return (
-      card.description.includes('attackskill') ||
-      card.description.includes('playskill') ||
-      card.cardCode == '06RU002'
+      ((card.description.includes('attackskill') ||
+        card.description.includes('playskill')) &&
+        card.rarity !== 'Champion') ||
+      card.cardCode === '06RU002'
     )
   },
   Jax: (card: Card): boolean => {
-    return card.subtypes.includes('weaponmaster') || card.cardCode === '06RU008'
+    return (
+      (card.subtypes.includes('weaponmaster') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU008'
+    )
   },
   Ryze: (card: Card): boolean => {
     return ryzeOrigin.includes(card.cardCode) || card.cardCode === '06RU006'
   },
   Kayn: (card: Card): boolean => {
-    return card.subtypes.includes('cultist') || card.cardCode === '06RU005'
+    return (
+      (card.subtypes.includes('cultist') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU005'
+    )
   },
   Aatrox: (card: Card): boolean => {
     return (
@@ -84,7 +97,10 @@ const g_origins = {
     )
   },
   Varus: (card: Card): boolean => {
-    return card.subtypes.includes('cultist') || card.cardCode === '06RU009'
+    return (
+      (card.subtypes.includes('cultist') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU009'
+    )
   },
 } as const
 
@@ -101,10 +117,15 @@ export const OriginT = Union(origin_literals[0], ...origin_literals.slice(1))
 export const RegionT = Union(MainRegionT, OriginT)
 export type Region = MainRegion | Origin
 
+const g_all_origins = [...Object.keys(g_origins)] as Origin[]
 const g_all_regions: Region[] = [
   ...(g_main_regions as ReadonlyArray<Region>),
-  ...(Object.keys(g_origins) as Region[]),
+  ...(g_all_origins as Region[]),
 ]
+
+export function allOrigins(): readonly Origin[] {
+  return g_all_origins
+}
 
 export function allRegions(): readonly Region[] {
   return g_all_regions
@@ -139,6 +160,9 @@ export function regionContains(region: Region, card: Card) {
   }
 }
 
+export const CardCodeT = String
+export type CardCode = Static<typeof CardCodeT>
+
 export const SetPackCardT = Record({
   associatedCards: Array(String),
   associatedCardRefs: Array(String),
@@ -160,7 +184,7 @@ export const SetPackCardT = Record({
   flavorText: String,
   artistName: String,
   name: String,
-  cardCode: String,
+  cardCode: CardCodeT,
   keywords: Array(String),
   keywordRefs: Array(String),
   spellSpeed: String,
@@ -185,7 +209,7 @@ export const CardT = Record({
   imageUrl: String,
   cost: Number,
   name: String,
-  cardCode: String,
+  cardCode: CardCodeT,
   description: String,
   regions: Array(RegionT),
   subtypes: Array(String),
@@ -199,7 +223,7 @@ export interface Card {
   imageUrl: string
   cost: number
   name: string
-  cardCode: string
+  cardCode: CardCode
   description: string
   regions: Region[]
   subtypes: string[]

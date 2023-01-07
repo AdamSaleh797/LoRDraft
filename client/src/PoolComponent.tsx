@@ -68,6 +68,7 @@ export function PoolComponent(props: PoolComponentProps) {
   }
 
   function transitionSocketCalls(revertedCards: Card[]) {
+    setSelected([])
     props.setPendingCards([])
 
     const auth_info = getStorageAuthInfo()

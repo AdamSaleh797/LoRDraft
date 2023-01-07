@@ -6,24 +6,19 @@ export interface DeckListComponentProps {
 }
 
 export function DeckList(props: DeckListComponentProps) {
-  let map
-  if (props.draftState === null) {
-    map = new Map<string, number>()
-  } else {
-    map = props.draftState.deck.cards.reduce((map, card) => {
-      if (map.has(card.name)) {
-        map.set(card.name, (map.get(card.name) as number) + 1)
-      } else {
-        map.set(card.name, 1)
-      }
-      return map
-    }, new Map<string, number>())
-  }
+  const cardCounts =
+    props.draftState === null ? [] : props.draftState.deck.cardCounts
 
   return (
     <div>
-      {Array.from(map.entries()).map(([name, count]) => {
-        return <div>{count === 1 ? name : `${name} x${count}`}</div>
+      {cardCounts.map((cardCount) => {
+        return (
+          <div>
+            {cardCount.count === 1
+              ? cardCount.card.name
+              : `${cardCount.card.name} x${cardCount.count}`}
+          </div>
+        )
       })}
     </div>
   )

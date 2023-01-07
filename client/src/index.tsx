@@ -14,7 +14,7 @@ import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
-import { DraftStateInfo, makeDraftDeck } from 'draft'
+import { addCardToDeck, DraftStateInfo, makeDraftDeck } from 'draft'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -45,7 +45,9 @@ function Main() {
   const addToDeck = (cards: Card[]) => {
     if (draftState !== null) {
       const newDraftState = { ...draftState }
-      newDraftState.deck.cards.push(...cards)
+      cards.forEach((card) => {
+        addCardToDeck(newDraftState.deck, card)
+      })
       setDraftState(newDraftState)
     }
   }

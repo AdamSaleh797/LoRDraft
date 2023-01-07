@@ -1,5 +1,5 @@
 import { Card } from 'card'
-import { DraftStateInfo } from 'draft'
+import { CardCount, DraftStateInfo } from 'draft'
 import React from 'react'
 
 export const MAX_DISPLAY_COST = 8
@@ -11,10 +11,11 @@ export interface ManaCurveComponentProps {
 export function ManaCurve(props: ManaCurveComponentProps) {
   const histogram: number[] = new Array(MAX_DISPLAY_COST + 1).fill(0)
 
-  const deck_cards: Card[] = props.draftState?.deck.cards ?? []
+  const deck_card_counts: CardCount[] = props.draftState?.deck.cardCounts ?? []
 
-  deck_cards.forEach((card: Card) => {
-    histogram[Math.min(card.cost, MAX_DISPLAY_COST)]++
+  deck_card_counts.forEach((cardCount: CardCount) => {
+    histogram[Math.min(cardCount.card.cost, MAX_DISPLAY_COST)] +=
+      cardCount.count
   })
 
   const graphContainer = {

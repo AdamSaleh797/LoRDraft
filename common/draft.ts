@@ -1,5 +1,13 @@
-import { allRegions, Card, CardT, Region, regionContains, RegionT } from 'card'
-import { Array as ArrayT, Record } from 'runtypes'
+import {
+  allRegions,
+  Card,
+  CardT,
+  MAX_CARD_COPIES,
+  Region,
+  regionContains,
+  RegionT,
+} from 'card'
+import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
 
 export const POOL_SIZE = 4
 
@@ -16,20 +24,56 @@ export const enum DraftState {
   GENERATE_CODE = 'GENERATE_CODE',
 }
 
-export const DraftDeckT = Record({
-  regions: ArrayT(RegionT).asReadonly(),
-  cards: ArrayT(CardT),
+export const CardCountT = RecordT({
+  card: CardT,
+  count: Number,
 })
+
+export const DraftDeckT = RecordT({
+  regions: ArrayT(RegionT).asReadonly(),
+  cardCounts: ArrayT(CardCountT),
+  numCards: Number,
+})
+
+export interface CardCount {
+  card: Card
+  count: number
+}
 
 export interface DraftDeck {
   regions: readonly Region[]
-  cards: Card[]
+  cardCounts: CardCount[]
+  numCards: number
+}
+
+export function addToCardCounts(
+  cardCounts: readonly CardCount[],
+  card: Card
+): CardCount[] {
+  const idx = cardCounts.findIndex((cardCount) => {
+    return card.cardCode === cardCount.card.cardCode
+  })
+
+  if (idx === -1) {
+    return cardCounts.concat({
+      card: card,
+      count: 1,
+    })
+  } else {
+    const copy = cardCounts.slice()
+    copy[idx] = {
+      card: copy[idx].card,
+      count: copy[idx].count + 1,
+    }
+    return copy
+  }
 }
 
 export function makeDraftDeck(cards: Card[] = []): DraftDeck {
   const deck: DraftDeck = {
     regions: allRegions(),
-    cards: [],
+    cardCounts: [],
+    numCards: 0,
   }
 
   cards.forEach((card) => {
@@ -50,7 +94,7 @@ export function makeDraftDeck(cards: Card[] = []): DraftDeck {
  * cards do not make a valid deck.
  */
 function possibleRegionsForCards(
-  cards: Card[],
+  cardCounts: CardCount[],
   possible_regions: readonly Region[]
 ): readonly Region[] | null {
   if (possible_regions.length === 2) {
@@ -61,14 +105,17 @@ function possibleRegionsForCards(
     (map, region) => map.set(region, 0),
     new Map()
   )
-  const regions_in_deck = cards.reduce<Map<Region, number>>((map, card) => {
-    possible_regions.forEach((region) => {
-      if (regionContains(region, card)) {
-        map.set(region, (map.get(region) ?? (0 as never)) + 1)
-      }
-    })
-    return map
-  }, initial_regions_in_deck)
+  const regions_in_deck = cardCounts.reduce<Map<Region, number>>(
+    (map, cardCount) => {
+      possible_regions.forEach((region) => {
+        if (regionContains(region, cardCount.card)) {
+          map.set(region, (map.get(region) ?? (0 as never)) + 1)
+        }
+      })
+      return map
+    },
+    initial_regions_in_deck
+  )
 
   // Sort regions in non-increasing order of size
   const region_search_order = Array.from(regions_in_deck.entries())
@@ -89,9 +136,10 @@ function possibleRegionsForCards(
       }
 
       if (
-        !cards.some(
-          (card) =>
-            !regionContains(region1, card) && !regionContains(region2, card)
+        !cardCounts.some(
+          (cardCount) =>
+            !regionContains(region1, cardCount.card) &&
+            !regionContains(region2, cardCount.card)
         )
       ) {
         // region1 and region2 are valid regions to choose for this deck.
@@ -112,38 +160,47 @@ function possibleRegionsForCards(
 /**
  * Checks if `card` can be added to `deck` without breaking the rule that decks
  * can be from at most two regions, and each card in the deck must be from at
- * least one of those two regions.
+ * least one of those two regions, and there can be no more than three copies
+ * of each card.
  * @param deck The deck to check.
  * @param card The card to be added.
  * @returns True if `card` can be added to `deck`.
  */
 export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
-  const cards = deck.cards.concat(card)
-  return possibleRegionsForCards(cards, deck.regions) !== null
+  if (
+    deck.cardCounts.find(
+      (cardCount) => cardCount.card.cardCode === card.cardCode
+    )?.count === MAX_CARD_COPIES
+  ) {
+    return false
+  }
+  const cardCounts = addToCardCounts(deck.cardCounts, card)
+  return possibleRegionsForCards(cardCounts, deck.regions) !== null
 }
 
 /**
  * Adds a card to the deck.
  * @param deck The deck to add `card` to.
  * @param card The card to be added.
- * @returns True if the card was successfully added, or false if the card could
- * not be added because adding it would violate a rule of deck building.
+ * @returns True if the card was successfully added, or false if the card
+ * could not be added because adding it would violate a rule of deck building.
  */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
-  const cards = deck.cards.concat(card)
-  const new_regions = possibleRegionsForCards(cards, deck.regions)
+  const cardCounts = addToCardCounts(deck.cardCounts, card)
+  const new_regions = possibleRegionsForCards(cardCounts, deck.regions)
 
   if (new_regions === null) {
     return false
   }
 
-  deck.cards = cards
+  deck.cardCounts = cardCounts
   deck.regions = new_regions
+  deck.numCards++
 
   return true
 }
 
-export const DraftStateInfoT = Record({
+export const DraftStateInfoT = RecordT({
   deck: DraftDeckT,
   pending_cards: ArrayT(CardT),
 })

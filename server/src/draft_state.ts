@@ -1,12 +1,14 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { allRegions, Card, CardT, regionContains } from 'card'
+import { allOrigins, Card, CardT, regionContains } from 'card'
 import {
+  addCardToDeck,
   canAddToDeck,
   DraftDeck,
   DraftState,
   draftStateCardLimits,
   DraftStateInfo,
   DraftStateInfoT,
+  makeDraftDeck,
   POOL_SIZE,
 } from 'draft'
 import {
@@ -189,7 +191,7 @@ function nextDraftState(
     case DraftState.INITIAL_SELECTION:
       return DraftState.RANDOM_SELECTION_1
     case DraftState.RANDOM_SELECTION_1:
-      if (draft_state_info.deck.cards.length < RANDOM_SELECTION_1_CARD_CUTOFF) {
+      if (draft_state_info.deck.numCards < RANDOM_SELECTION_1_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_1
       } else {
         return DraftState.CHAMP_ROUND_1
@@ -197,7 +199,7 @@ function nextDraftState(
     case DraftState.CHAMP_ROUND_1:
       return DraftState.RANDOM_SELECTION_2
     case DraftState.RANDOM_SELECTION_2:
-      if (draft_state_info.deck.cards.length < RANDOM_SELECTION_2_CARD_CUTOFF) {
+      if (draft_state_info.deck.numCards < RANDOM_SELECTION_2_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_2
       } else {
         return DraftState.CHAMP_ROUND_2
@@ -205,7 +207,7 @@ function nextDraftState(
     case DraftState.CHAMP_ROUND_2:
       return DraftState.RANDOM_SELECTION_3
     case DraftState.RANDOM_SELECTION_3:
-      if (draft_state_info.deck.cards.length < RANDOM_SELECTION_3_CARD_CUTOFF) {
+      if (draft_state_info.deck.numCards < RANDOM_SELECTION_3_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_3
       } else {
         return DraftState.CHAMP_ROUND_3
@@ -326,6 +328,7 @@ export function initDraftState(socket: LoRDraftSocket) {
     const CardListT = Array(CardT).asReadonly()
 
     if (!CardListT.guard(cards)) {
+      console.log(cards)
       resolve(
         MakeErrStatus(
           StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
@@ -401,9 +404,20 @@ export function initDraftState(socket: LoRDraftSocket) {
 
       // Add the chosen cards to the deck.
       chosen_cards.forEach((card) => {
-        draft_info.deck.cards.push(card)
+        addCardToDeck(draft_info.deck, card)
       })
       draft_info.pending_cards = []
+      if (draft_info.draft_state.state() === DraftState.INITIAL_SELECTION) {
+        allOrigins().forEach((origin) => {
+          if (
+            !chosen_cards.some((card) => {
+              return regionContains(origin, card)
+            })
+          ) {
+            draft_info.deck.regions.filter((region) => region !== origin)
+          }
+        })
+      }
 
       resolve(OkStatus)
     })
@@ -440,6 +454,7 @@ function randomChampCards(
     // the region of the champ card chosen, and set_idx is the index of the
     // champ card within that region.
     let region_and_set_indexes: [number, number][]
+    let champs: Card[]
     do {
       region_and_set_indexes = randSampleNumbers(region_count, num_champs).map(
         (index) => {
@@ -447,21 +462,24 @@ function randomChampCards(
           return [region_idx, index - cumulative_totals[region_idx]]
         }
       )
+      champs = region_and_set_indexes.map(([region_idx, idx]) => {
+        return region_sets[region_pool[region_idx]].champs[idx]
+      })
     } while (
       allow_same_region ||
       containsDuplicates(
         region_and_set_indexes,
         (region_and_set_idx) => region_and_set_idx[0]
       ) ||
-      region_and_set_indexes.some(([region_idx, idx]) => {
-        const champ = region_sets[region_pool[region_idx]].champs[idx]
+      containsDuplicates(
+        champs.map((champ) => {
+          return champ.cardCode
+        })
+      ) ||
+      champs.some((champ) => {
         return !canAddToDeck(deck, champ)
       })
     )
-
-    const champs = region_and_set_indexes.map(([region_idx, idx]) => {
-      return region_sets[region_pool[region_idx]].champs[idx]
-    })
 
     callback(OkStatus, champs)
   })
@@ -550,10 +568,7 @@ export function enterDraft(session_info: SessionInfo): Status {
 
   session_info.draft_state_info = {
     draft_state: draft_state,
-    deck: {
-      regions: allRegions().slice(),
-      cards: [],
-    },
+    deck: makeDraftDeck(),
     pending_cards: [],
   }
   return OkStatus
