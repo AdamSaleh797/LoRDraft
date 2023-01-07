@@ -13,7 +13,7 @@ export interface PoolComponentProps {
     callback: (status: Status) => void
   ) => void
   draftState: DraftStateInfo | null
-  addToDeck: (cards: Card[]) => void
+  addToDeck: (cards: Card[]) => boolean
   setPendingCards: (cards: Card[]) => void
 }
 
@@ -94,7 +94,9 @@ export function PoolComponent(props: PoolComponentProps) {
           console.log(status)
           return
         }
-        props.addToDeck(revertedCards)
+        if (!props.addToDeck(revertedCards)) {
+          console.log('Failed to add cards to the deck')
+        }
         socketPoolCall(auth_info)
       }
     )

@@ -9,7 +9,7 @@ import {
   SessionCredT,
 } from 'socket-msgs'
 
-import { isOk, MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
+import { isOk, makeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 import assert from 'assert'
 import { SessionInfo } from 'session'
 
@@ -119,7 +119,7 @@ function register(
   const auth_user = users.get(register_info.username)
   if (auth_user !== undefined) {
     callback(
-      MakeErrStatus(
+      makeErrStatus(
         StatusCode.USER_ALREADY_EXISTS,
         `User ${register_info.username} already exists`
       )
@@ -149,7 +149,7 @@ export function login(
   const auth_user = users.get(login_cred.username)
   if (auth_user === undefined) {
     callback(
-      MakeErrStatus(
+      makeErrStatus(
         StatusCode.UNKNOWN_USER,
         `Unknown user ${login_cred.username}`
       )
@@ -161,7 +161,7 @@ export function login(
   const password_hash = hash.update(login_cred.password).digest()
   if (!crypto.timingSafeEqual(password_hash, auth_user.password_hash)) {
     callback(
-      MakeErrStatus(
+      makeErrStatus(
         StatusCode.INCORRECT_PASSWORD,
         `Password for user ${login_cred.username} is incorrect`
       )
@@ -208,7 +208,7 @@ export function join_session(
   if (!SessionCredT.guard(session_cred)) {
     // Invalid input, we can ignore
     callback(
-      MakeErrStatus(
+      makeErrStatus(
         StatusCode.INVALID_CLIENT_REQ,
         'Received invalid join session input'
       )
@@ -221,13 +221,13 @@ export function join_session(
 
   const auth_user = users.get(username)
   if (auth_user === undefined) {
-    callback(MakeErrStatus(StatusCode.UNKNOWN_USER, `Unknown user ${username}`))
+    callback(makeErrStatus(StatusCode.UNKNOWN_USER, `Unknown user ${username}`))
     return
   }
 
   if (!logged_in(auth_user)) {
     callback(
-      MakeErrStatus(
+      makeErrStatus(
         StatusCode.NOT_LOGGED_IN,
         `User ${username} is not logged in`
       )
@@ -240,7 +240,7 @@ export function join_session(
     !crypto.timingSafeEqual(token, auth_user.session_info.auth_info.token)
   ) {
     callback(
-      MakeErrStatus(
+      makeErrStatus(
         StatusCode.INVALID_TOKEN,
         `Token provided for ${username} is invalid`
       )
@@ -259,7 +259,7 @@ export function join_session(
       callback(status)
     } else {
       callback(
-        MakeErrStatus(
+        makeErrStatus(
           StatusCode.NOT_LOGGED_IN,
           `User ${username} is not logged in`
         )

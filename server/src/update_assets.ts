@@ -3,7 +3,7 @@ import {
   allFullfilled,
   ErrStatusT,
   isOk,
-  MakeErrStatus,
+  makeErrStatus,
   OkStatus,
   OkStatusT,
   rejectedResults,
@@ -56,7 +56,7 @@ export function updateAssets(
   Promise.allSettled(promiseList).then((results) => {
     if (!allFullfilled(results)) {
       callback(
-        MakeErrStatus(
+        makeErrStatus(
           StatusCode.UPDATE_ASSET_ERROR,
           'Asset update error',
           rejectedResults(results).map(

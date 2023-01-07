@@ -13,7 +13,7 @@ import {
   allFullfilled,
   ErrStatusT,
   isOk,
-  MakeErrStatus,
+  makeErrStatus,
   OkStatus,
   rejectedResults,
   Status,
@@ -52,13 +52,13 @@ function loadSetPack(
     const obj = JSON.parse(data) as any[]
     const cards: Card[] = []
     if (
-      obj.some((card: any) => {
-        if (!SetPackCardT.guard(card)) {
+      obj.some((parsed_card: any) => {
+        if (!SetPackCardT.guard(parsed_card)) {
           callback(
-            MakeErrStatus(
+            makeErrStatus(
               StatusCode.INVALID_SET_PACK_FORMAT,
               `Found card with invalid structure (cardCode/name: ${
-                card?.cardCode ?? card?.name
+                parsed_card?.cardCode ?? parsed_card?.name
               })`
             ),
             null
@@ -66,57 +66,63 @@ function loadSetPack(
           return true
         }
 
-        if (card.collectible) {
-          const regionRefs = card.regionRefs
+        if (parsed_card.collectible) {
+          const regionRefs = parsed_card.regionRefs
           let regions: Region[]
 
           if (isRuneterran(regionRefs)) {
-            if (!isOrigin(card.name)) {
+            if (!isOrigin(parsed_card.name)) {
               callback(
-                MakeErrStatus(
+                makeErrStatus(
                   StatusCode.MISSING_RUNETERRAN_CHAMP,
-                  `The Runeterran champion ${card.name} is not configured, please add a custom origin filter.`
+                  `The Runeterran champion ${parsed_card.name} is not configured, please add a custom origin filter.`
                 ),
                 null
               )
               return true
             }
 
-            regions = runeterranOrigin(card.name, regionRefs)
+            regions = runeterranOrigin(parsed_card.name, regionRefs)
           } else {
             regions = regionRefs as Region[]
           }
 
-          cards.push({
-            rarity: card.rarityRef,
-            imageUrl: card.assets[0].gameAbsolutePath,
-            cost: card.cost,
-            name: card.name,
-            cardCode: card.cardCode,
-            description: card.description.toLowerCase(),
+          const card = {
+            rarity: parsed_card.rarityRef,
+            imageUrl: parsed_card.assets[0].gameAbsolutePath,
+            cost: parsed_card.cost,
+            name: parsed_card.name,
+            cardCode: parsed_card.cardCode,
+            description: parsed_card.description.toLowerCase(),
             regions: regions,
-            subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
-            keywords: card.keywordRefs,
-            type: card.type.toLowerCase(),
-          })
+            subtypes: parsed_card.subtypes.map((subtype) =>
+              subtype.toLowerCase()
+            ),
+            keywords: parsed_card.keywordRefs,
+            type: parsed_card.type.toLowerCase(),
+          }
 
-          if (!CardT.guard(cards.at(-1))) {
+          if (!CardT.guard(card as any)) {
             callback(
-              MakeErrStatus(
+              makeErrStatus(
                 StatusCode.INVALID_SET_PACK_FORMAT,
                 `Found card with invalid structure in set pack (cardCode/name: ${
-                  cards.at(-1)?.cardCode ?? cards.at(-1)?.name
+                  card.cardCode ?? card.name
                 })`
               ),
               null
             )
             return true
           }
+
+          cards.push(card)
         }
 
         return false
       })
     ) {
+      // An error occurred while iterating over the parsed cards, which already
+      // raised the error to `callback`.
       return
     }
     callback(status, cards)
@@ -159,7 +165,7 @@ export function regionSets(
   ).then((set_pack_results) => {
     if (!allFullfilled(set_pack_results)) {
       callback(
-        MakeErrStatus(
+        makeErrStatus(
           StatusCode.SET_PACK_UPDATE_ERROR,
           'Set pack update error',
           rejectedResults(set_pack_results).map(

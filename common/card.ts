@@ -11,6 +11,8 @@ import {
 
 export const MAX_CARD_COPIES = 3
 
+const RUNETERRA = 'Runeterra' as const
+
 const g_main_regions = [
   'Demacia',
   'Noxus',
@@ -119,7 +121,7 @@ export type Region = MainRegion | Origin
 
 const g_all_regions: Region[] = [
   ...(g_main_regions as ReadonlyArray<Region>),
-  ...([...Object.keys(g_origins)] as Region[]),
+  ...(Object.keys(g_origins) as Region[]),
 ]
 
 export function allRegions(): readonly Region[] {
@@ -135,16 +137,18 @@ export function isOrigin(region: string): region is Origin {
 }
 
 export function isRuneterran(regions: string[]): boolean {
-  return regions.includes('Runeterra')
+  return regions.includes(RUNETERRA)
 }
 
 export function runeterranOrigin(
   card_name: Origin,
   regions: string[]
 ): Region[] {
-  return regions
-    .filter((region) => region !== 'Runeterra')
-    .concat(card_name) as Region[]
+  const origins = regions.filter((region) => region !== RUNETERRA)
+  if (!origins.includes(card_name)) {
+    origins.push(card_name)
+  }
+  return origins as Region[]
 }
 
 export function regionContains(region: Region, card: Card) {
@@ -168,7 +172,7 @@ export const SetPackCardT = Record({
     })
   ),
   regions: Array(String),
-  regionRefs: Array(Union(RegionT, Literal('Runeterra'))),
+  regionRefs: Array(Union(MainRegionT, Literal(RUNETERRA))),
   attack: Number,
   cost: Number,
   health: Number,
@@ -195,8 +199,10 @@ export const SetPackCardT = Record({
 
 export type SetPackCard = Static<typeof SetPackCardT>
 
-export function filterRegions(regions: (Region | 'Runeterra')[]): Region[] {
-  return regions.filter((region) => region !== 'Runeterra') as Region[]
+export function filterRegions(
+  regions: (Region | typeof RUNETERRA)[]
+): Region[] {
+  return regions.filter((region) => region !== RUNETERRA) as Region[]
 }
 
 export const CardT = Record({

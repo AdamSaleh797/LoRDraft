@@ -1,6 +1,6 @@
 import { Socket as ClientSocket } from 'socket.io-client'
 import { Socket as ServerSocket } from 'socket.io'
-import { Empty, gen_uuid, MakeErrStatus, Status, StatusCode } from 'lor_util'
+import { Empty, gen_uuid, makeErrStatus, Status, StatusCode } from 'lor_util'
 
 interface EventsMap {
   [event: string]: any
@@ -156,7 +156,7 @@ export class AsyncSocketContext<
 
       const cb = callback as (status: Status, ...args: null[]) => void
       cb(
-        MakeErrStatus(
+        makeErrStatus(
           StatusCode.MESSAGE_TIMEOUT,
           `Async socket call ${event_name} timed out after ${
             timeout_ms / 1000

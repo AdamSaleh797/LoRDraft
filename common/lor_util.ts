@@ -51,6 +51,7 @@ export enum StatusCode {
   NOT_WAITING_FOR_CARD_SELECTION = 'NOT_WAITING_FOR_CARD_SELECTION',
   NOT_PENDING_CARD = 'NOT_PENDING_CARD',
   INCORRECT_NUM_CHOSEN_CARDS = 'INCORRECT_NUM_CHOSEN_CARDS',
+  ILLEGAL_CARD_COMBINATION = 'ILLEGAL_CARD_COMBINATION',
 }
 
 export interface OkStatusT {
@@ -67,7 +68,7 @@ export interface ErrStatusT {
 
 export type Status = OkStatusT | ErrStatusT
 
-export function MakeErrStatus(
+export function makeErrStatus(
   status: ErrStatusCode,
   message: string,
   from_statuses?: ErrStatusT[]
@@ -79,22 +80,22 @@ export function MakeErrStatus(
   }
 }
 
-export function AddSubStatuses(
+export function withSubStatuses(
   status: ErrStatusT,
   from_statuses: ErrStatusT[]
 ): ErrStatusT {
-  return MakeErrStatus(
+  return makeErrStatus(
     status.status,
     status.message,
     status.from_statuses?.concat(from_statuses) ?? from_statuses
   )
 }
 
-export function StatusFromError<E extends Error>(
+export function statusFromError<E extends Error>(
   error: E | null,
   code: ErrStatusCode
 ): Status {
-  return error === null ? OkStatus : MakeErrStatus(code, error.message)
+  return error === null ? OkStatus : makeErrStatus(code, error.message)
 }
 
 export const OkStatus: OkStatusT = { status: StatusCode.OK }
@@ -124,7 +125,7 @@ export function statusSanitizeError<T extends Status>(
   sanitized_message: string
 ): T | ErrStatusT {
   if (!isOk(status) && isInternalError(status)) {
-    return MakeErrStatus(sanitized_code, sanitized_message)
+    return makeErrStatus(sanitized_code, sanitized_message)
   } else {
     return status
   }
@@ -280,9 +281,7 @@ export function containsDuplicates<T>(
   return false
 }
 
-export function containsNoNull<T>(
-  arr: readonly T[]
-): arr is Exclude<T, null>[] {
+export function allNonNull<T>(arr: readonly T[]): arr is Exclude<T, null>[] {
   return !arr.some((val) => val === null)
 }
 

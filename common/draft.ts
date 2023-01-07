@@ -168,9 +168,9 @@ function possibleRegionsForCards(
  */
 export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
   if (
-    deck.cardCounts.find(
+    (deck.cardCounts.find(
       (cardCount) => cardCount.card.cardCode === card.cardCode
-    )?.count === MAX_CARD_COPIES
+    )?.count ?? 0) === MAX_CARD_COPIES
   ) {
     return false
   }

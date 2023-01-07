@@ -12,13 +12,13 @@ import {
   POOL_SIZE,
 } from 'draft'
 import {
-  AddSubStatuses,
+  withSubStatuses,
   binarySearch,
   containsDuplicates,
-  containsNoNull,
+  allNonNull,
   ErrStatusT,
   isOk,
-  MakeErrStatus,
+  makeErrStatus,
   narrowType,
   OkStatus,
   randChoice,
@@ -65,11 +65,11 @@ function choose_champ_cards(
 
         let err_statuses = [status as ErrStatusT]
         if (!isOk(undo_status)) {
-          err_statuses = [AddSubStatuses(undo_status, err_statuses)]
+          err_statuses = [withSubStatuses(undo_status, err_statuses)]
         }
 
         callback(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.RETRIEVE_CARD_ERROR,
             'Failed to retrieve cards',
             err_statuses
@@ -100,11 +100,11 @@ function choose_non_champ_cards(
 
       let err_statuses = [status as ErrStatusT]
       if (!isOk(undo_status)) {
-        err_statuses = [AddSubStatuses(undo_status, err_statuses)]
+        err_statuses = [withSubStatuses(undo_status, err_statuses)]
       }
 
       callback(
-        MakeErrStatus(
+        makeErrStatus(
           StatusCode.RETRIEVE_CARD_ERROR,
           'Failed to retrieve cards',
           err_statuses
@@ -169,7 +169,7 @@ function draftStateInfo(
 ): [Status, ServerDraftStateInfo | null] {
   if (!inDraft(auth_user.session_info)) {
     return [
-      MakeErrStatus(StatusCode.NOT_IN_DRAFT_SESSION, 'No draft session found.'),
+      makeErrStatus(StatusCode.NOT_IN_DRAFT_SESSION, 'No draft session found.'),
       null,
     ]
   } else {
@@ -241,7 +241,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       ) as DraftStateInfo | null
       if (draft_info === null) {
         resolve(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.INTERNAL_SERVER_ERROR,
             'Failed narrow draft info from ServerDraftInfo'
           ),
@@ -292,7 +292,7 @@ export function initDraftState(socket: LoRDraftSocket) {
 
       if (next_draft_state === null) {
         resolve(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.DRAFT_COMPLETE,
             'The draft is complete, no more pools to choose from.'
           ),
@@ -329,7 +329,7 @@ export function initDraftState(socket: LoRDraftSocket) {
 
     if (!CardListT.guard(cards)) {
       resolve(
-        MakeErrStatus(
+        makeErrStatus(
           StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
           `Argument \`cards\` to 'choose_cards' is not of the correct type.`
         )
@@ -351,7 +351,7 @@ export function initDraftState(socket: LoRDraftSocket) {
 
       if (draft_info.pending_cards.length === 0) {
         resolve(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
             'Draft state is not currently waiting for pending cards from the client.'
           )
@@ -362,7 +362,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       const min_max_cards = draftStateCardLimits(draft_info.draft_state.state())
       if (min_max_cards === null) {
         resolve(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
             'Draft state is not currently waiting for pending cards from the client.'
           )
@@ -373,13 +373,14 @@ export function initDraftState(socket: LoRDraftSocket) {
 
       if (cards.length < min_cards || cards.length > max_cards) {
         resolve(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
             `Cannot choose ${
               cards.length
             } cards in state ${draft_info.draft_state.state()}, must choose from ${min_cards} to ${max_cards} cards`
           )
         )
+        return
       }
 
       const pending_cards = draft_info.pending_cards
@@ -391,9 +392,9 @@ export function initDraftState(socket: LoRDraftSocket) {
         )
       })
 
-      if (!containsNoNull(chosen_cards)) {
+      if (!allNonNull(chosen_cards)) {
         resolve(
-          MakeErrStatus(
+          makeErrStatus(
             StatusCode.NOT_PENDING_CARD,
             `Some chosen cards are not pending cards`
           )
@@ -402,20 +403,28 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
 
       // Add the chosen cards to the deck.
-      chosen_cards.forEach((card) => {
-        addCardToDeck(draft_info.deck, card)
-      })
+      const new_deck = { ...draft_info.deck }
+      if (chosen_cards.some((card) => !addCardToDeck(new_deck, card))) {
+        resolve(
+          makeErrStatus(
+            StatusCode.ILLEGAL_CARD_COMBINATION,
+            'The cards could not be added to the deck'
+          )
+        )
+        return
+      }
+
+      draft_info.deck = new_deck
       draft_info.pending_cards = []
 
       // After initial selection, filter out all origins from the candidate
       // regions that aren't covered by the two chosen champions.
       if (draft_info.draft_state.state() === DraftState.INITIAL_SELECTION) {
-        draft_info.deck.regions = draft_info.deck.regions.filter((region) => {
-          return (
+        draft_info.deck.regions = draft_info.deck.regions.filter(
+          (region) =>
             !isOrigin(region) ||
             chosen_cards.some((card) => regionContains(region, card))
-          )
-        })
+        )
       }
 
       resolve(OkStatus)
@@ -465,16 +474,17 @@ function randomChampCards(
         return region_sets[region_pool[region_idx]].champs[idx]
       })
     } while (
-      allow_same_region ||
-      containsDuplicates(
-        region_and_set_indexes,
-        (region_and_set_idx) => region_and_set_idx[0]
-      ) ||
-      containsDuplicates(
-        champs.map((champ) => {
-          return champ.cardCode
-        })
-      ) ||
+      (!allow_same_region &&
+        containsDuplicates(
+          region_and_set_indexes,
+          (region_and_set_idx) => region_and_set_idx[0]
+        )) ||
+      containsDuplicates(champs, (champ) => {
+        return champ.cardCode
+      }) ||
+      // It may be that certain pairs of champions are incompatible in the deck,
+      // but the champions individually are each compatible. This will be
+      // checked for when validating 'add_cards' calls.
       champs.some((champ) => {
         return !canAddToDeck(deck, champ)
       })
@@ -550,7 +560,7 @@ function randomNonChampCards(
 
 export function enterDraft(session_info: SessionInfo): Status {
   if (inDraft(session_info)) {
-    return MakeErrStatus(
+    return makeErrStatus(
       StatusCode.ALREADY_IN_DRAFT_SESSION,
       'Already in draft session siwwy'
     )

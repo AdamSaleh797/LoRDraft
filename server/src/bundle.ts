@@ -1,7 +1,7 @@
 import child_process from 'child_process'
 import fs from 'fs'
 import https from 'https'
-import { isOk, Status, StatusCode, StatusFromError } from 'lor_util'
+import { isOk, Status, StatusCode, statusFromError } from 'lor_util'
 import path from 'path'
 
 const _ASSET_DIR = path.join(__dirname, '../assets')
@@ -25,7 +25,7 @@ function unzip_file(
     `unzip -u ${file} -d ${output_dir}`,
     { cwd: _ASSET_DIR },
     (err) => {
-      callback(StatusFromError(err, StatusCode.CHILD_PROCESS_EXEC_ERROR))
+      callback(statusFromError(err, StatusCode.CHILD_PROCESS_EXEC_ERROR))
     }
   )
 }
@@ -51,14 +51,14 @@ export function downloadZipAsset(
           callback(status)
         } else {
           fs.unlink(zip_path, (err: Error | null) => {
-            callback(StatusFromError(err, StatusCode.UNZIP_ERROR))
+            callback(statusFromError(err, StatusCode.UNZIP_ERROR))
           })
         }
       })
     })
 
     file.on('error', (err: Error) => {
-      callback(StatusFromError(err, StatusCode.FILE_ERROR))
+      callback(statusFromError(err, StatusCode.FILE_ERROR))
     })
   })
 }
@@ -79,7 +79,7 @@ export function extractFromBundle(
     path.join(_ASSET_DIR, bundle, rel_path),
     path.join(_ASSET_DIR, name),
     (err) => {
-      callback(StatusFromError(err, StatusCode.FILE_CP_ERROR))
+      callback(statusFromError(err, StatusCode.FILE_CP_ERROR))
     }
   )
 }
@@ -91,7 +91,7 @@ export function removeBundle(
   prepareAssetsDir()
 
   fs.rm(path.join(_ASSET_DIR, bundle), { recursive: true }, (err) => {
-    callback(StatusFromError(err, StatusCode.FILE_RM_ERROR))
+    callback(statusFromError(err, StatusCode.FILE_RM_ERROR))
   })
 }
 
@@ -100,6 +100,6 @@ export function readBundle(
   callback: (status: Status, data: string | null) => void = () => undefined
 ) {
   fs.readFile(path.join(_ASSET_DIR, bundle), 'utf-8', (err, data) => {
-    callback(StatusFromError(err, StatusCode.FILE_READ_ERROR), data)
+    callback(statusFromError(err, StatusCode.FILE_READ_ERROR), data)
   })
 }

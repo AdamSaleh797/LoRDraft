@@ -42,13 +42,23 @@ function Main() {
     })
   }
 
-  const addToDeck = (cards: Card[]) => {
+  const addToDeck = (cards: Card[]): boolean => {
     if (draftState !== null) {
       const newDraftState = { ...draftState }
-      cards.forEach((card) => {
-        addCardToDeck(newDraftState.deck, card)
-      })
+
+      // Fail if any of the cards can't be added to the deck.
+      if (
+        cards.some((card) => {
+          return !addCardToDeck(newDraftState.deck, card)
+        })
+      ) {
+        return false
+      }
+
       setDraftState(newDraftState)
+      return true
+    } else {
+      return false
     }
   }
 
