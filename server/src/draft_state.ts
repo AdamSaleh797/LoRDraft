@@ -486,7 +486,8 @@ function randomNonChampCards(
       iterations++
 
       const region = randChoice(region_pool)
-      const card = randChoice(region_sets[region].champs)
+      const card = randChoice(region_sets[region].nonChamps)
+      console.log(region, card)
 
       if (cards.includes(card) && iterations < MAX_CARD_REPICK_ITERATIONS) {
         continue
@@ -511,9 +512,9 @@ function randomNonChampCards(
 
         // TODO: check how this distribution compares to a weighted average
         // over 1/region_size, i.e. take the card with 1/region_size / (sum over 1/region_size from region_pool)
-        const region_size = region_sets[region].champs.length
+        const region_size = region_sets[region].nonChamps.length
         const weighted_sizes = regions.reduce<number>(
-          (_1, region) => 1 / region_sets[region].champs.length,
+          (_1, region) => 1 / region_sets[region].nonChamps.length,
           0
         )
         if (Math.random() * region_size * weighted_sizes > 1) {

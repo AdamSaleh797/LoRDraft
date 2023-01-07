@@ -53,34 +53,38 @@ export const MainRegionT = Union(
 
 const g_origins = {
   Evelynn: (card: Card): boolean => {
-    return card.description.includes('husk')
+    return card.description.includes('husk') || card.cardCode === '06RU025'
   },
   Bard: (card: Card): boolean => {
-    return card.description.includes('link=card.chime')
+    return (
+      card.description.includes('link=card.chime') ||
+      card.cardCode === '06RU001'
+    )
   },
   Jhin: (card: Card): boolean => {
     return (
       card.description.includes('attackskill') ||
-      card.description.includes('playskill')
+      card.description.includes('playskill') ||
+      card.cardCode == '06RU002'
     )
   },
   Jax: (card: Card): boolean => {
-    return card.subtypes.includes('weaponmaster')
+    return card.subtypes.includes('weaponmaster') || card.cardCode === '06RU008'
   },
   Ryze: (card: Card): boolean => {
-    return ryzeOrigin.includes(card.cardCode)
+    return ryzeOrigin.includes(card.cardCode) || card.cardCode === '06RU006'
   },
   Kayn: (card: Card): boolean => {
-    return card.subtypes.includes('cultist')
+    return card.subtypes.includes('cultist') || card.cardCode === '06RU005'
   },
   Aatrox: (card: Card): boolean => {
     return (
-      card.subtypes.includes('darkin') &&
-      (card.name === 'Aatrox' || card.rarity !== 'Champion')
+      (card.subtypes.includes('darkin') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU026'
     )
   },
   Varus: (card: Card): boolean => {
-    return card.subtypes.includes('cultist')
+    return card.subtypes.includes('cultist') || card.cardCode === '06RU009'
   },
 } as const
 
@@ -123,7 +127,7 @@ export function runeterranOrigin(
   regions: string[]
 ): Region[] {
   return regions
-    .filter((region) => region === 'Runeterra')
+    .filter((region) => region !== 'Runeterra')
     .concat(card_name) as Region[]
 }
 

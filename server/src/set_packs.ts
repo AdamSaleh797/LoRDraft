@@ -1,6 +1,7 @@
 import {
   allRegions,
   Card,
+  CardT,
   isOrigin,
   isRuneterran,
   Region,
@@ -146,6 +147,10 @@ export function loadSetPack(
           keywords: card.keywordRefs,
           type: card.type.toLowerCase(),
         })
+        if (!CardT.guard(cards[cards.length - 1])) {
+          console.log(cards[cards.length - 1])
+        }
+        CardT.check(cards[cards.length - 1])
       }
     })
     callback(status, cards)
