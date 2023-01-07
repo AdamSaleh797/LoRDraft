@@ -117,15 +117,10 @@ export const OriginT = Union(origin_literals[0], ...origin_literals.slice(1))
 export const RegionT = Union(MainRegionT, OriginT)
 export type Region = MainRegion | Origin
 
-const g_all_origins = [...Object.keys(g_origins)] as Origin[]
 const g_all_regions: Region[] = [
   ...(g_main_regions as ReadonlyArray<Region>),
-  ...(g_all_origins as Region[]),
+  ...([...Object.keys(g_origins)] as Region[]),
 ]
-
-export function allOrigins(): readonly Origin[] {
-  return g_all_origins
-}
 
 export function allRegions(): readonly Region[] {
   return g_all_regions

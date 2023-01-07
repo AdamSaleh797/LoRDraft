@@ -1,5 +1,5 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { allOrigins, Card, CardT, regionContains } from 'card'
+import { Card, CardT, isOrigin, regionContains } from 'card'
 import {
   addCardToDeck,
   canAddToDeck,
@@ -407,15 +407,15 @@ export function initDraftState(socket: LoRDraftSocket) {
         addCardToDeck(draft_info.deck, card)
       })
       draft_info.pending_cards = []
+
+      // After initial selection, filter out all origins from the candidate
+      // regions that aren't covered by the two chosen champions.
       if (draft_info.draft_state.state() === DraftState.INITIAL_SELECTION) {
-        allOrigins().forEach((origin) => {
-          if (
-            !chosen_cards.some((card) => {
-              return regionContains(origin, card)
-            })
-          ) {
-            draft_info.deck.regions.filter((region) => region !== origin)
-          }
+        draft_info.deck.regions = draft_info.deck.regions.filter((region) => {
+          return (
+            !isOrigin(region) ||
+            chosen_cards.some((card) => regionContains(region, card))
+          )
         })
       }
 
