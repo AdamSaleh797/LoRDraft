@@ -32,8 +32,10 @@ export enum StatusCode {
   CHILD_PROCESS_EXEC_ERROR = 'CHILD_PROCESS_EXEC_ERROR',
 
   // Generic error for failure to update the set packs.
+  UPDATE_ASSET_ERROR = 'UPDATE_ASSET_ERROR',
   SET_PACK_UPDATE_ERROR = 'SET_PACK_UPDATE_ERROR',
   MISSING_RUNETERRAN_CHAMP = 'MISSING_RUNETERRAN_CHAMP',
+  INVALID_SET_PACK_FORMAT = 'INVALID_SET_PACK_FORMAT',
 
   // Generic error when retrieving a Card, used to mask internal errors.
   RETRIEVE_CARD_ERROR = 'RETRIEVE_CARD_ERROR',

@@ -328,7 +328,6 @@ export function initDraftState(socket: LoRDraftSocket) {
     const CardListT = Array(CardT).asReadonly()
 
     if (!CardListT.guard(cards)) {
-      console.log(cards)
       resolve(
         MakeErrStatus(
           StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
@@ -505,7 +504,6 @@ function randomNonChampCards(
 
       const region = randChoice(region_pool)
       const card = randChoice(region_sets[region].nonChamps)
-      console.log(region, card)
 
       if (cards.includes(card) && iterations < MAX_CARD_REPICK_ITERATIONS) {
         continue
@@ -515,10 +513,6 @@ function randomNonChampCards(
       const regions = region_pool.filter((region) =>
         regionContains(region, card)
       )
-
-      console.log(card)
-      console.log(region_pool)
-      console.log(regions)
 
       if (regions.length > 1) {
         // For multi-region cards, only take it with 1/num_regions probability.

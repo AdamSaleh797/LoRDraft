@@ -1,5 +1,10 @@
 [
   {
+    "setName": "core",
+    "url": "https://dd.b.pvp.net/latest/core-en_us.zip",
+    "configPath": "en_us/data/globals-en_us.json"
+  },
+  {
     "setName": "set1",
     "url": "https://dd.b.pvp.net/latest/set1-lite-en_us.zip",
     "configPath": "en_us/data/set1-en_us.json"

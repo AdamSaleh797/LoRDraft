@@ -1,4 +1,3 @@
-import { Card } from 'card'
 import { CardCount, DraftStateInfo } from 'draft'
 import React from 'react'
 

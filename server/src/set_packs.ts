@@ -15,20 +15,12 @@ import {
   isOk,
   MakeErrStatus,
   OkStatus,
-  OkStatusT,
   rejectedResults,
   Status,
   StatusCode,
 } from 'lor_util'
-import path from 'path'
 
-import {
-  downloadZipAsset,
-  extractFromBundle,
-  readBundle,
-  removeBundle,
-} from './bundle'
-import bundles from './config/bundles.json'
+import { readBundle } from './bundle'
 
 interface RegionSet {
   champs: readonly Card[]
@@ -48,56 +40,7 @@ const g_set_packs = [
 
 let g_region_sets: RegionSetMap | undefined
 
-export function updateSetPacks(
-  callback: (rejected_results: PromiseRejectedResult[] | null) => void = () =>
-    undefined
-) {
-  const promiseList = bundles.map((bundle) => {
-    return new Promise(
-      (
-        resolve: (value: OkStatusT) => void,
-        reject: (reason: ErrStatusT) => void
-      ) => {
-        downloadZipAsset(bundle.url, bundle.setName, (status) => {
-          if (!isOk(status)) {
-            reject(status)
-            return
-          }
-
-          extractFromBundle(
-            bundle.setName,
-            bundle.configPath,
-            path.basename(bundle.configPath),
-            (status) => {
-              if (!isOk(status)) {
-                reject(status)
-                return
-              }
-
-              removeBundle(bundle.setName, (status) => {
-                if (!isOk(status)) {
-                  reject(status)
-                  return
-                }
-                resolve(status)
-              })
-            }
-          )
-        })
-      }
-    )
-  })
-
-  Promise.allSettled(promiseList).then((results) => {
-    if (!allFullfilled(results)) {
-      callback(rejectedResults(results))
-    } else {
-      callback(null)
-    }
-  })
-}
-
-export function loadSetPack(
+function loadSetPack(
   bundle: string,
   callback: (status: Status, cards: Card[] | null) => void = () => undefined
 ): void {
@@ -106,53 +49,76 @@ export function loadSetPack(
       callback(status, null)
       return
     }
-    const obj = JSON.parse(data)
+    const obj = JSON.parse(data) as any[]
     const cards: Card[] = []
-    obj.forEach((card: unknown) => {
-      if (!SetPackCardT.guard(card)) {
-        console.log(`Parse error, found card with invalid format.`)
-        return
-      }
+    if (
+      obj.some((card: any) => {
+        if (!SetPackCardT.guard(card)) {
+          callback(
+            MakeErrStatus(
+              StatusCode.INVALID_SET_PACK_FORMAT,
+              `Found card with invalid structure (cardCode/name: ${
+                card?.cardCode ?? card?.name
+              })`
+            ),
+            null
+          )
+          return true
+        }
 
-      if (card.collectible) {
-        const regionRefs = card.regionRefs
-        let regions: Region[]
+        if (card.collectible) {
+          const regionRefs = card.regionRefs
+          let regions: Region[]
 
-        if (isRuneterran(regionRefs)) {
-          if (!isOrigin(card.name)) {
+          if (isRuneterran(regionRefs)) {
+            if (!isOrigin(card.name)) {
+              callback(
+                MakeErrStatus(
+                  StatusCode.MISSING_RUNETERRAN_CHAMP,
+                  `The Runeterran champion ${card.name} is not configured, please add a custom origin filter.`
+                ),
+                null
+              )
+              return true
+            }
+
+            regions = runeterranOrigin(card.name, regionRefs)
+          } else {
+            regions = regionRefs as Region[]
+          }
+
+          cards.push({
+            rarity: card.rarityRef,
+            imageUrl: card.assets[0].gameAbsolutePath,
+            cost: card.cost,
+            name: card.name,
+            cardCode: card.cardCode,
+            description: card.description.toLowerCase(),
+            regions: regions,
+            subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
+            keywords: card.keywordRefs,
+            type: card.type.toLowerCase(),
+          })
+
+          if (!CardT.guard(cards.at(-1))) {
             callback(
               MakeErrStatus(
-                StatusCode.MISSING_RUNETERRAN_CHAMP,
-                `The Runeterran champion ${card.name} is not configured, please add a custom origin filter.`
+                StatusCode.INVALID_SET_PACK_FORMAT,
+                `Found card with invalid structure in set pack (cardCode/name: ${
+                  cards.at(-1)?.cardCode ?? cards.at(-1)?.name
+                })`
               ),
               null
             )
-            return
+            return true
           }
-
-          regions = runeterranOrigin(card.name, regionRefs)
-        } else {
-          regions = regionRefs as Region[]
         }
 
-        cards.push({
-          rarity: card.rarityRef,
-          imageUrl: card.assets[0].gameAbsolutePath,
-          cost: card.cost,
-          name: card.name,
-          cardCode: card.cardCode,
-          description: card.description.toLowerCase(),
-          regions: regions,
-          subtypes: card.subtypes.map((subtype) => subtype.toLowerCase()),
-          keywords: card.keywordRefs,
-          type: card.type.toLowerCase(),
-        })
-        if (!CardT.guard(cards[cards.length - 1])) {
-          console.log(cards[cards.length - 1])
-        }
-        CardT.check(cards[cards.length - 1])
-      }
-    })
+        return false
+      })
+    ) {
+      return
+    }
     callback(status, cards)
   })
 }
