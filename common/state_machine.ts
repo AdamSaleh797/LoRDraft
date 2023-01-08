@@ -1,7 +1,6 @@
-import { MakeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
+import { makeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 
 type KeyT = string | number
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFn = (...args: any) => void
 
 export type StateMachineStateDef<State extends KeyT> = Partial<
@@ -46,7 +45,7 @@ export class StateMachine<
       : never
   >(from: FromT, to: ToT, ...args: Parameters<UpdateFnT>): Status {
     if (this.state_ !== from) {
-      return MakeErrStatus(
+      return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
         `Cannot transition from state ${from} to state ${to}, currently in state ${this.state_}`
       )
@@ -63,20 +62,14 @@ export class StateMachine<
     return OkStatus
   }
 
-  transition_any(
-    from: State,
-    to: State,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...args: any
-  ): Status {
+  transition_any(from: State, to: State, ...args: any): Status {
     if (this.state_machine_def_[from][to] === undefined) {
-      return MakeErrStatus(
+      return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
         `transition from state ${from} to state ${to}, illegal transition`
       )
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.transition(from, to as any, ...args)
   }
 
@@ -85,7 +78,7 @@ export class StateMachine<
     ToT extends MachineDef extends Record<FromT, infer U> ? keyof U : never
   >(current_state: ToT, prior_state: FromT): Status {
     if (this.state_ !== (current_state as unknown as State)) {
-      return MakeErrStatus(
+      return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
         `Cannot undo transition from state ${current_state} back to state ${prior_state}, currently in state ${this.state_}`
       )
@@ -97,14 +90,14 @@ export class StateMachine<
 
   undo_transition_any(current_state: State, prior_state: State): Status {
     if (this.state_ !== current_state) {
-      return MakeErrStatus(
+      return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
         `Cannot undo transition from state ${current_state} back to state ${prior_state}, currently in state ${this.state_}`
       )
     }
 
     if (this.state_machine_def_[prior_state][current_state] === undefined) {
-      return MakeErrStatus(
+      return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
         `Cannot undo transition from state ${current_state} back to state ${prior_state}, illegal transition`
       )

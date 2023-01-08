@@ -4,7 +4,6 @@ import io from 'socket.io-client'
 
 import { Card } from 'card'
 import {
-  DraftStateInfo,
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
@@ -15,6 +14,7 @@ import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
+import { addCardToDeck, DraftStateInfo, makeDraftDeck } from 'draft'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -42,11 +42,23 @@ function Main() {
     })
   }
 
-  const addToDeck = (cards: Card[]) => {
+  const addToDeck = (cards: Card[]): boolean => {
     if (draftState !== null) {
       const newDraftState = { ...draftState }
-      newDraftState.deck.cards.push(...cards)
+
+      // Fail if any of the cards can't be added to the deck.
+      if (
+        cards.some((card) => {
+          return !addCardToDeck(newDraftState.deck, card)
+        })
+      ) {
+        return false
+      }
+
       setDraftState(newDraftState)
+      return true
+    } else {
+      return false
     }
   }
 
@@ -58,10 +70,7 @@ function Main() {
       console.log('test y')
     } else {
       const newDraftState: DraftStateInfo = {
-        deck: {
-          regions: [],
-          cards: [],
-        },
+        deck: makeDraftDeck(),
         pending_cards: cards,
       }
       setDraftState(newDraftState)

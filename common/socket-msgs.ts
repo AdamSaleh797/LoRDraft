@@ -1,32 +1,12 @@
 import { Buffer } from 'buffer'
-import { Array, InstanceOf, Record, Static, String } from 'runtypes'
+import { InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
 import { AsyncSocketContext } from 'async_socket'
-import { Card, CardT, Region, RegionT } from 'card'
+import { Card } from 'card'
 import { Empty, Status } from 'lor_util'
-import { DraftState } from 'draft'
-
-export const DraftDeckT = Record({
-  regions: Array(RegionT),
-  cards: Array(CardT),
-})
-
-export interface DraftDeck {
-  regions: Region[]
-  cards: Card[]
-}
-
-export const DraftStateInfoT = Record({
-  deck: DraftDeckT,
-  pending_cards: Array(CardT),
-})
-
-export interface DraftStateInfo {
-  deck: DraftDeck
-  pending_cards: Card[]
-}
+import { DraftState, DraftStateInfo } from 'draft'
 
 export const RegisterInfoT = Record({
   username: String,

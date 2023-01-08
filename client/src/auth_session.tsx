@@ -12,8 +12,13 @@ import { isOk, StatusCode } from 'lor_util'
 import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
+let g_auth_info: SessionCred | null = null
 
 export function getStorageAuthInfo(): SessionCred | null {
+  if (g_auth_info !== null) {
+    return g_auth_info
+  }
+
   const auth_info_str = window.sessionStorage.getItem(STORAGE_AUTH_INFO_KEY)
   if (auth_info_str === null) {
     return null
@@ -47,13 +52,21 @@ export function getStorageAuthInfo(): SessionCred | null {
 
   const { token, ...auth_info_no_token } = { ...auth_info_prim }
 
-  return {
+  console.log(
+    'getting storage auth info:',
+    Array.from(token.values()).slice(0, 8)
+  )
+
+  g_auth_info = {
     token: Buffer.from(token),
     ...auth_info_no_token,
   }
+
+  return g_auth_info
 }
 
 function setStorageAuthInfo(session_cred: SessionCred): void {
+  g_auth_info = session_cred
   window.sessionStorage.setItem(
     STORAGE_AUTH_INFO_KEY,
     JSON.stringify(session_cred)
@@ -61,6 +74,7 @@ function setStorageAuthInfo(session_cred: SessionCred): void {
 }
 
 function clearStorageAuthInfo(): void {
+  g_auth_info = null
   window.sessionStorage.removeItem(STORAGE_AUTH_INFO_KEY)
 }
 
@@ -177,7 +191,6 @@ export function SessionComponent(props: SessionComponentProps) {
     SessionState.LOGIN
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const machine_def = {
     [SessionState.LOGIN]: {
       [SessionState.REGISTER]: () => {

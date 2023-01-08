@@ -9,6 +9,10 @@ import {
   Union,
 } from 'runtypes'
 
+export const MAX_CARD_COPIES = 3
+
+const RUNETERRA = 'Runeterra' as const
+
 const g_main_regions = [
   'Demacia',
   'Noxus',
@@ -24,7 +28,7 @@ const g_main_regions = [
 
 // burst/focus speed spell cards that do not say
 // prettier-ignore
-export const ryzeOrigin = [
+const ryzeOrigin = [
   '01DE019', '01DE017', '01DE027', '02DE007', '04DE012', '06DE042',
   '06DE030', '06DE026', '06DE040', '01NX039', '04NX002', '06NX037',
   '04SH035', '04SH120', '04SH099', '04SH037', '04SH083', '04SH092',
@@ -44,8 +48,6 @@ export const ryzeOrigin = [
   '01IO029', '01IO054', '02IO009', '05IO006', '06IO036'
 ]
 
-export const jhinOrigin = []
-
 export type MainRegion = typeof g_main_regions[number]
 const main_region_literals = g_main_regions.map((region) => Literal(region))
 export const MainRegionT = Union(
@@ -55,34 +57,52 @@ export const MainRegionT = Union(
 
 const g_origins = {
   Evelynn: (card: Card): boolean => {
-    return card.description.includes('husk')
+    return (
+      (card.description.includes('husk') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU025'
+    )
   },
   Bard: (card: Card): boolean => {
-    return card.description.includes('link=card.chime')
+    return (
+      (card.description.includes('link=card.chime') &&
+        card.rarity !== 'Champion') ||
+      card.cardCode === '06RU001'
+    )
   },
   Jhin: (card: Card): boolean => {
     return (
-      card.description.includes('attackskill') ||
-      card.description.includes('playskill')
+      ((card.description.includes('attackskill') ||
+        card.description.includes('playskill')) &&
+        card.rarity !== 'Champion') ||
+      card.cardCode === '06RU002'
     )
   },
   Jax: (card: Card): boolean => {
-    return card.subtypes.includes('weaponmaster')
+    return (
+      (card.subtypes.includes('weaponmaster') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU008'
+    )
   },
   Ryze: (card: Card): boolean => {
-    return ryzeOrigin.includes(card.cardCode)
+    return ryzeOrigin.includes(card.cardCode) || card.cardCode === '06RU006'
   },
   Kayn: (card: Card): boolean => {
-    return card.subtypes.includes('cultist')
+    return (
+      (card.subtypes.includes('cultist') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU005'
+    )
   },
   Aatrox: (card: Card): boolean => {
     return (
-      card.subtypes.includes('darkin') &&
-      (card.name === 'Aatrox' || card.rarity !== 'Champion')
+      (card.subtypes.includes('darkin') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU026'
     )
   },
   Varus: (card: Card): boolean => {
-    return card.subtypes.includes('cultist')
+    return (
+      (card.subtypes.includes('cultist') && card.rarity !== 'Champion') ||
+      card.cardCode === '06RU009'
+    )
   },
 } as const
 
@@ -117,16 +137,18 @@ export function isOrigin(region: string): region is Origin {
 }
 
 export function isRuneterran(regions: string[]): boolean {
-  return regions.includes('Runeterra')
+  return regions.includes(RUNETERRA)
 }
 
 export function runeterranOrigin(
   card_name: Origin,
   regions: string[]
 ): Region[] {
-  return regions
-    .filter((region) => region === 'Runeterra')
-    .concat(card_name) as Region[]
+  const origins = regions.filter((region) => region !== RUNETERRA)
+  if (!origins.includes(card_name)) {
+    origins.push(card_name)
+  }
+  return origins as Region[]
 }
 
 export function regionContains(region: Region, card: Card) {
@@ -136,6 +158,9 @@ export function regionContains(region: Region, card: Card) {
     return g_origins[region](card)
   }
 }
+
+export const CardCodeT = String
+export type CardCode = Static<typeof CardCodeT>
 
 export const SetPackCardT = Record({
   associatedCards: Array(String),
@@ -147,7 +172,7 @@ export const SetPackCardT = Record({
     })
   ),
   regions: Array(String),
-  regionRefs: Array(Union(RegionT, Literal('Runeterra'))),
+  regionRefs: Array(Union(MainRegionT, Literal(RUNETERRA))),
   attack: Number,
   cost: Number,
   health: Number,
@@ -158,7 +183,7 @@ export const SetPackCardT = Record({
   flavorText: String,
   artistName: String,
   name: String,
-  cardCode: String,
+  cardCode: CardCodeT,
   keywords: Array(String),
   keywordRefs: Array(String),
   spellSpeed: String,
@@ -174,8 +199,10 @@ export const SetPackCardT = Record({
 
 export type SetPackCard = Static<typeof SetPackCardT>
 
-export function filterRegions(regions: (Region | 'Runeterra')[]): Region[] {
-  return regions.filter((region) => region !== 'Runeterra') as Region[]
+export function filterRegions(
+  regions: (Region | typeof RUNETERRA)[]
+): Region[] {
+  return regions.filter((region) => region !== RUNETERRA) as Region[]
 }
 
 export const CardT = Record({
@@ -183,7 +210,7 @@ export const CardT = Record({
   imageUrl: String,
   cost: Number,
   name: String,
-  cardCode: String,
+  cardCode: CardCodeT,
   description: String,
   regions: Array(RegionT),
   subtypes: Array(String),
@@ -197,7 +224,7 @@ export interface Card {
   imageUrl: string
   cost: number
   name: string
-  cardCode: string
+  cardCode: CardCode
   description: string
   regions: Region[]
   subtypes: string[]

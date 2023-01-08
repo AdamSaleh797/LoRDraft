@@ -3,7 +3,6 @@ import { Runtype, Static } from 'runtypes/lib/runtype'
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Empty = Record<any, never>
 
 export enum StatusCode {
@@ -13,6 +12,7 @@ export enum StatusCode {
   INVALID_CLIENT_REQ = 'INVALID_CLIENT_REQ',
   INVALID_STATE_TRANSITION = 'INVALID_STATE_TRANSITION',
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  INCORRECT_MESSAGE_ARGUMENTS = 'INCORRECT_MESSAGE_ARGUMENTS',
 
   // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
@@ -32,8 +32,10 @@ export enum StatusCode {
   CHILD_PROCESS_EXEC_ERROR = 'CHILD_PROCESS_EXEC_ERROR',
 
   // Generic error for failure to update the set packs.
+  UPDATE_ASSET_ERROR = 'UPDATE_ASSET_ERROR',
   SET_PACK_UPDATE_ERROR = 'SET_PACK_UPDATE_ERROR',
   MISSING_RUNETERRAN_CHAMP = 'MISSING_RUNETERRAN_CHAMP',
+  INVALID_SET_PACK_FORMAT = 'INVALID_SET_PACK_FORMAT',
 
   // Generic error when retrieving a Card, used to mask internal errors.
   RETRIEVE_CARD_ERROR = 'RETRIEVE_CARD_ERROR',
@@ -46,6 +48,10 @@ export enum StatusCode {
   NOT_IN_DRAFT_SESSION = 'NOT_IN_DRAFT_SESSION',
   ALREADY_IN_DRAFT_SESSION = 'ALREADY_IN_DRAFT_SESSION',
   DRAFT_COMPLETE = 'DRAFT_COMPLETE',
+  NOT_WAITING_FOR_CARD_SELECTION = 'NOT_WAITING_FOR_CARD_SELECTION',
+  NOT_PENDING_CARD = 'NOT_PENDING_CARD',
+  INCORRECT_NUM_CHOSEN_CARDS = 'INCORRECT_NUM_CHOSEN_CARDS',
+  ILLEGAL_CARD_COMBINATION = 'ILLEGAL_CARD_COMBINATION',
 }
 
 export interface OkStatusT {
@@ -62,7 +68,7 @@ export interface ErrStatusT {
 
 export type Status = OkStatusT | ErrStatusT
 
-export function MakeErrStatus(
+export function makeErrStatus(
   status: ErrStatusCode,
   message: string,
   from_statuses?: ErrStatusT[]
@@ -74,22 +80,22 @@ export function MakeErrStatus(
   }
 }
 
-export function AddSubStatuses(
+export function withSubStatuses(
   status: ErrStatusT,
   from_statuses: ErrStatusT[]
 ): ErrStatusT {
-  return MakeErrStatus(
+  return makeErrStatus(
     status.status,
     status.message,
     status.from_statuses?.concat(from_statuses) ?? from_statuses
   )
 }
 
-export function StatusFromError<E extends Error>(
+export function statusFromError<E extends Error>(
   error: E | null,
   code: ErrStatusCode
 ): Status {
-  return error === null ? OkStatus : MakeErrStatus(code, error.message)
+  return error === null ? OkStatus : makeErrStatus(code, error.message)
 }
 
 export const OkStatus: OkStatusT = { status: StatusCode.OK }
@@ -119,7 +125,7 @@ export function statusSanitizeError<T extends Status>(
   sanitized_message: string
 ): T | ErrStatusT {
   if (!isOk(status) && isInternalError(status)) {
-    return MakeErrStatus(sanitized_code, sanitized_message)
+    return makeErrStatus(sanitized_code, sanitized_message)
   } else {
     return status
   }
@@ -156,7 +162,7 @@ export function gen_uuid(): string {
   return uuidv4()
 }
 
-export function randChoice<T>(arr: T[]): T {
+export function randChoice<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
@@ -167,8 +173,18 @@ export function randChoice<T>(arr: T[]): T {
  *
  * @return A list of the randomly sampled elements of `arr`.
  */
-export function randSample<T>(arr: T[], samples: number): T[] {
-  if (samples > arr.length) {
+export function randSample<T>(arr: readonly T[], samples: number): T[] {
+  return randSampleNumbers(arr.length, samples).map((idx) => arr[idx])
+}
+
+/**
+ *
+ * @param size The number of numbers to choose from.
+ * @param samples The number of samples to take. This cannot exceed `size`.
+ * @returns A list of numbers sampled randomly from [0, size) with no repeats.
+ */
+export function randSampleNumbers(size: number, samples: number): number[] {
+  if (samples > size) {
     return []
   }
 
@@ -177,12 +193,12 @@ export function randSample<T>(arr: T[], samples: number): T[] {
   sample_idx.forEach((_1, idx, self) => {
     let rand_idx
     do {
-      rand_idx = Math.floor(Math.random() * arr.length)
+      rand_idx = Math.floor(Math.random() * size)
     } while (self.includes(rand_idx))
     self[idx] = rand_idx
   })
 
-  return sample_idx.map((idx) => arr[idx])
+  return sample_idx
 }
 
 /**
@@ -191,7 +207,6 @@ export function randSample<T>(arr: T[], samples: number): T[] {
  * @param obj
  * @returns
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function narrowType<T extends Record<any, false>, U extends Static<T>>(
   type: T,
   obj: U
@@ -206,10 +221,107 @@ export function narrowType<T extends Record<any, false>, U extends Static<T>>(
     }
 
     if (val !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       res[key as keyof Static<T>] = val as any
     }
   }
 
   return res as Static<T>
+}
+
+/**
+ * Binary searches through `arr` for `el`, assuming `arr` is sorted in
+ * increasing order.
+ *
+ * @param arr The array of elements to search through.
+ * @param el The element to search for
+ *
+ * @return The index of `el` in `arr`, or the index of the largest element less
+ * than or equal to `el`, or `-1` if `el` is smaller than the smallest element
+ * of `arr`. If there are multiple equal elements which are all return
+ * candidates, the one with largest index is returned.
+ */
+export function binarySearch<T>(arr: readonly T[], el: T): number {
+  let l = 0
+  let r = arr.length
+
+  while (l < r) {
+    const m = (l + r) >> 1
+
+    if (arr[m] <= el) {
+      l = m + 1
+    } else {
+      r = m
+    }
+  }
+
+  return l - 1
+}
+
+/**
+ * Checks for duplicate values in an array.
+ *
+ * @param arr The array to search for duplicate elements in.
+ * @param key_fn An optional mapping from element values to key values, which
+ *   are compared for uniqueness.
+ * @returns True if any of the elements in the array have the same key (or value
+ *   if no `key_fn` is supplied).
+ */
+export function containsDuplicates<T>(
+  arr: readonly T[],
+  key_fn: (val: T) => any = (val) => val
+): boolean {
+  const sorted_keys = arr.map(key_fn).sort()
+
+  for (let i = 0; i < sorted_keys.length - 1; i++) {
+    if (sorted_keys[i] === sorted_keys[i + 1]) {
+      return true
+    }
+  }
+
+  return false
+}
+
+export function allNonNull<T>(arr: readonly T[]): arr is Exclude<T, null>[] {
+  return !arr.some((val) => val === null)
+}
+
+export function unionLists<T>(arr1: readonly T[], arr2: readonly T[]): T[] {
+  return arr1.concat(...arr2.map((el2) => (arr1.includes(el2) ? [] : [el2])))
+}
+
+export function intersectLists<T>(arr1: readonly T[], arr2: readonly T[]): T[] {
+  return ([] as T[]).concat(
+    ...arr1.map((el1) => (arr2.includes(el1) ? [el1] : []))
+  )
+}
+
+/**
+ * For each element of arr1, finds a unique occurrence of arr2 that it matches,
+ * ensuring that no other element of arr1 will be matched against the same
+ * element of arr2.
+ *
+ * @param arr1 The list to filter.
+ * @param arr2 The list to intersect with `arr1`.
+ * @param predicate An equality comparison function between the elements of the
+ *   two lists. Must be transitive.
+ * @return The intersected list in terms of `arr1`.
+ */
+export function intersectListsPred<T, U>(
+  arr1: readonly T[],
+  arr2: readonly U[],
+  predicate: (val1: T, val2: U) => boolean
+): T[] {
+  const chosen_idxs = new Set<number>()
+
+  return arr1.filter((val1) => {
+    const idx = arr2.findIndex(
+      (val2, i) => predicate(val1, val2) && !chosen_idxs.has(i)
+    )
+    if (idx !== -1) {
+      chosen_idxs.add(idx)
+      return true
+    } else {
+      return false
+    }
+  })
 }
