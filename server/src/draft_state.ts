@@ -114,7 +114,7 @@ function choose_champ_cards(
             return
           }
 
-          cards.push(...guaranteed_cards)
+          cards = guaranteed_cards.concat(cards)
           draft_state_info.pending_cards = cards
 
           callback(OkStatus, cards)
