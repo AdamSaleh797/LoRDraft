@@ -178,6 +178,27 @@ export function randSample<T>(arr: readonly T[], samples: number): T[] | null {
 }
 
 /**
+ * Returns a random sample of numbers in the range [0, size) with `samples`
+ * elements removed.
+ * @param size The size of the range of numbers to sample from.
+ * @param samples The count of numbers to remove from the full range [0, size)
+ * @returns The sampled list.
+ */
+function randSampleNumbersNegated(size: number, samples: number): number[] {
+  const sample_idx = new Set(Array.from({ length: size }, (_1, i) => i))
+
+  for (let i = 0; i < samples; i++) {
+    let rand_idx
+    do {
+      rand_idx = Math.floor(Math.random() * size)
+    } while (!sample_idx.has(rand_idx))
+    sample_idx.delete(rand_idx)
+  }
+
+  return Array.from(sample_idx.values())
+}
+
+/**
  *
  * @param size The number of numbers to choose from.
  * @param samples The number of samples to take. This cannot exceed `size`.
@@ -189,6 +210,9 @@ export function randSampleNumbers(
 ): number[] | null {
   if (samples > size) {
     return null
+  }
+  if (samples > size / 2) {
+    return randSampleNumbersNegated(size, size - samples)
   }
 
   const sample_idx = new Array<number>(samples).fill(-1)
@@ -202,6 +226,40 @@ export function randSampleNumbers(
   })
 
   return sample_idx
+}
+
+/**
+ * @param size The number of numbers to choose from.
+ * @param samples The number of samples to take. This cannot exceed `size`.
+ * @returns A list of numbers sampled randomly from [0, size) with no repeats if
+ *   possible, otherwise with minimal skew in the distribution of chosen values.
+ */
+export function randSampleNumbersAvoidingRepeats(
+  size: number,
+  samples: number
+): number[] {
+  if (samples === 0) {
+    return []
+  }
+
+  const n_repeats = Math.floor(samples / size)
+  samples = samples % size
+
+  const broadcast: number[] = Array.from({ length: size }, (_1, i) =>
+    Array(n_repeats).fill(i)
+  ).flat(1)
+
+  const sample_idx = new Array<number>(samples).fill(-1)
+
+  sample_idx.forEach((_1, idx, self) => {
+    let rand_idx
+    do {
+      rand_idx = Math.floor(Math.random() * size)
+    } while (self.includes(rand_idx))
+    self[idx] = rand_idx
+  })
+
+  return broadcast.concat(sample_idx)
 }
 
 /**

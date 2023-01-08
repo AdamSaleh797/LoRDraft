@@ -1,5 +1,12 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { Card, CardT, isChampion, isOrigin, regionContains } from 'card'
+import {
+  Card,
+  CardT,
+  isChampion,
+  isOrigin,
+  MAX_CARD_COPIES,
+  regionContains,
+} from 'card'
 import {
   addCardToDeck,
   canAddToDeck,
@@ -22,17 +29,17 @@ import {
   narrowType,
   OkStatus,
   randChoice,
-  randSampleNumbers,
   Status,
   StatusCode,
   intersectListsPred,
   randSample,
+  randSampleNumbersAvoidingRepeats,
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
 import { LoRDraftSocket } from 'socket-msgs'
 import { StateMachine } from 'state_machine'
-import { Array } from 'runtypes'
+import { Array as ArrayT } from 'runtypes'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [
@@ -89,11 +96,6 @@ function choose_champ_cards(
     ? GUARANTEED_CHAMP_COUNT
     : 0
 
-  console.log(
-    prev_state,
-    draft_state_info.draft_state.state(),
-    num_guaranteed_champs
-  )
   randomChampCardsFromDeck(
     draft_state_info.deck,
     num_guaranteed_champs,
@@ -105,7 +107,7 @@ function choose_champ_cards(
 
       randomChampCards(
         draft_state_info.deck,
-        POOL_SIZE - num_guaranteed_champs,
+        POOL_SIZE - guaranteed_cards.length,
         allow_same_region,
         guaranteed_cards,
         (status, cards) => {
@@ -254,7 +256,9 @@ function nextDraftState(
       if (draft_state_info.deck.numCards < RANDOM_SELECTION_3_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_3
       } else {
-        return DraftState.CHAMP_ROUND_3
+        return DraftState.GENERATE_CODE
+        // TODO revert this
+        // return DraftState.CHAMP_ROUND_3
       }
     case DraftState.CHAMP_ROUND_3:
       return DraftState.TRIM_DECK
@@ -356,12 +360,7 @@ export function initDraftState(socket: LoRDraftSocket) {
             resolve(status, null, null)
             return
           }
-          console.log(
-            cur_state,
-            draft_info.draft_state.state(),
-            next_draft_state,
-            cards.map((card) => card.name)
-          )
+
           resolve(status, cards, next_draft_state)
         }
       )
@@ -374,7 +373,7 @@ export function initDraftState(socket: LoRDraftSocket) {
   })
 
   socket.respond('choose_cards', (resolve, session_cred, cards) => {
-    const CardListT = Array(CardT).asReadonly()
+    const CardListT = ArrayT(CardT).asReadonly()
 
     if (!CardListT.guard(cards)) {
       resolve(
@@ -504,29 +503,21 @@ function randomChampCards(
       },
       [0, []]
     )
+
     if (total_champ_count - restriction_pool.length < num_champs) {
-      const num_necessary_duplicates =
-        num_champs + restriction_pool.length - total_champ_count
-      const narrowed_restriction_pool = randSample(
-        restriction_pool,
-        num_necessary_duplicates
+      // If there aren't enough remaining champions not in the restriction pool,
+      // remove enough champions from the restriction pool so there will be
+      // enough to choose from.
+      const num_necessary_duplicates = Math.max(
+        num_champs + restriction_pool.length - total_champ_count,
+        0
       )
-      if (narrowed_restriction_pool === null) {
-        callback(
-          makeErrStatus(
-            StatusCode.INTERNAL_SERVER_ERROR,
-            `unable to choose ${num_necessary_duplicates} cards from a pool of ${restriction_pool.length} cards`
-          ),
-          null
-        )
-        return
-      }
+      restriction_pool = restriction_pool.slice(0, num_necessary_duplicates)
 
       // TODO: write bumski. Should restrict total occurrences of cards in
       // restriction_pool + the randomly sampled pool + deck to no more than 3.
       // As of now, it is possible to put more than 1 copy of a card that
       // already occurs twice in the deck in the pending cards.
-      restriction_pool = narrowed_restriction_pool
     }
 
     // List of pairs of [region_idx, set_idx], where region_idx is the index of
@@ -535,22 +526,14 @@ function randomChampCards(
     let region_and_set_indexes: [number, number][]
     let champs: Card[]
     do {
-      const sample =
-        (randSampleNumbers(total_champ_count, num_champs)?.map((index) => {
-          const region_idx = binarySearch(cumulative_totals, index)
-          return [region_idx, index - cumulative_totals[region_idx]]
-        }) as [number, number][]) ?? null
-      if (sample === null) {
-        callback(
-          makeErrStatus(
-            StatusCode.INTERNAL_SERVER_ERROR,
-            `unable to choose ${num_champs} cards from a pool of ${total_champ_count} numbers`
-          ),
-          null
-        )
-        return
-      }
-      region_and_set_indexes = sample
+      region_and_set_indexes =
+        (randSampleNumbersAvoidingRepeats(total_champ_count, num_champs).map(
+          (index) => {
+            const region_idx = binarySearch(cumulative_totals, index)
+            return [region_idx, index - cumulative_totals[region_idx]]
+          }
+        ) as [number, number][]) ?? null
+
       champs = region_and_set_indexes.map(([region_idx, idx]) => {
         return region_sets[region_pool[region_idx]].champs[idx]
       })
@@ -575,15 +558,25 @@ function randomChampCards(
   })
 }
 
+/**
+ * Attempts to choose `desired_num_champs` unique champs that there aren't
+ * already `MAX_CARD_COPIES` copies of, returning the largest such list of
+ * champs.
+ * @param deck The deck to sample the champs from.
+ * @param desired_num_champs The desired number of unique champs to choose.
+ * @param callback Called with the result, or an error status if it failed.
+ */
 function randomChampCardsFromDeck(
   deck: DraftDeck,
-  num_champs: number,
+  desired_num_champs: number,
   callback: (status: Status, cards: Card[] | null) => void
 ): void {
-  const champs = deck.cardCounts.filter((cardCount) =>
-    isChampion(cardCount.card)
+  const champs = deck.cardCounts.filter(
+    (cardCount) =>
+      isChampion(cardCount.card) && cardCount.count < MAX_CARD_COPIES
   )
 
+  const num_champs = Math.min(desired_num_champs, champs.length)
   const chosenChamps =
     randSample(champs, num_champs)?.map((cardCount) => cardCount.card) ?? null
   if (chosenChamps === null) {
@@ -665,6 +658,7 @@ function randomNonChampCards(
 }
 
 export function enterDraft(session_info: SessionInfo): Status {
+  console.log('entering draft')
   if (inDraft(session_info)) {
     return makeErrStatus(
       StatusCode.ALREADY_IN_DRAFT_SESSION,
