@@ -8,6 +8,7 @@ import {
   draftStateCardLimits,
   DraftStateInfo,
   DraftStateInfoT,
+  generateDeckCode,
   makeDraftDeck,
   POOL_SIZE,
 } from 'draft'
@@ -44,7 +45,8 @@ const MAX_CARD_REPICK_ITERATIONS = 100
 
 const RANDOM_SELECTION_1_CARD_CUTOFF = 20
 const RANDOM_SELECTION_2_CARD_CUTOFF = 37
-const RANDOM_SELECTION_3_CARD_CUTOFF = 43
+//FIXME: REVERT THIS BACK TO 43
+const RANDOM_SELECTION_3_CARD_CUTOFF = 40
 
 export interface ServerDraftStateInfo extends DraftStateInfo {
   draft_state: StateMachine<typeof draft_states_def, DraftState>
@@ -156,6 +158,10 @@ function choose_non_champ_cards(
   })
 }
 
+function generate_deck_code(draft_state_info: DraftStateInfo) {
+  draft_state_info.deck.deckCode = generateDeckCode(draft_state_info.deck)
+}
+
 const draft_states_def = {
   [DraftState.INIT]: {
     [DraftState.INITIAL_SELECTION]: (
@@ -184,7 +190,9 @@ const draft_states_def = {
     [DraftState.RANDOM_SELECTION_3]: choose_non_champ_cards,
   },
   [DraftState.RANDOM_SELECTION_3]: {
-    [DraftState.CHAMP_ROUND_3]: choose_champ_cards,
+    //FIXME: uncomment this line
+    //[DraftState.CHAMP_ROUND_3]: choose_champ_cards,
+    [DraftState.GENERATE_CODE]: generate_deck_code,
     [DraftState.RANDOM_SELECTION_3]: choose_non_champ_cards,
   },
   [DraftState.CHAMP_ROUND_3]: {
@@ -325,7 +333,7 @@ export function initDraftState(socket: LoRDraftSocket) {
 
       const cur_state = state.state()
       const next_draft_state = nextDraftState(cur_state, draft_info)
-
+      //TODO: Check if in right state
       if (next_draft_state === null) {
         resolve(
           makeErrStatus(

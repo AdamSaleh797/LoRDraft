@@ -7,7 +7,15 @@ import {
   regionContains,
   RegionT,
 } from 'card'
-import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
+import { getCodeFromDeck } from 'lor-deckcodes-ts'
+import {
+  Array as ArrayT,
+  Null,
+  Number,
+  Record as RecordT,
+  String,
+  Union,
+} from 'runtypes'
 
 export const POOL_SIZE = 4
 
@@ -33,6 +41,7 @@ export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
   cardCounts: ArrayT(CardCountT),
   numCards: Number,
+  deckCode: Union(String, Null),
 })
 
 export interface CardCount {
@@ -44,6 +53,7 @@ export interface DraftDeck {
   regions: readonly Region[]
   cardCounts: CardCount[]
   numCards: number
+  deckCode: string | null
 }
 
 export function addToCardCounts(
@@ -74,6 +84,7 @@ export function makeDraftDeck(cards: Card[] = []): DraftDeck {
     regions: allRegions(),
     cardCounts: [],
     numCards: 0,
+    deckCode: null,
   }
 
   cards.forEach((card) => {
@@ -235,4 +246,13 @@ export function draftStateCardLimits(
       return null
     }
   }
+}
+
+export function generateDeckCode(deck: DraftDeck): string {
+  const deckcodesDeck = deck.cardCounts.map((cardCount) => ({
+    cardCode: cardCount.card.cardCode,
+    count: cardCount.count,
+  }))
+
+  return getCodeFromDeck(deckcodesDeck)
 }
