@@ -514,6 +514,10 @@ function randomChampCards(
         return
       }
 
+      // TODO: write bumski. Should restrict total occurrences of cards in
+      // restriction_pool + the randomly sampled pool + deck to no more than 3.
+      // As of now, it is possible to put more than 1 copy of a card that
+      // already occurs twice in the deck in the pending cards.
       restriction_pool = narrowed_restriction_pool
     }
 
