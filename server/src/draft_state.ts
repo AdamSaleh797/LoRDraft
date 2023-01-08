@@ -15,7 +15,6 @@ import {
   withSubStatuses,
   binarySearch,
   containsDuplicates,
-  allNonNull,
   ErrStatusT,
   isOk,
   makeErrStatus,
@@ -25,6 +24,7 @@ import {
   randSampleNumbers,
   Status,
   StatusCode,
+  intersectListsPred,
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
@@ -383,26 +383,17 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      const pending_cards: (Card | null)[] = draft_info.pending_cards.slice()
-      const chosen_cards = cards.map((card) => {
-        const idx = pending_cards.findIndex(
-          (pending_card) =>
-            pending_card !== null && pending_card.cardCode === card.cardCode
-        )
-        if (idx !== -1) {
-          const chosen_card = pending_cards[idx]
-          pending_cards[idx] = null
-          return chosen_card
-        } else {
-          return null
-        }
-      })
+      const chosen_cards = intersectListsPred(
+        draft_info.pending_cards,
+        cards,
+        (pending_card, card) => pending_card.cardCode === card.cardCode
+      )
 
-      if (!allNonNull(chosen_cards)) {
+      if (chosen_cards.length !== cards.length) {
         resolve(
           makeErrStatus(
             StatusCode.NOT_PENDING_CARD,
-            `Some chosen cards are not pending cards`
+            `Some chosen cards are not pending cards, or are duplicates.`
           )
         )
         return

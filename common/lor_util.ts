@@ -294,3 +294,34 @@ export function intersectLists<T>(arr1: readonly T[], arr2: readonly T[]): T[] {
     ...arr1.map((el1) => (arr2.includes(el1) ? [el1] : []))
   )
 }
+
+/**
+ * For each element of arr1, finds a unique occurrence of arr2 that it matches,
+ * ensuring that no other element of arr1 will be matched against the same
+ * element of arr2.
+ *
+ * @param arr1 The list to filter.
+ * @param arr2 The list to intersect with `arr1`.
+ * @param predicate An equality comparison function between the elements of the
+ *   two lists. Must be transitive.
+ * @return The intersected list in terms of `arr1`.
+ */
+export function intersectListsPred<T, U>(
+  arr1: readonly T[],
+  arr2: readonly U[],
+  predicate: (val1: T, val2: U) => boolean
+): T[] {
+  const chosen_idxs = new Set<number>()
+
+  return arr1.filter((val1) => {
+    const idx = arr2.findIndex(
+      (val2, i) => predicate(val1, val2) && !chosen_idxs.has(i)
+    )
+    if (idx !== -1) {
+      chosen_idxs.add(idx)
+      return true
+    } else {
+      return false
+    }
+  })
+}
