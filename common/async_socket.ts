@@ -190,6 +190,7 @@ export class AsyncSocketContext<
       ResponseCallbackT<EventName, ListenEvents>
     ]
   ): void {
+    console.log(`calling ${event_name} with`, ...args.slice(0, -1))
     const callback = args.at(-1) as ResponseCallbackT<EventName, ListenEvents>
     const call_args = args.slice(0, -1) as ReqParams<EventName, EmitEvents>
 

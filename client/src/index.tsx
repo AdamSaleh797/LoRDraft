@@ -25,6 +25,9 @@ function Main() {
     null
   )
   const socket_ref = React.useRef(createLoRSocket())
+  const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
+
+  setDraftStateRef.current = setDraftState
 
   const socket = socket_ref.current
 
@@ -37,7 +40,8 @@ function Main() {
         callback(status)
         return
       }
-      setDraftState(draft_state_info)
+
+      setDraftStateRef.current(draft_state_info)
       callback(status)
     })
   }

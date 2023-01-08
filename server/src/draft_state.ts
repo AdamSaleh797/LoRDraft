@@ -658,7 +658,6 @@ function randomNonChampCards(
 }
 
 export function enterDraft(session_info: SessionInfo): Status {
-  console.log('entering draft')
   if (inDraft(session_info)) {
     return makeErrStatus(
       StatusCode.ALREADY_IN_DRAFT_SESSION,

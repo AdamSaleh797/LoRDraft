@@ -273,7 +273,6 @@ export function narrowType<T extends Record<any, false>, U extends Static<T>>(
   obj: U
 ): Static<T> | null {
   const res: Static<T> = {}
-  console.log(Object.keys(type.fields))
 
   for (const [key, runtype] of Object.entries<Runtype>(type.fields)) {
     const val = obj[key]
