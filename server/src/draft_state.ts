@@ -383,13 +383,19 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      const pending_cards = draft_info.pending_cards
+      const pending_cards: (Card | null)[] = draft_info.pending_cards.slice()
       const chosen_cards = cards.map((card) => {
-        return (
-          pending_cards.find(
-            (pending_card) => pending_card.cardCode === card.cardCode
-          ) ?? null
+        const idx = pending_cards.findIndex(
+          (pending_card) =>
+            pending_card !== null && pending_card.cardCode === card.cardCode
         )
+        if (idx !== -1) {
+          const chosen_card = pending_cards[idx]
+          pending_cards[idx] = null
+          return chosen_card
+        } else {
+          return null
+        }
       })
 
       if (!allNonNull(chosen_cards)) {
