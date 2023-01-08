@@ -173,8 +173,29 @@ export function randChoice<T>(arr: readonly T[]): T {
  *
  * @return A list of the randomly sampled elements of `arr`.
  */
-export function randSample<T>(arr: readonly T[], samples: number): T[] {
-  return randSampleNumbers(arr.length, samples).map((idx) => arr[idx])
+export function randSample<T>(arr: readonly T[], samples: number): T[] | null {
+  return randSampleNumbers(arr.length, samples)?.map((idx) => arr[idx]) ?? null
+}
+
+/**
+ * Returns a random sample of numbers in the range [0, size) with `samples`
+ * elements removed.
+ * @param size The size of the range of numbers to sample from.
+ * @param samples The count of numbers to remove from the full range [0, size)
+ * @returns The sampled list.
+ */
+function randSampleNumbersNegated(size: number, samples: number): number[] {
+  const sample_idx = new Set(Array.from({ length: size }, (_1, i) => i))
+
+  for (let i = 0; i < samples; i++) {
+    let rand_idx
+    do {
+      rand_idx = Math.floor(Math.random() * size)
+    } while (!sample_idx.has(rand_idx))
+    sample_idx.delete(rand_idx)
+  }
+
+  return Array.from(sample_idx.values())
 }
 
 /**
@@ -183,9 +204,15 @@ export function randSample<T>(arr: readonly T[], samples: number): T[] {
  * @param samples The number of samples to take. This cannot exceed `size`.
  * @returns A list of numbers sampled randomly from [0, size) with no repeats.
  */
-export function randSampleNumbers(size: number, samples: number): number[] {
+export function randSampleNumbers(
+  size: number,
+  samples: number
+): number[] | null {
   if (samples > size) {
-    return []
+    return null
+  }
+  if (samples > size / 2) {
+    return randSampleNumbersNegated(size, size - samples)
   }
 
   const sample_idx = new Array<number>(samples).fill(-1)
@@ -202,6 +229,40 @@ export function randSampleNumbers(size: number, samples: number): number[] {
 }
 
 /**
+ * @param size The number of numbers to choose from.
+ * @param samples The number of samples to take. This cannot exceed `size`.
+ * @returns A list of numbers sampled randomly from [0, size) with no repeats if
+ *   possible, otherwise with minimal skew in the distribution of chosen values.
+ */
+export function randSampleNumbersAvoidingRepeats(
+  size: number,
+  samples: number
+): number[] {
+  if (samples === 0) {
+    return []
+  }
+
+  const n_repeats = Math.floor(samples / size)
+  samples = samples % size
+
+  const broadcast: number[] = Array.from({ length: size }, (_1, i) =>
+    Array(n_repeats).fill(i)
+  ).flat(1)
+
+  const sample_idx = new Array<number>(samples).fill(-1)
+
+  sample_idx.forEach((_1, idx, self) => {
+    let rand_idx
+    do {
+      rand_idx = Math.floor(Math.random() * size)
+    } while (self.includes(rand_idx))
+    self[idx] = rand_idx
+  })
+
+  return broadcast.concat(sample_idx)
+}
+
+/**
  * Narrows an object to include only fields of the type `type`, discarding the other fields.
  * @param type
  * @param obj
@@ -212,7 +273,6 @@ export function narrowType<T extends Record<any, false>, U extends Static<T>>(
   obj: U
 ): Static<T> | null {
   const res: Static<T> = {}
-  console.log(Object.keys(type.fields))
 
   for (const [key, runtype] of Object.entries<Runtype>(type.fields)) {
     const val = obj[key]

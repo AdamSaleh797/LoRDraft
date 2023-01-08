@@ -3,7 +3,7 @@ import { Card } from 'card'
 import { draftStateCardLimits, DraftStateInfo, POOL_SIZE } from 'draft'
 import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { getStorageAuthInfo } from './auth_session'
-import { isOk, Status } from 'lor_util'
+import { isOk, Status, StatusCode } from 'lor_util'
 import { CardComponent } from './CardComponent'
 
 export interface PoolComponentProps {
@@ -24,11 +24,15 @@ export function PoolComponent(props: PoolComponentProps) {
   const cards: (Card | null)[] =
     props.draftState?.pending_cards ?? new Array(POOL_SIZE).fill(null)
 
+  const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
+    () => undefined
+  )
   const setPendingCardsRef = React.useRef<typeof props.setPendingCards>(
     () => undefined
   )
   const setMinMaxRef = React.useRef<typeof setMinMax>(() => undefined)
 
+  refreshDraftRef.current = props.refreshDraft
   setMinMaxRef.current = setMinMax
   setPendingCardsRef.current = props.setPendingCards
 
@@ -50,7 +54,16 @@ export function PoolComponent(props: PoolComponentProps) {
     if (auth_info !== null) {
       props.socket.call('join_draft', auth_info, (status) => {
         if (!isOk(status)) {
-          return status
+          if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
+            refreshDraftRef.current(auth_info, (status) => {
+              if (!isOk(status)) {
+                console.log(status)
+                return
+              }
+            })
+          } else {
+            console.log(status)
+          }
         }
         getInitialPool(auth_info)
       })
@@ -104,13 +117,12 @@ export function PoolComponent(props: PoolComponentProps) {
 
   function socketPoolCall(auth_info: SessionCred) {
     props.socket.call('next_pool', auth_info, (status, cards, draft_state) => {
-      if (draft_state !== null) {
-        setMinMaxRef.current(draftStateCardLimits(draft_state) ?? [0, 0])
-      }
-      if (!isOk(status) || cards === null) {
+      if (!isOk(status) || cards === null || draft_state === null) {
         console.log(status)
         return
       }
+
+      setMinMaxRef.current(draftStateCardLimits(draft_state) ?? [0, 0])
       setPendingCardsRef.current(cards)
     })
   }

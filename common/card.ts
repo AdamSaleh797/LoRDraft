@@ -58,14 +58,13 @@ export const MainRegionT = Union(
 const g_origins = {
   Evelynn: (card: Card): boolean => {
     return (
-      (card.description.includes('husk') && card.rarity !== 'Champion') ||
+      (card.description.includes('husk') && !isChampion(card)) ||
       card.cardCode === '06RU025'
     )
   },
   Bard: (card: Card): boolean => {
     return (
-      (card.description.includes('link=card.chime') &&
-        card.rarity !== 'Champion') ||
+      (card.description.includes('link=card.chime') && !isChampion(card)) ||
       card.cardCode === '06RU001'
     )
   },
@@ -73,13 +72,13 @@ const g_origins = {
     return (
       ((card.description.includes('attackskill') ||
         card.description.includes('playskill')) &&
-        card.rarity !== 'Champion') ||
+        !isChampion(card)) ||
       card.cardCode === '06RU002'
     )
   },
   Jax: (card: Card): boolean => {
     return (
-      (card.subtypes.includes('weaponmaster') && card.rarity !== 'Champion') ||
+      (card.subtypes.includes('weaponmaster') && !isChampion(card)) ||
       card.cardCode === '06RU008'
     )
   },
@@ -88,19 +87,19 @@ const g_origins = {
   },
   Kayn: (card: Card): boolean => {
     return (
-      (card.subtypes.includes('cultist') && card.rarity !== 'Champion') ||
+      (card.subtypes.includes('cultist') && !isChampion(card)) ||
       card.cardCode === '06RU005'
     )
   },
   Aatrox: (card: Card): boolean => {
     return (
-      (card.subtypes.includes('darkin') && card.rarity !== 'Champion') ||
+      (card.subtypes.includes('darkin') && !isChampion(card)) ||
       card.cardCode === '06RU026'
     )
   },
   Varus: (card: Card): boolean => {
     return (
-      (card.subtypes.includes('cultist') && card.rarity !== 'Champion') ||
+      (card.subtypes.includes('cultist') && !isChampion(card)) ||
       card.cardCode === '06RU009'
     )
   },
@@ -230,4 +229,8 @@ export interface Card {
   subtypes: string[]
   keywords: string[]
   type: string
+}
+
+export function isChampion(card: Card): boolean {
+  return card.rarity === 'Champion'
 }

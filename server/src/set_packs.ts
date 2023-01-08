@@ -2,6 +2,7 @@ import {
   allRegions,
   Card,
   CardT,
+  isChampion,
   isOrigin,
   isRuneterran,
   Region,
@@ -183,7 +184,7 @@ export function regionSets(
       cards.forEach((card) => {
         allRegions().forEach((region) => {
           if (regionContains(region, card)) {
-            if (card.rarity === 'Champion') {
+            if (isChampion(card)) {
               // prettier-ignore
               (region_sets[region].champs as Card[]).push(card)
             } else {
