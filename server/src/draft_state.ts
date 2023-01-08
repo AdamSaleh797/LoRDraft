@@ -1,5 +1,5 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import { Card, CardT, isOrigin, regionContains } from 'card'
+import { Card, CardT, isChampion, isOrigin, regionContains } from 'card'
 import {
   addCardToDeck,
   canAddToDeck,
@@ -25,12 +25,20 @@ import {
   Status,
   StatusCode,
   intersectListsPred,
+  randSample,
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
 import { LoRDraftSocket } from 'socket-msgs'
 import { StateMachine } from 'state_machine'
 import { Array } from 'runtypes'
+
+const GUARANTEED_CHAMP_COUNT = 2
+const RESTRICTED_POOL_DRAFT_STATES = [
+  DraftState.CHAMP_ROUND_1,
+  DraftState.CHAMP_ROUND_2,
+  DraftState.CHAMP_ROUND_3,
+]
 
 const MAX_CARD_REPICK_ITERATIONS = 100
 
@@ -52,36 +60,64 @@ function choose_champ_cards(
   callback: (status: Status, champ_cards: Card[] | null) => void,
   allow_same_region = true
 ) {
-  randomChampCards(
+  const rollbackDraftStateAndReturn = (status: Status) => {
+    const undo_status = draft_state_info.draft_state.undo_transition_any(
+      draft_state_info.draft_state.state(),
+      prev_state
+    )
+
+    let err_statuses = [status as ErrStatusT]
+    if (!isOk(undo_status)) {
+      err_statuses = [withSubStatuses(undo_status, err_statuses)]
+    }
+
+    callback(
+      makeErrStatus(
+        StatusCode.RETRIEVE_CARD_ERROR,
+        'Failed to retrieve cards',
+        err_statuses
+      ),
+      null
+    )
+  }
+
+  const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
+    draft_state_info.draft_state.state()
+  )
+    ? GUARANTEED_CHAMP_COUNT
+    : 0
+
+  console.log(
+    prev_state,
+    draft_state_info.draft_state.state(),
+    num_guaranteed_champs
+  )
+  randomChampCardsFromDeck(
     draft_state_info.deck,
-    POOL_SIZE,
-    allow_same_region,
-    (status, cards) => {
-      if (!isOk(status) || cards === null) {
-        const undo_status = draft_state_info.draft_state.undo_transition_any(
-          draft_state_info.draft_state.state(),
-          prev_state
-        )
-
-        let err_statuses = [status as ErrStatusT]
-        if (!isOk(undo_status)) {
-          err_statuses = [withSubStatuses(undo_status, err_statuses)]
-        }
-
-        callback(
-          makeErrStatus(
-            StatusCode.RETRIEVE_CARD_ERROR,
-            'Failed to retrieve cards',
-            err_statuses
-          ),
-          null
-        )
+    num_guaranteed_champs,
+    (status, guaranteed_cards) => {
+      if (!isOk(status) || guaranteed_cards === null) {
+        rollbackDraftStateAndReturn(status)
         return
       }
 
-      draft_state_info.pending_cards = cards
+      randomChampCards(
+        draft_state_info.deck,
+        POOL_SIZE - num_guaranteed_champs,
+        allow_same_region,
+        guaranteed_cards,
+        (status, cards) => {
+          if (!isOk(status) || cards === null) {
+            rollbackDraftStateAndReturn(status)
+            return
+          }
 
-      callback(OkStatus, cards)
+          cards.push(...guaranteed_cards)
+          draft_state_info.pending_cards = cards
+
+          callback(OkStatus, cards)
+        }
+      )
     }
   )
 }
@@ -312,7 +348,12 @@ export function initDraftState(socket: LoRDraftSocket) {
             resolve(status, null, null)
             return
           }
-
+          console.log(
+            cur_state,
+            draft_info.draft_state.state(),
+            next_draft_state,
+            cards.map((card) => card.name)
+          )
           resolve(status, cards, next_draft_state)
         }
       )
@@ -433,6 +474,7 @@ function randomChampCards(
   deck: DraftDeck,
   num_champs: number,
   allow_same_region: boolean,
+  restriction_pool: Card[],
   callback: (status: Status, cards: Card[] | null) => void
 ): void {
   regionSets((status, region_sets) => {
@@ -442,18 +484,38 @@ function randomChampCards(
     }
 
     const region_pool = deck.regions
-    const [region_count, cumulative_totals] = region_pool.reduce<
+    const [total_champ_count, cumulative_totals] = region_pool.reduce<
       [number, number[]]
     >(
-      ([region_count, cumulative_totals], region) => {
+      ([total_champ_count, cumulative_totals], region) => {
         const num_champs = region_sets[region].champs.length
         return [
-          region_count + num_champs,
-          cumulative_totals.concat([region_count]),
+          total_champ_count + num_champs,
+          cumulative_totals.concat([total_champ_count]),
         ]
       },
       [0, []]
     )
+    if (total_champ_count - restriction_pool.length < num_champs) {
+      const num_necessary_duplicates =
+        num_champs + restriction_pool.length - total_champ_count
+      const narrowed_restriction_pool = randSample(
+        restriction_pool,
+        num_necessary_duplicates
+      )
+      if (narrowed_restriction_pool === null) {
+        callback(
+          makeErrStatus(
+            StatusCode.INTERNAL_SERVER_ERROR,
+            `unable to choose ${num_necessary_duplicates} cards from a pool of ${restriction_pool.length} cards`
+          ),
+          null
+        )
+        return
+      }
+
+      restriction_pool = narrowed_restriction_pool
+    }
 
     // List of pairs of [region_idx, set_idx], where region_idx is the index of
     // the region of the champ card chosen, and set_idx is the index of the
@@ -461,12 +523,22 @@ function randomChampCards(
     let region_and_set_indexes: [number, number][]
     let champs: Card[]
     do {
-      region_and_set_indexes = randSampleNumbers(region_count, num_champs).map(
-        (index) => {
+      const sample =
+        (randSampleNumbers(total_champ_count, num_champs)?.map((index) => {
           const region_idx = binarySearch(cumulative_totals, index)
           return [region_idx, index - cumulative_totals[region_idx]]
-        }
-      )
+        }) as [number, number][]) ?? null
+      if (sample === null) {
+        callback(
+          makeErrStatus(
+            StatusCode.INTERNAL_SERVER_ERROR,
+            `unable to choose ${num_champs} cards from a pool of ${total_champ_count} numbers`
+          ),
+          null
+        )
+        return
+      }
+      region_and_set_indexes = sample
       champs = region_and_set_indexes.map(([region_idx, idx]) => {
         return region_sets[region_pool[region_idx]].champs[idx]
       })
@@ -483,12 +555,37 @@ function randomChampCards(
       // but the champions individually are each compatible. This will be
       // checked for when validating 'add_cards' calls.
       champs.some((champ) => {
-        return !canAddToDeck(deck, champ)
+        return !canAddToDeck(deck, champ) || restriction_pool.includes(champ)
       })
     )
 
     callback(OkStatus, champs)
   })
+}
+
+function randomChampCardsFromDeck(
+  deck: DraftDeck,
+  num_champs: number,
+  callback: (status: Status, cards: Card[] | null) => void
+): void {
+  const champs = deck.cardCounts.filter((cardCount) =>
+    isChampion(cardCount.card)
+  )
+
+  const chosenChamps =
+    randSample(champs, num_champs)?.map((cardCount) => cardCount.card) ?? null
+  if (chosenChamps === null) {
+    callback(
+      makeErrStatus(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'you aint got no champs to get'
+      ),
+      null
+    )
+    return
+  }
+
+  callback(OkStatus, chosenChamps)
 }
 
 function randomNonChampCards(

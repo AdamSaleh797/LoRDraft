@@ -173,8 +173,8 @@ export function randChoice<T>(arr: readonly T[]): T {
  *
  * @return A list of the randomly sampled elements of `arr`.
  */
-export function randSample<T>(arr: readonly T[], samples: number): T[] {
-  return randSampleNumbers(arr.length, samples).map((idx) => arr[idx])
+export function randSample<T>(arr: readonly T[], samples: number): T[] | null {
+  return randSampleNumbers(arr.length, samples)?.map((idx) => arr[idx]) ?? null
 }
 
 /**
@@ -183,9 +183,12 @@ export function randSample<T>(arr: readonly T[], samples: number): T[] {
  * @param samples The number of samples to take. This cannot exceed `size`.
  * @returns A list of numbers sampled randomly from [0, size) with no repeats.
  */
-export function randSampleNumbers(size: number, samples: number): number[] {
+export function randSampleNumbers(
+  size: number,
+  samples: number
+): number[] | null {
   if (samples > size) {
-    return []
+    return null
   }
 
   const sample_idx = new Array<number>(samples).fill(-1)

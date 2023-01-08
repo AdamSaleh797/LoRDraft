@@ -51,14 +51,15 @@ export class StateMachine<
       )
     }
 
+    this.state_ = to
+    if (this.state_update_fn_ !== undefined) {
+      this.state_update_fn_(to)
+    }
+
     const state_def = this.state_machine_def_[from]
     const transition_fn = state_def[to] as UpdateFnT
     ;(transition_fn as AnyFn)(...args)
 
-    if (this.state_update_fn_ !== undefined) {
-      this.state_update_fn_(to)
-    }
-    this.state_ = to
     return OkStatus
   }
 
