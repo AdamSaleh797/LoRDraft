@@ -48,7 +48,7 @@ const ryzeOrigin = [
   '01IO029', '01IO054', '02IO009', '05IO006', '06IO036'
 ]
 
-export type MainRegion = typeof g_main_regions[number]
+export type MainRegion = (typeof g_main_regions)[number]
 const main_region_literals = g_main_regions.map((region) => Literal(region))
 export const MainRegionT = Union(
   main_region_literals[0],
