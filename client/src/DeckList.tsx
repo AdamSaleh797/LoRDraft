@@ -13,7 +13,7 @@ export function DeckList(props: DeckListComponentProps) {
     props.draftState !== null &&
     cardCounts.reduce((count, cardCount) => {
       return count + cardCount.count
-    }, 0) === 40
+    }, 0) >= 40
   ) {
     deckCode = generateDeckCode(props.draftState.deck)
   } else {
