@@ -1,7 +1,10 @@
 #!/bin/sh
+script_dir="$(dirname "$(realpath "$0")")"
 
-/usr/bin/npm install
+set -e
 
-/usr/bin/npm run build 
+cd $script_dir && /usr/bin/npm install
 
-/usr/bin/npm run start 
+cd $script_dir && /usr/bin/npm run build
+
+cd $script_dir && /usr/bin/npm run start-prod
