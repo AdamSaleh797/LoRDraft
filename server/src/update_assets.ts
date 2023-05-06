@@ -82,7 +82,21 @@ export function updateAssets(
 function updateAssetsSequential(
   callback: (status: Status) => void = () => undefined
 ) {
-  bundles.forEach((bundle) => {
+  const download_next_bundle = (
+    bundles_iterator: Iterator<{
+      setName: string
+      url: string
+      configPath: string
+    }>
+  ) => {
+    const bundle_result = bundles_iterator.next()
+    if (bundle_result.done === true) {
+      callback(OkStatus)
+      return
+    }
+
+    const bundle = bundle_result.value
+
     console.log(`downloading pack ${bundle.setName}`)
     downloadZipAsset(bundle.url, bundle.setName, (status) => {
       if (!isOk(status)) {
@@ -104,12 +118,14 @@ function updateAssetsSequential(
           removeBundle(bundle.setName, (status) => {
             if (!isOk(status)) {
               callback(status)
-              return
+            } else {
+              download_next_bundle(bundles_iterator)
             }
           })
         }
       )
     })
-  })
-  callback(OkStatus)
+  }
+
+  download_next_bundle(bundles.values())
 }
