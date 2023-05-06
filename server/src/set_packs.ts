@@ -37,6 +37,7 @@ const g_set_packs = [
   'set5-en_us.json',
   'set6-en_us.json',
   'set6cde-en_us.json',
+  'set7-en_us.json',
 ]
 
 let g_region_sets: RegionSetMap | undefined

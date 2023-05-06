@@ -5,24 +5,28 @@ import path from 'path'
 import minimist from 'minimist'
 
 import { InitSocket } from './socket_init'
+import { updateAssets } from './update_assets'
+import { isOk } from 'lor_util'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
 const args = minimist(process.argv.slice(2), {
   default: {
     port: 2000,
+    download: false,
   },
 })
 
-/*
-updateAssets((status) => {
-  if (!isOk(status)) {
-    console.log(status)
-    return
-  }
-  console.log('done downloading!')
-})
-*/
+if (args.download as boolean) {
+  console.log('downloading assets.')
+  updateAssets((status) => {
+    if (!isOk(status)) {
+      console.log(status)
+      return
+    }
+    console.log('done downloading!')
+  })
+}
 
 /*
 const sets = [

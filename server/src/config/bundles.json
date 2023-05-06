@@ -38,5 +38,10 @@
     "setName": "set6cde",
     "url": "https://dd.b.pvp.net/latest/set6cde-lite-en_us.zip",
     "configPath": "en_us/data/set6cde-en_us.json"
+  },
+  {
+    "setName": "set7",
+    "url": "https://dd.b.pvp.net/latest/set7-lite-en_us.zip",
+    "configPath": "en_us/data/set7-en_us.json"
   }
 ]
