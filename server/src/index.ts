@@ -2,12 +2,17 @@ import fs from 'fs'
 import http from 'http'
 import mime from 'mime'
 import path from 'path'
+import minimist from 'minimist'
 
 import { InitSocket } from './socket_init'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 
-const port = 2000
+const args = minimist(process.argv.slice(2), {
+  default: {
+    port: 2000,
+  },
+})
 
 /*
 updateAssets((status) => {
@@ -91,7 +96,7 @@ const app = http.createServer(function (req, resp) {
 
 InitSocket(app)
 
-app.listen(port)
+app.listen(args.port)
 
 {
   let addr = app.address()
