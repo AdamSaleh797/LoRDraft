@@ -14,12 +14,13 @@ const args = minimist(process.argv.slice(2), {
   default: {
     port: 2000,
     download: false,
+    sequential: true,
   },
 })
 
 if (args.download as boolean) {
   console.log('downloading assets.')
-  updateAssets((status) => {
+  updateAssets(args.sequential as boolean, (status) => {
     if (!isOk(status)) {
       console.log(status)
       return
