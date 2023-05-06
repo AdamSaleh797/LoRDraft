@@ -53,7 +53,7 @@ const MAX_CARD_REPICK_ITERATIONS = 100
 const RANDOM_SELECTION_1_CARD_CUTOFF = 20
 const RANDOM_SELECTION_2_CARD_CUTOFF = 37
 //FIXME: REVERT THIS BACK TO 43
-const RANDOM_SELECTION_3_CARD_CUTOFF = 40
+const RANDOM_SELECTION_3_CARD_CUTOFF = 46
 
 export interface ServerDraftStateInfo extends DraftStateInfo {
   draft_state: StateMachine<typeof draft_states_def, DraftState>
