@@ -56,7 +56,7 @@ function Main() {
   return (
     <div>
       <div>
-        <SessionComponent socket={socket} />
+        <SessionComponent socket={socket} refreshDraft={refreshDraft} />
       </div>
       <div>
         <PoolComponent

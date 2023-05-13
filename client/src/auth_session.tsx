@@ -8,7 +8,7 @@ import {
   SessionCred,
   SessionCredT,
 } from 'socket-msgs'
-import { isOk, StatusCode } from 'lor_util'
+import { isOk, Status, StatusCode } from 'lor_util'
 import { StateMachine } from 'state_machine'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
@@ -177,6 +177,10 @@ export function UserComponent(props: UserComponentProps) {
 
 interface SessionComponentProps {
   socket: LoRDraftClientSocket
+  refreshDraft: (
+    session_cred: SessionCred,
+    callback: (status: Status) => void
+  ) => void
 }
 
 const enum SessionState {
@@ -190,6 +194,10 @@ export function SessionComponent(props: SessionComponentProps) {
   const [sessionState, setSessionState] = React.useState<SessionState>(
     SessionState.LOGIN
   )
+  const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
+    props.refreshDraft
+  )
+  refreshDraftRef.current = props.refreshDraft
 
   const machine_def = {
     [SessionState.LOGIN]: {
@@ -201,6 +209,10 @@ export function SessionComponent(props: SessionComponentProps) {
         console.log('saving token to session storage')
         setStorageAuthInfo(session_cred)
         setUsername(session_cred.username)
+
+        // Attempt to load the current draft. Ignore failures, since this is
+        // likely due to a current draft not existing.
+        refreshDraftRef.current(session_cred, () => undefined)
       },
     },
     [SessionState.REGISTER]: {
