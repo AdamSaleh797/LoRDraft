@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
-import { Card } from 'card'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
@@ -14,7 +13,7 @@ import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
-import { addCardToDeck, DraftStateInfo, makeDraftDeck } from 'draft'
+import { DraftStateInfo } from 'draft'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -25,8 +24,10 @@ function Main() {
     null
   )
   const socket_ref = React.useRef(createLoRSocket())
+  const draftStateRef = React.useRef<DraftStateInfo | null>(draftState)
   const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
 
+  draftStateRef.current = draftState
   setDraftStateRef.current = setDraftState
 
   const socket = socket_ref.current
@@ -46,39 +47,10 @@ function Main() {
     })
   }
 
-  const addToDeck = (cards: Card[]): boolean => {
-    if (draftState !== null) {
-      const newDraftState = { ...draftState }
-
-      // Fail if any of the cards can't be added to the deck.
-      if (
-        cards.some((card) => {
-          return !addCardToDeck(newDraftState.deck, card)
-        })
-      ) {
-        return false
-      }
-
-      setDraftState(newDraftState)
-      return true
-    } else {
-      return false
-    }
-  }
-
-  const setPendingCards = (cards: Card[]) => {
-    if (draftState !== null) {
-      const newDraftState = { ...draftState }
-      newDraftState.pending_cards = cards
-      setDraftState(newDraftState)
-      console.log('test y')
-    } else {
-      const newDraftState: DraftStateInfo = {
-        deck: makeDraftDeck(),
-        pending_cards: cards,
-      }
-      setDraftState(newDraftState)
-    }
+  const updateDraftState = (
+    mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
+  ) => {
+    setDraftStateRef.current(mutator(draftStateRef.current))
   }
 
   return (
@@ -91,8 +63,7 @@ function Main() {
           socket={socket}
           refreshDraft={refreshDraft}
           draftState={draftState}
-          addToDeck={addToDeck}
-          setPendingCards={setPendingCards}
+          updateDraftState={updateDraftState}
         />
       </div>
       <div>
