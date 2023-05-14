@@ -8,12 +8,12 @@ import {
   POOL_SIZE,
 } from 'draft'
 import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
-import { getStorageAuthInfo } from './auth_session'
 import { isOk, Status, StatusCode } from 'lor_util'
 import { CardComponent } from './CardComponent'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
+  authInfo: SessionCred
   refreshDraft: (
     session_cred: SessionCred,
     callback: (status: Status) => void
@@ -27,6 +27,7 @@ export interface PoolComponentProps {
 export function PoolComponent(props: PoolComponentProps) {
   const [selected, setSelected] = React.useState<string[]>([])
   const setSelectedRef = React.useRef<typeof setSelected>(setSelected)
+  const authInfoRef = React.useRef<SessionCred>(props.authInfo)
 
   const cards: (Card | null)[] =
     props.draftState?.pending_cards ?? new Array(POOL_SIZE).fill(null)
@@ -41,11 +42,12 @@ export function PoolComponent(props: PoolComponentProps) {
   refreshDraftRef.current = props.refreshDraft
   updateDraftStateRef.current = props.updateDraftState
   setSelectedRef.current = setSelected
+  authInfoRef.current = props.authInfo
 
-  function nextPool(auth_info: SessionCred) {
+  function nextPool() {
     props.socket.call(
       'next_pool',
-      auth_info,
+      authInfoRef.current,
       (status, pending_cards, draft_state) => {
         if (!isOk(status) || pending_cards === null || draft_state === null) {
           console.log(status)
@@ -70,24 +72,21 @@ export function PoolComponent(props: PoolComponentProps) {
   }
 
   function joinDraft() {
-    const auth_info = getStorageAuthInfo()
-    if (auth_info !== null) {
-      props.socket.call('join_draft', auth_info, (status) => {
-        if (!isOk(status)) {
-          if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
-            refreshDraftRef.current(auth_info, (status) => {
-              if (!isOk(status)) {
-                console.log(status)
-                return
-              }
-            })
-          } else {
-            console.log(status)
-          }
+    props.socket.call('join_draft', authInfoRef.current, (status) => {
+      if (!isOk(status)) {
+        if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
+          refreshDraftRef.current(authInfoRef.current, (status) => {
+            if (!isOk(status)) {
+              console.log(status)
+              return
+            }
+          })
+        } else {
+          console.log(status)
         }
-        nextPool(auth_info)
-      })
-    }
+      }
+      nextPool()
+    })
   }
 
   function confirm() {
@@ -97,12 +96,11 @@ export function PoolComponent(props: PoolComponentProps) {
           (card) => card !== null && card.cardCode === cardCode
         ) as Card
     )
-    transitionSocketCalls(revertedCards)
+    chooseCards(revertedCards)
   }
 
-  function transitionSocketCalls(revertedCards: Card[]) {
-    const auth_info = getStorageAuthInfo()
-    if (auth_info === null || props.draftState === null) {
+  function chooseCards(revertedCards: Card[]) {
+    if (props.draftState === null) {
       return
     }
 
@@ -120,7 +118,7 @@ export function PoolComponent(props: PoolComponentProps) {
 
     props.socket.call(
       'choose_cards',
-      auth_info,
+      authInfoRef.current,
       revertedCards,
       (status: Status) => {
         if (!isOk(status)) {
@@ -136,7 +134,7 @@ export function PoolComponent(props: PoolComponentProps) {
           addCardsToDeck(draft_state_info.deck, revertedCards)
           return draft_state_info
         })
-        nextPool(auth_info)
+        nextPool()
       }
     )
   }
