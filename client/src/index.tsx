@@ -15,6 +15,7 @@ import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
 import { addCardToDeck, DraftStateInfo, makeDraftDeck } from 'draft'
+import { TypeCounts } from './TypeCounts'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -81,6 +82,13 @@ function Main() {
     }
   }
 
+  const deckInfoDisplay = {
+    width: 'calc(50% - 10px)',
+    display: 'inline-block',
+    marginLeft: '5px',
+    marginRight: '5px',
+  }
+
   return (
     <div>
       <div>
@@ -95,8 +103,11 @@ function Main() {
           setPendingCards={setPendingCards}
         />
       </div>
-      <div>
+      <div style={deckInfoDisplay}>
         <ManaCurve draftState={draftState} />
+      </div>
+      <div style={deckInfoDisplay}>
+        <TypeCounts draftState={draftState} />
       </div>
       <div>
         <DeckList draftState={draftState} />
