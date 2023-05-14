@@ -55,8 +55,10 @@ const RANDOM_SELECTION_2_CARD_CUTOFF = 37
 //FIXME: REVERT THIS BACK TO 43
 const RANDOM_SELECTION_3_CARD_CUTOFF = 46
 
-export interface ServerDraftStateInfo extends DraftStateInfo {
+export interface ServerDraftStateInfo {
   draft_state: StateMachine<typeof draft_states_def, DraftState>
+  deck: DraftDeck
+  pending_cards: Card[]
 }
 
 interface InDraftSessionInfo extends SessionInfo {

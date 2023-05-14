@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
-import { Card } from 'card'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
@@ -14,7 +13,8 @@ import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
-import { addCardToDeck, DraftStateInfo, makeDraftDeck } from 'draft'
+import { DraftStateInfo } from 'draft'
+import { CachedAuthInfo } from './cached_auth_info'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -24,10 +24,19 @@ function Main() {
   const [draftState, setDraftState] = React.useState<DraftStateInfo | null>(
     null
   )
-  const socket_ref = React.useRef(createLoRSocket())
-  const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
+  const [cachedAuthInfo, setCachedAuthInfo] = React.useState<CachedAuthInfo>(
+    CachedAuthInfo.initialStorageAuthInfo()
+  )
 
+  const socket_ref = React.useRef(createLoRSocket())
+  const draftStateRef = React.useRef<DraftStateInfo | null>(draftState)
+  const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
+  const setCachedAuthInfoRef =
+    React.useRef<typeof setCachedAuthInfo>(setCachedAuthInfo)
+
+  draftStateRef.current = draftState
   setDraftStateRef.current = setDraftState
+  setCachedAuthInfoRef.current = setCachedAuthInfo
 
   const socket = socket_ref.current
 
@@ -46,54 +55,43 @@ function Main() {
     })
   }
 
-  const addToDeck = (cards: Card[]): boolean => {
-    if (draftState !== null) {
-      const newDraftState = { ...draftState }
-
-      // Fail if any of the cards can't be added to the deck.
-      if (
-        cards.some((card) => {
-          return !addCardToDeck(newDraftState.deck, card)
-        })
-      ) {
-        return false
-      }
-
-      setDraftState(newDraftState)
-      return true
-    } else {
-      return false
-    }
+  const updateDraftState = (
+    mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
+  ) => {
+    setDraftStateRef.current(mutator(draftStateRef.current))
   }
 
-  const setPendingCards = (cards: Card[]) => {
-    if (draftState !== null) {
-      const newDraftState = { ...draftState }
-      newDraftState.pending_cards = cards
-      setDraftState(newDraftState)
-      console.log('test y')
-    } else {
-      const newDraftState: DraftStateInfo = {
-        deck: makeDraftDeck(),
-        pending_cards: cards,
-      }
-      setDraftState(newDraftState)
-    }
+  const authInfo = cachedAuthInfo.getStorageAuthInfo()
+  const setAuthInfo = (authInfo: SessionCred) => {
+    setCachedAuthInfoRef.current(CachedAuthInfo.setStorageAuthInfo(authInfo))
+  }
+  const clearAuthInfo = () => {
+    setCachedAuthInfoRef.current(CachedAuthInfo.clearStorageAuthInfo())
   }
 
   return (
     <div>
       <div>
-        <SessionComponent socket={socket} />
+        <SessionComponent
+          socket={socket}
+          authInfo={authInfo}
+          setAuthInfo={setAuthInfo}
+          clearAuthInfo={clearAuthInfo}
+          refreshDraft={refreshDraft}
+        />
       </div>
       <div>
-        <PoolComponent
-          socket={socket}
-          refreshDraft={refreshDraft}
-          draftState={draftState}
-          addToDeck={addToDeck}
-          setPendingCards={setPendingCards}
-        />
+        {authInfo === null ? (
+          []
+        ) : (
+          <PoolComponent
+            socket={socket}
+            authInfo={authInfo}
+            refreshDraft={refreshDraft}
+            draftState={draftState}
+            updateDraftState={updateDraftState}
+          />
+        )}
       </div>
       <div>
         <ManaCurve draftState={draftState} />

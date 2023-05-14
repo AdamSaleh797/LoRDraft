@@ -211,12 +211,31 @@ export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   return true
 }
 
+/**
+ * Adds a list of cards to the deck.
+ * @param deck The deck to add `card` to.
+ * @param card The card to be added.
+ * @returns True if the card was successfully added, or false if the card
+ * could not be added because adding it would violate a rule of deck building.
+ */
+export function addCardsToDeck(deck: DraftDeck, cards: Card[]): boolean {
+  const old_deck = { ...deck }
+  if (cards.some((card) => !addCardToDeck(deck, card))) {
+    // Restore the initial state of deck.
+    Object.assign(deck, old_deck.cardCounts)
+    return false
+  } else {
+    return true
+  }
+}
+
 export const DraftStateInfoT = RecordT({
   deck: DraftDeckT,
   pending_cards: ArrayT(CardT),
 })
 
 export interface DraftStateInfo {
+  state: DraftState
   deck: DraftDeck
   pending_cards: Card[]
 }
