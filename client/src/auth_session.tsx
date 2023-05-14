@@ -6,77 +6,9 @@ import {
   LoRDraftClientSocket,
   RegisterInfo,
   SessionCred,
-  SessionCredT,
 } from 'socket-msgs'
-import { isOk, StatusCode } from 'lor_util'
+import { isOk, Status, StatusCode } from 'lor_util'
 import { StateMachine } from 'state_machine'
-
-const STORAGE_AUTH_INFO_KEY = 'auth_info'
-let g_auth_info: SessionCred | null = null
-
-export function getStorageAuthInfo(): SessionCred | null {
-  if (g_auth_info !== null) {
-    return g_auth_info
-  }
-
-  const auth_info_str = window.sessionStorage.getItem(STORAGE_AUTH_INFO_KEY)
-  if (auth_info_str === null) {
-    return null
-  }
-
-  const auth_info_prim: unknown = JSON.parse(
-    auth_info_str,
-    (_1, val: unknown) => {
-      // Transform the serialized Buffers back into the correct Buffer view.
-      if (
-        val !== null &&
-        typeof val === 'object' &&
-        'type' in val &&
-        val.type === 'Buffer' &&
-        'data' in val &&
-        Array.isArray(val.data)
-      ) {
-        return Buffer.from(val.data)
-      } else {
-        return val
-      }
-    }
-  )
-
-  if (!SessionCredT.guard(auth_info_prim)) {
-    console.log("session cred doesn't match expected format:")
-    console.log(auth_info_prim)
-    window.sessionStorage.removeItem(STORAGE_AUTH_INFO_KEY)
-    return null
-  }
-
-  const { token, ...auth_info_no_token } = { ...auth_info_prim }
-
-  console.log(
-    'getting storage auth info:',
-    Array.from(token.values()).slice(0, 8)
-  )
-
-  g_auth_info = {
-    token: Buffer.from(token),
-    ...auth_info_no_token,
-  }
-
-  return g_auth_info
-}
-
-function setStorageAuthInfo(session_cred: SessionCred): void {
-  g_auth_info = session_cred
-  window.sessionStorage.setItem(
-    STORAGE_AUTH_INFO_KEY,
-    JSON.stringify(session_cred)
-  )
-}
-
-function clearStorageAuthInfo(): void {
-  g_auth_info = null
-  window.sessionStorage.removeItem(STORAGE_AUTH_INFO_KEY)
-}
 
 interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void
@@ -177,6 +109,13 @@ export function UserComponent(props: UserComponentProps) {
 
 interface SessionComponentProps {
   socket: LoRDraftClientSocket
+  authInfo: SessionCred | null
+  setAuthInfo: (auth_info: SessionCred) => void
+  clearAuthInfo: () => void
+  refreshDraft: (
+    session_cred: SessionCred,
+    callback: (status: Status) => void
+  ) => void
 }
 
 const enum SessionState {
@@ -190,6 +129,10 @@ export function SessionComponent(props: SessionComponentProps) {
   const [sessionState, setSessionState] = React.useState<SessionState>(
     SessionState.LOGIN
   )
+  const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
+    props.refreshDraft
+  )
+  refreshDraftRef.current = props.refreshDraft
 
   const machine_def = {
     [SessionState.LOGIN]: {
@@ -199,8 +142,12 @@ export function SessionComponent(props: SessionComponentProps) {
       [SessionState.SIGNED_IN]: (session_cred: SessionCred) => {
         console.log('login -> signed in')
         console.log('saving token to session storage')
-        setStorageAuthInfo(session_cred)
+        props.setAuthInfo(session_cred)
         setUsername(session_cred.username)
+
+        // Attempt to load the current draft. Ignore failures, since this is
+        // likely due to a current draft not existing.
+        refreshDraftRef.current(session_cred, () => undefined)
       },
     },
     [SessionState.REGISTER]: {
@@ -211,7 +158,7 @@ export function SessionComponent(props: SessionComponentProps) {
     [SessionState.SIGNED_IN]: {
       [SessionState.LOGIN]: () => {
         console.log('signed in -> login')
-        clearStorageAuthInfo()
+        props.clearAuthInfo()
         setUsername(null)
       },
     },
@@ -226,15 +173,14 @@ export function SessionComponent(props: SessionComponentProps) {
   const socket = props.socket
 
   if (username === null) {
-    const auth_info = getStorageAuthInfo()
-    if (auth_info !== null) {
-      socket.call('join_session', auth_info, (status, session_cred) => {
+    if (props.authInfo !== null) {
+      socket.call('join_session', props.authInfo, (status, session_cred) => {
         if (!isOk(status) || session_cred === null) {
           if (sessionState === SessionState.LOGIN) {
             console.log('failed to join session')
             console.log(status)
             console.log('clearing token session storage')
-            clearStorageAuthInfo()
+            props.clearAuthInfo()
           }
           return
         }
@@ -358,9 +304,8 @@ export function SessionComponent(props: SessionComponentProps) {
     }
     case SessionState.SIGNED_IN: {
       const logout = () => {
-        const auth_info = getStorageAuthInfo()
-        if (auth_info !== null) {
-          socket.call('logout', auth_info, (status) => {
+        if (props.authInfo !== null) {
+          socket.call('logout', props.authInfo, (status) => {
             if (!isOk(status)) {
               console.log(status)
               return
@@ -375,11 +320,9 @@ export function SessionComponent(props: SessionComponentProps) {
         }
       }
 
-      const auth_info = getStorageAuthInfo()
-
       return (
         <UserComponent
-          username={auth_info?.username ?? ''}
+          username={props.authInfo?.username ?? ''}
           logout_fn={logout}
         />
       )
