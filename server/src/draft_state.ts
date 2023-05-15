@@ -315,6 +315,17 @@ export function initDraftState(socket: LoRDraftSocket) {
     })
   })
 
+  socket.respond('close_draft', (resolve, session_cred) => {
+    join_session(session_cred, (status, auth_user) => {
+      if (!isOk(status) || auth_user === undefined) {
+        resolve(status)
+        return
+      }
+
+      resolve(exitDraft(auth_user.session_info))
+    })
+  })
+
   socket.respond('next_pool', (resolve, session_cred) => {
     join_session(session_cred, (status, auth_user) => {
       if (!isOk(status) || auth_user === undefined) {
@@ -676,6 +687,18 @@ export function enterDraft(session_info: SessionInfo): Status {
     deck: makeDraftDeck(),
     pending_cards: [],
   }
+  return OkStatus
+}
+
+export function exitDraft(session_info: SessionInfo): Status {
+  if (!inDraft(session_info)) {
+    return makeErrStatus(
+      StatusCode.NOT_IN_DRAFT_SESSION,
+      'Not in draft session'
+    )
+  }
+
+  delete (session_info as SessionInfo).draft_state_info
   return OkStatus
 }
 
