@@ -9,6 +9,7 @@ import {
   regionContains,
   runeterranOrigin,
   SetPackCardT,
+  StandardFormatRef,
 } from 'card'
 import {
   allFullfilled,
@@ -102,6 +103,7 @@ function loadSetPack(
             ),
             keywords: parsed_card.keywordRefs,
             type: parsed_card.type.toLowerCase(),
+            isStandard: parsed_card.formatRefs.includes(StandardFormatRef),
           }
 
           if (!CardT.guard(card as any)) {
