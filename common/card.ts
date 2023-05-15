@@ -55,6 +55,8 @@ export const MainRegionT = Union(
   ...main_region_literals.slice(1)
 )
 
+export const StandardFormatRef = 'client_Formats_Standard_name'
+
 const g_origins = {
   Evelynn: (card: Card): boolean => {
     return (
@@ -194,6 +196,8 @@ export const SetPackCardT = Record({
   type: String,
   collectible: Boolean,
   set: String,
+  formats: Array(String),
+  formatRefs: Array(String),
 })
 
 export type SetPackCard = Static<typeof SetPackCardT>
@@ -215,6 +219,7 @@ export const CardT = Record({
   subtypes: Array(String),
   keywords: Array(String),
   type: String,
+  isStandard: Boolean,
 })
 
 // export type Card = Static<typeof CardT>
@@ -229,6 +234,7 @@ export interface Card {
   subtypes: string[]
   keywords: string[]
   type: string
+  isStandard: boolean
 }
 
 export function isChampion(card: Card): boolean {
