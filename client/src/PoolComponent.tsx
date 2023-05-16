@@ -89,6 +89,15 @@ export function PoolComponent(props: PoolComponentProps) {
     })
   }
 
+  function closeDraft() {
+    props.socket.call('close_draft', authInfoRef.current, (status) => {
+      if (!isOk(status)) {
+        console.log(status)
+      }
+      updateDraftStateRef.current(() => null)
+    })
+  }
+
   function confirm() {
     const revertedCards = selected.map(
       (cardCode) =>
@@ -167,6 +176,7 @@ export function PoolComponent(props: PoolComponentProps) {
       })}
       <button onClick={confirm}>CONFIRM!</button>
       <button onClick={joinDraft}>DRAFT!</button>
+      <button onClick={closeDraft}>EXIT!</button>
     </div>
   )
 }

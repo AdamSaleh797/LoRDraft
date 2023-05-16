@@ -37,6 +37,7 @@ export interface ServerToClientEvents {
   logout_res: (status: Status) => void
   card_res: (status: Status, card: Card | null) => void
   join_draft_res: (status: Status) => void
+  close_draft_res: (status: Status) => void
   current_draft_res: (
     status: Status,
     draft_state_info: DraftStateInfo | null
@@ -56,6 +57,7 @@ export interface ClientToServerEvents {
   logout_req: (session_cred?: SessionCred) => void
   card_req: (name?: string) => void
   join_draft_req: (session_cred?: SessionCred) => void
+  close_draft_req: (session_cred?: SessionCred) => void
   current_draft_req: (session_cred?: SessionCred) => void
   next_pool_req: (session_cred?: SessionCred) => void
   choose_cards_req: (session_cred?: SessionCred, cards?: Card[]) => void
