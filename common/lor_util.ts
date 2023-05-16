@@ -385,15 +385,3 @@ export function intersectListsPred<T, U>(
     }
   })
 }
-
-/**
- * Turns an enum type into an array of its values.
- *
- * @param enumObject An enum type.
- * @returns An array of the enum values.
- */
-export function enumToArray(enumObject: any): string[] {
-  return Object.keys(enumObject).filter(
-    (key) => typeof enumObject[key as any] === 'number'
-  )
-}
