@@ -1,9 +1,9 @@
-import { Record } from 'runtypes'
+import { Literal, Record as RecordT, Union } from 'runtypes'
 import { Runtype, Static } from 'runtypes/lib/runtype'
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
-export type Empty = Record<any, never>
+export type Empty = RecordT<any, never>
 
 export enum StatusCode {
   OK = 'OK',
@@ -268,7 +268,7 @@ export function randSampleNumbersAvoidingRepeats(
  * @param obj
  * @returns
  */
-export function narrowType<T extends Record<any, false>, U extends Static<T>>(
+export function narrowType<T extends RecordT<any, false>, U extends Static<T>>(
   type: T,
   obj: U
 ): Static<T> | null {
@@ -384,4 +384,11 @@ export function intersectListsPred<T, U>(
       return false
     }
   })
+}
+
+export function enumToRuntype<Enum extends Record<string, string>>(
+  e: Enum
+): Union<[Literal<string>, ...Literal<string>[]]> {
+  const values = Object.keys(e).map((state) => Literal(state))
+  return Union(values[0], ...values.slice(1))
 }
