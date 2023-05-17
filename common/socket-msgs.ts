@@ -6,7 +6,7 @@ import { Socket as ClientSocket } from 'socket.io-client'
 import { AsyncSocketContext } from 'async_socket'
 import { Card } from 'card'
 import { Empty, Status } from 'lor_util'
-import { DraftState, DraftStateInfo } from 'draft'
+import { DraftOptions, DraftState, DraftStateInfo } from 'draft'
 
 export const RegisterInfoT = Record({
   username: String,
@@ -56,7 +56,10 @@ export interface ClientToServerEvents {
   join_session_req: (session_cred?: SessionCred) => void
   logout_req: (session_cred?: SessionCred) => void
   card_req: (name?: string) => void
-  join_draft_req: (session_cred?: SessionCred) => void
+  join_draft_req: (
+    session_cred?: SessionCred,
+    draft_options?: DraftOptions
+  ) => void
   close_draft_req: (session_cred?: SessionCred) => void
   current_draft_req: (session_cred?: SessionCred) => void
   next_pool_req: (session_cred?: SessionCred) => void

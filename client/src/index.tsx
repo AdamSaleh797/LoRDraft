@@ -9,13 +9,13 @@ import {
 } from 'socket-msgs'
 import { AsyncSocketContext } from 'async_socket'
 import { SessionComponent } from './auth_session'
-import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'
 import { DraftStateInfo } from 'draft'
 import { CachedAuthInfo } from './cached_auth_info'
 import { TypeCounts } from './TypeCounts'
+import { DraftFlowComponent } from './draft_flow'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
@@ -92,7 +92,7 @@ function Main() {
         {authInfo === null ? (
           []
         ) : (
-          <PoolComponent
+          <DraftFlowComponent
             socket={socket}
             authInfo={authInfo}
             refreshDraft={refreshDraft}
