@@ -9,7 +9,6 @@ import {
 } from 'socket-msgs'
 import { AsyncSocketContext } from 'async_socket'
 import { SessionComponent } from './auth_session'
-import { PoolComponent } from './PoolComponent'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
 import { isOk, Status } from 'lor_util'

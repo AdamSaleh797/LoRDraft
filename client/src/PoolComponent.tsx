@@ -8,7 +8,7 @@ import {
   POOL_SIZE,
 } from 'draft'
 import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
-import { isOk, Status, StatusCode } from 'lor_util'
+import { isOk, Status } from 'lor_util'
 import { CardComponent } from './CardComponent'
 
 export interface PoolComponentProps {

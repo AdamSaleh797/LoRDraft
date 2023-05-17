@@ -1,9 +1,6 @@
 import React from 'react'
 
-import { Buffer } from 'buffer'
-
-import { SessionCred } from 'socket-msgs'
-import { DraftFormat, DraftOptions } from 'draft'
+import { DraftOptions } from 'draft'
 import { StateMachine } from 'state_machine'
 import { DraftFormatComponent } from './draft_format'
 import { DraftRarityRestrictionComponent } from './draft_rarity_restriction'

@@ -3,9 +3,9 @@ import { DraftOptionsComponent } from './draft_options'
 import { isOk, Status, StatusCode } from 'lor_util'
 import { PoolComponent } from './PoolComponent'
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+
 import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
-import io from 'socket.io-client'
+
 import { StateMachine } from 'state_machine'
 
 const enum FlowState {

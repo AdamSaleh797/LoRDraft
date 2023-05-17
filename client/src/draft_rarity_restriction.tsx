@@ -1,9 +1,6 @@
 import React from 'react'
 
-import { Buffer } from 'buffer'
-
-import { SessionCred } from 'socket-msgs'
-import { DraftRarityRestriction, DraftOptions } from 'draft'
+import { DraftRarityRestriction } from 'draft'
 
 interface DraftRarityRestrictionComponentProps {
   select_rarity_restriction_fn: (

@@ -1,9 +1,6 @@
 import React from 'react'
 
-import { Buffer } from 'buffer'
-
-import { SessionCred } from 'socket-msgs'
-import { DraftFormat, DraftOptions } from 'draft'
+import { DraftFormat } from 'draft'
 
 interface DraftFormatComponentProps {
   select_format_fn: (draft_format: DraftFormat) => void
