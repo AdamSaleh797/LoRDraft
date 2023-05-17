@@ -8,6 +8,7 @@ import {
   RegionT,
 } from 'card'
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
+import { enumToRuntype } from 'lor_util'
 import {
   Array as ArrayT,
   Null,
@@ -32,10 +33,39 @@ export const enum DraftState {
   GENERATE_CODE = 'GENERATE_CODE',
 }
 
+export enum DraftFormat {
+  STANDARD = 'STANDARD',
+  ETERNAL = 'ETERNAL',
+}
+
+export const DraftFormatT = enumToRuntype(DraftFormat)
+
+export enum DraftRarityRestriction {
+  COMMONS = 'COMMONS',
+  ANY_RARITY = 'ANY_RARITY',
+}
+
+export const DraftRarityRestrictionT = enumToRuntype(DraftRarityRestriction)
+
 export const CardCountT = RecordT({
   card: CardT,
   count: Number,
 })
+
+export interface CardCount {
+  card: Card
+  count: number
+}
+
+export const DraftOptionsT = RecordT({
+  rarityRestriction: DraftRarityRestrictionT,
+  draftFormat: DraftFormatT,
+})
+
+export interface DraftOptions {
+  rarityRestriction: DraftRarityRestriction
+  draftFormat: DraftFormat
+}
 
 export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
@@ -43,11 +73,6 @@ export const DraftDeckT = RecordT({
   numCards: Number,
   deckCode: Union(String, Null),
 })
-
-export interface CardCount {
-  card: Card
-  count: number
-}
 
 export interface DraftDeck {
   regions: readonly Region[]

@@ -71,23 +71,9 @@ export function PoolComponent(props: PoolComponentProps) {
     )
   }
 
-  function joinDraft() {
-    props.socket.call('join_draft', authInfoRef.current, (status) => {
-      if (!isOk(status)) {
-        if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
-          refreshDraftRef.current(authInfoRef.current, (status) => {
-            if (!isOk(status)) {
-              console.log(status)
-              return
-            }
-          })
-        } else {
-          console.log(status)
-        }
-      }
-      nextPool()
-    })
-  }
+  React.useEffect(() => {
+    nextPool()
+  }, [])
 
   function closeDraft() {
     props.socket.call('close_draft', authInfoRef.current, (status) => {
@@ -175,7 +161,6 @@ export function PoolComponent(props: PoolComponentProps) {
         )
       })}
       <button onClick={confirm}>CONFIRM!</button>
-      <button onClick={joinDraft}>DRAFT!</button>
       <button onClick={closeDraft}>EXIT!</button>
     </div>
   )
