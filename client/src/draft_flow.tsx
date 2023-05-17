@@ -59,25 +59,29 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   )
 
   function joinDraft(draft_options: DraftOptions) {
-    console.log(draft_options)
-    props.socket.call('join_draft', authInfoRef.current, (status) => {
-      if (!isOk(status)) {
-        if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
-          refreshDraftRef.current(authInfoRef.current, (status) => {
-            if (!isOk(status)) {
-              console.log(status)
-              return
-            }
-          })
-        } else {
-          console.log(status)
+    props.socket.call(
+      'join_draft',
+      authInfoRef.current,
+      draft_options,
+      (status) => {
+        if (!isOk(status)) {
+          if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
+            refreshDraftRef.current(authInfoRef.current, (status) => {
+              if (!isOk(status)) {
+                console.log(status)
+                return
+              }
+            })
+          } else {
+            console.log(status)
+          }
         }
+        flow_state_machine.transition(
+          FlowState.DRAFT_OPTIONS,
+          FlowState.DRAFT_POOL
+        )
       }
-      flow_state_machine.transition(
-        FlowState.DRAFT_OPTIONS,
-        FlowState.DRAFT_POOL
-      )
-    })
+    )
   }
 
   switch (flowState) {

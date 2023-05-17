@@ -304,7 +304,7 @@ export function initDraftState(socket: LoRDraftSocket) {
     })
   })
 
-  socket.respond('join_draft', (resolve, session_cred) => {
+  socket.respond('join_draft', (resolve, session_cred, draft_options) => {
     join_session(session_cred, (status, auth_user) => {
       if (!isOk(status) || auth_user === undefined) {
         resolve(status)
