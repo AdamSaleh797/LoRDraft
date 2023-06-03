@@ -14,7 +14,7 @@ const args = minimist(process.argv.slice(2), {
   default: {
     port: 2000,
     download: false,
-    sequential: true,
+    sequential: false,
   },
 })
 
