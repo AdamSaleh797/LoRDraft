@@ -20,20 +20,16 @@ function unzip_file(
   file: string,
   output_dir: string,
   callback: callback_fn = () => undefined
-) { 
-  let cmd; 
-  if (process.platform === "win32"){
+) {
+  let cmd
+  if (process.platform === 'win32') {
     cmd = `powershell -command "Expand-Archive -Force -Path '${file}' -DestinationPath '${output_dir}'"`
   } else {
-    cmd =  `unzip -u ${file} -d ${output_dir}`
+    cmd = `unzip -u ${file} -d ${output_dir}`
   }
-  child_process.exec(
-    cmd,
-    { cwd: _ASSET_DIR },
-    (err) => {
-      callback(statusFromError(err, StatusCode.CHILD_PROCESS_EXEC_ERROR))
-    }
-  )
+  child_process.exec(cmd, { cwd: _ASSET_DIR }, (err) => {
+    callback(statusFromError(err, StatusCode.CHILD_PROCESS_EXEC_ERROR))
+  })
 }
 
 export function downloadZipAsset(
