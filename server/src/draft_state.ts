@@ -11,6 +11,8 @@ import {
   addCardToDeck,
   canAddToDeck,
   DraftDeck,
+  DraftOptions,
+  DraftOptionsT,
   DraftState,
   draftStateCardLimits,
   DraftStateInfo,
@@ -305,14 +307,23 @@ export function initDraftState(socket: LoRDraftSocket) {
   })
 
   socket.respond('join_draft', (resolve, session_cred, draft_options) => {
-    console.log(draft_options)
+    if (!DraftOptionsT.guard(draft_options)) {
+      resolve(
+        makeErrStatus(
+          StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
+          `Argument \`draft_options\` to 'join_draft' is not of the correct type.`
+        )
+      )
+      return
+    }
+
     join_session(session_cred, (status, auth_user) => {
       if (!isOk(status) || auth_user === undefined) {
         resolve(status)
         return
       }
 
-      resolve(enterDraft(auth_user.session_info))
+      resolve(enterDraft(auth_user.session_info, draft_options))
     })
   })
 
@@ -671,7 +682,10 @@ function randomNonChampCards(
   })
 }
 
-export function enterDraft(session_info: SessionInfo): Status {
+export function enterDraft(
+  session_info: SessionInfo,
+  draft_options: DraftOptions
+): Status {
   if (inDraft(session_info)) {
     return makeErrStatus(
       StatusCode.ALREADY_IN_DRAFT_SESSION,
@@ -685,7 +699,7 @@ export function enterDraft(session_info: SessionInfo): Status {
 
   session_info.draft_state_info = {
     draft_state: draft_state,
-    deck: makeDraftDeck(),
+    deck: makeDraftDeck(draft_options),
     pending_cards: [],
   }
   return OkStatus

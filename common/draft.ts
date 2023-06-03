@@ -67,6 +67,35 @@ export interface DraftOptions {
   draftFormat: DraftFormat
 }
 
+export function formatContainsCard(
+  draft_options: DraftOptions,
+  card: Card
+): boolean {
+  switch (draft_options.draftFormat) {
+    case DraftFormat.ETERNAL: {
+      break
+    }
+    case DraftFormat.STANDARD: {
+      if (!card.isStandard) {
+        return false
+      }
+    }
+  }
+
+  switch (draft_options.rarityRestriction) {
+    case DraftRarityRestriction.ANY_RARITY: {
+      break
+    }
+    case DraftRarityRestriction.COMMONS: {
+      if (card.rarity !== 'Common') {
+        return false
+      }
+    }
+  }
+
+  return true
+}
+
 export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
   cardCounts: ArrayT(CardCountT),
@@ -79,6 +108,7 @@ export interface DraftDeck {
   cardCounts: CardCount[]
   numCards: number
   deckCode: string | null
+  options: DraftOptions
 }
 
 export function addToCardCounts(
@@ -104,12 +134,16 @@ export function addToCardCounts(
   }
 }
 
-export function makeDraftDeck(cards: Card[] = []): DraftDeck {
+export function makeDraftDeck(
+  options: DraftOptions,
+  cards: Card[] = []
+): DraftDeck {
   const deck: DraftDeck = {
     regions: allRegions(),
     cardCounts: [],
     numCards: 0,
     deckCode: null,
+    options: options,
   }
 
   cards.forEach((card) => {
