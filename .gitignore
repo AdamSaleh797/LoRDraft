@@ -4,3 +4,4 @@ dist
 /static
 *.swp
 .vscode/sftp.json
+package-lock.json
