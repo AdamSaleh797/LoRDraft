@@ -1,6 +1,8 @@
+# By default, Moniino and Clayton own all json config files.
+*.json @Moniino @ClaytonKnittel
+
+/common @Moniino @ClaytonKnittel
 
 /client @Moniino
-/common @Moniino @ClaytonKnittel
-/server @ClaytonKnittel
 
-*.json @Moniino @ClaytonKnittel
+/server @ClaytonKnittel
