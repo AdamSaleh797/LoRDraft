@@ -27,7 +27,6 @@ export function DraftOptionsComponent(props: DraftOptionsComponentProps) {
   const [selectionState, setSelectionState] = React.useState<SelectionState>(
     SelectionState.SELECT_FORMAT
   )
-
   const [draftOptions, setDraftOptions] = React.useState<Partial<DraftOptions>>(
     {}
   )
