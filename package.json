@@ -41,6 +41,7 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "child_process": "^1.0.2",
+    "copyfiles": "^2.4.1",
     "css-loader": "^6.7.3",
     "eslint": "^8.31.0",
     "prettier": "2.8.8",
