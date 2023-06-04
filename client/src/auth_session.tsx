@@ -184,8 +184,8 @@ export function SessionComponent(props: SessionComponentProps) {
   const socket = props.socket
 
   if (props.authInfo !== null && sessionState !== SessionState.SIGNED_IN) {
-    socket.call('join_session', props.authInfo, (status, session_cred) => {
-      if (!isOk(status) || session_cred === null) {
+    socket.call('join_session', props.authInfo, (status) => {
+      if (!isOk(status)) {
         if (sessionState === SessionState.LOGIN) {
           console.log('failed to join session')
           console.log(status)
@@ -194,6 +194,7 @@ export function SessionComponent(props: SessionComponentProps) {
         }
         return
       }
+      const session_cred = status.value
       session_cred.token = Buffer.from(session_cred.token)
 
       console.log('joined session')
@@ -228,11 +229,12 @@ export function SessionComponent(props: SessionComponentProps) {
     }
     case SessionState.LOGIN: {
       const login = (login_cred: LoginCred) => {
-        socket.call('login', login_cred, (status, session_cred) => {
-          if (!isOk(status) || session_cred === null) {
+        socket.call('login', login_cred, (status) => {
+          if (!isOk(status)) {
             console.log(status)
             return
           }
+          const session_cred = status.value
           session_cred.token = Buffer.from(session_cred.token)
 
           console.log('logged in!')
@@ -278,11 +280,12 @@ export function SessionComponent(props: SessionComponentProps) {
             socket.call(
               'login',
               { username: username, password: password },
-              (status, session_cred) => {
-                if (!isOk(status) || session_cred === null) {
+              (status) => {
+                if (!isOk(status)) {
                   console.log(status)
                   return
                 }
+                const session_cred = status.value
                 session_cred.token = Buffer.from(session_cred.token)
 
                 session_state_machine.transition(
@@ -312,13 +315,14 @@ export function SessionComponent(props: SessionComponentProps) {
       )
     }
     case SessionState.SIGNED_IN: {
-      const signed_in_state = session_state_machine.state_prop_exact(
+      const status = session_state_machine.state_prop_exact(
         SessionState.SIGNED_IN
       )
-      if (!isOk(signed_in_state)) {
-        console.log(signed_in_state)
+      if (!isOk(status)) {
+        console.log(status)
         return <div></div>
       }
+      const signed_in_state = status.value
 
       const logout = () => {
         if (props.authInfo !== null) {
@@ -338,10 +342,7 @@ export function SessionComponent(props: SessionComponentProps) {
       }
 
       return (
-        <UserComponent
-          username={signed_in_state.value.username}
-          logout_fn={logout}
-        />
+        <UserComponent username={signed_in_state.username} logout_fn={logout} />
       )
     }
   }

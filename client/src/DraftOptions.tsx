@@ -86,14 +86,14 @@ export function DraftOptionsComponent(props: DraftOptionsComponentProps) {
       )
     }
     case SelectionState.FINISH_SELECTION: {
-      const draft_options = stateMachineRef.current.state_prop_exact(
+      const status = stateMachineRef.current.state_prop_exact(
         SelectionState.FINISH_SELECTION
       )
-      if (!isOk(draft_options)) {
-        console.log(draft_options)
+      if (!isOk(status)) {
+        console.log(status)
         return <div></div>
       }
-      props.join_draft_fn(draft_options.value)
+      props.join_draft_fn(status.value)
       return <div></div>
     }
   }

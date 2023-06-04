@@ -21,6 +21,7 @@ import {
   intersectListsPred,
   randSample,
   randSampleNumbersAvoidingRepeats,
+  makeOkStatus,
 } from 'lor_util'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
@@ -56,7 +57,7 @@ interface InDraftSessionInfo extends SessionInfo {
 function choose_champ_cards(
   draft_state: DraftState,
   deck: DraftDeck,
-  callback: (status: Status, champ_cards: Card[] | null) => void,
+  callback: (champ_cards: Status<Card[]>) => void,
   allow_same_region = true
 ) {
   const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
@@ -65,58 +66,45 @@ function choose_champ_cards(
     ? GUARANTEED_CHAMP_COUNT
     : 0
 
-  randomChampCardsFromDeck(
-    deck,
-    num_guaranteed_champs,
-    (status, guaranteed_cards) => {
-      if (!isOk(status) || guaranteed_cards === null) {
-        callback(status, null)
-        return
-      }
-
-      randomChampCards(
-        deck,
-        POOL_SIZE - guaranteed_cards.length,
-        allow_same_region,
-        guaranteed_cards,
-        (status, cards) => {
-          if (!isOk(status) || cards === null) {
-            callback(status, null)
-            return
-          }
-
-          cards = guaranteed_cards.concat(cards)
-          callback(OkStatus, cards)
-        }
-      )
+  randomChampCardsFromDeck(deck, num_guaranteed_champs, (status) => {
+    if (!isOk(status)) {
+      callback(status)
+      return
     }
-  )
+    const guaranteed_cards = status.value
+
+    randomChampCards(
+      deck,
+      POOL_SIZE - guaranteed_cards.length,
+      allow_same_region,
+      guaranteed_cards,
+      (status) => {
+        if (!isOk(status)) {
+          callback(status)
+          return
+        }
+
+        callback(makeOkStatus(guaranteed_cards.concat(status.value)))
+      }
+    )
+  })
 }
 
 function choose_non_champ_cards(
   deck: DraftDeck,
-  callback: (status: Status, cards: Card[] | null) => void
+  callback: (cards: Status<Card[]>) => void
 ) {
-  randomNonChampCards(deck, POOL_SIZE, (status, cards) => {
-    if (!isOk(status) || cards === null) {
-      callback(status, null)
-      return
-    }
-
-    callback(OkStatus, cards)
-  })
+  randomNonChampCards(deck, POOL_SIZE, callback)
 }
 
-function draftState(
-  auth_user: LoggedInAuthUser
-): [Status, ServerDraftState | null] {
+function draftState(auth_user: LoggedInAuthUser): Status<ServerDraftState> {
   if (!inDraft(auth_user.session_info)) {
-    return [
-      makeErrStatus(StatusCode.NOT_IN_DRAFT_SESSION, 'No draft session found.'),
-      null,
-    ]
+    return makeErrStatus(
+      StatusCode.NOT_IN_DRAFT_SESSION,
+      'No draft session found.'
+    )
   } else {
-    return [OkStatus, auth_user.session_info.draft_state]
+    return makeOkStatus(auth_user.session_info.draft_state)
   }
 }
 
@@ -166,7 +154,7 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
 function choose_next_cards(
   draft_state: DraftState,
   draft_deck: DraftDeck,
-  callback: (status: Status, champ_cards: Card[] | null) => void
+  callback: (champ_cards: Status<Card[]>) => void
 ) {
   switch (draft_state) {
     case DraftState.INIT: {
@@ -174,8 +162,7 @@ function choose_next_cards(
         makeErrStatus(
           StatusCode.INTERNAL_SERVER_ERROR,
           'Should not have called `choose_next_cards` on a newly initialized draft before generating the pending pool.'
-        ),
-        null
+        )
       )
       break
     }
@@ -199,8 +186,7 @@ function choose_next_cards(
         makeErrStatus(
           StatusCode.DRAFT_COMPLETE,
           'The draft is complete, no more card selections to be made.'
-        ),
-        null
+        )
       )
       break
     }
@@ -209,24 +195,26 @@ function choose_next_cards(
 
 export function initDraftState(socket: LoRDraftSocket) {
   socket.respond('current_draft', (resolve, session_cred) => {
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user, null)
+    join_session(session_cred, (auth_user_status) => {
+      if (!isOk(auth_user_status)) {
+        resolve(auth_user_status)
         return
       }
+      const auth_user = auth_user_status.value
 
-      const [draft_status, draft_state] = draftState(auth_user.value)
-      if (!isOk(draft_status) || draft_state === null) {
-        resolve(draft_status, null)
+      const draft_state_status = draftState(auth_user)
+      if (!isOk(draft_state_status)) {
+        resolve(draft_state_status)
         return
       }
+      const draft_state = draft_state_status.value
 
       const draft_info = {
         state: draft_state.state,
         deck: draft_state.deck,
         pending_cards: [],
       }
-      resolve(draft_status, draft_info)
+      resolve(makeOkStatus(draft_info))
     })
   })
 
@@ -241,44 +229,48 @@ export function initDraftState(socket: LoRDraftSocket) {
       return
     }
 
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user)
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
         return
       }
+      const auth_user = status.value
 
-      enterDraft(auth_user.value.session_info, draft_options, resolve)
+      enterDraft(auth_user.session_info, draft_options, resolve)
     })
   })
 
   socket.respond('close_draft', (resolve, session_cred) => {
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user)
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
         return
       }
+      const auth_user = status.value
 
-      resolve(exitDraft(auth_user.value.session_info))
+      resolve(exitDraft(auth_user.session_info))
     })
   })
 
   socket.respond('next_pool', (resolve, session_cred) => {
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user, null, null)
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
         return
       }
+      const auth_user = status.value
 
-      const [draft_info_status, draft_state] = draftState(auth_user.value)
-      if (!isOk(draft_info_status) || draft_state === null) {
-        resolve(draft_info_status, null, null)
+      const draft_state_status = draftState(auth_user)
+      if (!isOk(draft_state_status)) {
+        resolve(draft_state_status)
         return
       }
+      const draft_state = draft_state_status.value
 
       // If there are still pending cards, then one hasn't been chosen yet.
       // Re-return the current card pool.
       if (draft_state.pending_cards.length !== 0) {
-        resolve(OkStatus, draft_state.pending_cards, draft_state.state)
+        resolve(makeOkStatus([draft_state.pending_cards, draft_state.state]))
         return
       }
 
@@ -290,22 +282,21 @@ export function initDraftState(socket: LoRDraftSocket) {
           makeErrStatus(
             StatusCode.DRAFT_COMPLETE,
             'The draft is complete, no more pools to choose from.'
-          ),
-          null,
-          null
+          )
         )
         return
       }
 
-      choose_next_cards(next_draft_state, draft_state.deck, (status, cards) => {
-        if (!isOk(status) || cards === null) {
-          resolve(status, null, null)
+      choose_next_cards(next_draft_state, draft_state.deck, (status) => {
+        if (!isOk(status)) {
+          resolve(status)
           return
         }
+        const cards = status.value
 
         draft_state.state = next_draft_state
         draft_state.pending_cards = cards
-        resolve(status, cards, next_draft_state)
+        resolve(makeOkStatus([cards, next_draft_state]))
       })
     })
   })
@@ -323,17 +314,19 @@ export function initDraftState(socket: LoRDraftSocket) {
       return
     }
 
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user)
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
         return
       }
+      const auth_user = status.value
 
-      const [draft_info_status, draft_state] = draftState(auth_user.value)
-      if (!isOk(draft_info_status) || draft_state === null) {
-        resolve(draft_info_status)
+      const draft_state_status = draftState(auth_user)
+      if (!isOk(draft_state_status)) {
+        resolve(draft_state_status)
         return
       }
+      const draft_state = draft_state_status.value
 
       if (draft_state.pending_cards.length === 0) {
         resolve(
@@ -406,13 +399,14 @@ function randomChampCards(
   num_champs: number,
   allow_same_region: boolean,
   restriction_pool: Card[],
-  callback: (status: Status, cards: Card[] | null) => void
+  callback: (cards: Status<Card[]>) => void
 ): void {
-  regionSets((status, region_sets) => {
-    if (!isOk(status) || region_sets === null) {
-      callback(status, null)
+  regionSets((status) => {
+    if (!isOk(status)) {
+      callback(status)
       return
     }
+    const region_sets = status.value
 
     const region_pool = deck.regions
     const [total_champ_count, cumulative_totals] = region_pool.reduce<
@@ -478,7 +472,7 @@ function randomChampCards(
       })
     )
 
-    callback(OkStatus, champs)
+    callback(makeOkStatus(champs))
   })
 }
 
@@ -493,7 +487,7 @@ function randomChampCards(
 function randomChampCardsFromDeck(
   deck: DraftDeck,
   desired_num_champs: number,
-  callback: (status: Status, cards: Card[] | null) => void
+  callback: (cards: Status<Card[]>) => void
 ): void {
   const champs = deck.cardCounts.filter(
     (cardCount) =>
@@ -508,25 +502,25 @@ function randomChampCardsFromDeck(
       makeErrStatus(
         StatusCode.INTERNAL_SERVER_ERROR,
         'you aint got no champs to get'
-      ),
-      null
+      )
     )
     return
   }
 
-  callback(OkStatus, chosenChamps)
+  callback(makeOkStatus(chosenChamps))
 }
 
 function randomNonChampCards(
   deck: DraftDeck,
   num_champs: number,
-  callback: (status: Status, cards: Card[] | null) => void
+  callback: (cards: Status<Card[]>) => void
 ): void {
-  regionSets((status, region_sets) => {
-    if (!isOk(status) || region_sets === null) {
-      callback(status, null)
+  regionSets((status) => {
+    if (!isOk(status)) {
+      callback(status)
       return
     }
+    const region_sets = status.value
 
     const cards: Card[] = []
     const region_pool = deck.regions
@@ -544,8 +538,7 @@ function randomNonChampCards(
             makeErrStatus(
               StatusCode.MAX_REDRAWS_EXCEEDED,
               'Failed to choose cards after many attempts.'
-            ),
-            null
+            )
           )
           return
         }
@@ -588,7 +581,7 @@ function randomNonChampCards(
       cards.push(card)
     } while (cards.length < num_champs)
 
-    callback(OkStatus, cards)
+    callback(makeOkStatus(cards))
   })
 }
 

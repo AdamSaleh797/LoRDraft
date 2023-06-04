@@ -17,7 +17,6 @@ import {
   Status,
   StatusCode,
 } from 'lor_util'
-import assert from 'assert'
 import { SessionInfo } from 'session'
 
 // Expiration time of sessions in milliseconds.
@@ -76,42 +75,45 @@ export function init_auth(socket: LoRDraftSocket): void {
       return
     }
 
-    login(login_cred, (status, auth_user) => {
+    login(login_cred, (status) => {
       if (!isOk(status)) {
-        resolve(status, null)
+        resolve(status)
         return
       }
+      const auth_user = status.value
 
-      assert(auth_user !== undefined && logged_in(auth_user))
-
-      resolve(status, {
-        username: login_cred.username,
-        token: auth_user.session_info.auth_info.token,
-      })
+      resolve(
+        makeOkStatus({
+          username: login_cred.username,
+          token: auth_user.session_info.auth_info.token,
+        })
+      )
     })
   })
 
   socket.respond('join_session', (resolve, session_cred) => {
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user, null)
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
         return
       }
-      assert(auth_user !== undefined)
+      const auth_user = status.value
 
-      resolve(OkStatus, {
-        username: auth_user.value.username,
-        token: auth_user.value.session_info.auth_info.token,
-      })
+      resolve(
+        makeOkStatus({
+          username: auth_user.username,
+          token: auth_user.session_info.auth_info.token,
+        })
+      )
     })
   })
 
   socket.respond('logout', (resolve, session_cred) => {
-    join_session(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user)
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
       } else {
-        resolve(logout(auth_user.value))
+        resolve(logout(status.value))
       }
     })
   })
@@ -149,7 +151,7 @@ function register(
 
 export function login(
   login_cred: LoginCred,
-  callback: (status: Status, auth_user?: AuthUser) => void
+  callback: (auth_user: Status<LoggedInAuthUser>) => void
 ): void {
   const auth_user = users.get(login_cred.username)
   if (auth_user === undefined) {
@@ -197,7 +199,7 @@ export function login(
       login_time: now,
     },
   }
-  callback(OkStatus, auth_user)
+  callback(makeOkStatus(auth_user as LoggedInAuthUser))
 }
 
 export function logout(auth_user: LoggedInAuthUser): Status {

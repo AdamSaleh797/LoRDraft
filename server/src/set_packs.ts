@@ -17,7 +17,7 @@ import {
   isOk,
   keyInUnknown,
   makeErrStatus,
-  OkStatus,
+  makeOkStatus,
   rejectedResults,
   Status,
   StatusCode,
@@ -46,11 +46,11 @@ let g_region_sets: RegionSetMap | undefined
 
 function loadSetPack(
   bundle: string,
-  callback: (status: Status, cards: Card[] | null) => void = () => undefined
+  callback: (cards: Status<Card[]>) => void = () => undefined
 ): void {
   readBundle(bundle, (data: Status<string>) => {
     if (!isOk(data)) {
-      callback(data, null)
+      callback(data)
       return
     }
     const obj = JSON.parse(data.value) as unknown[]
@@ -75,8 +75,7 @@ function loadSetPack(
             makeErrStatus(
               StatusCode.INVALID_SET_PACK_FORMAT,
               `Found card with invalid structure (cardCode/name: ${ident})`
-            ),
-            null
+            )
           )
           return true
         }
@@ -91,8 +90,7 @@ function loadSetPack(
                 makeErrStatus(
                   StatusCode.MISSING_RUNETERRAN_CHAMP,
                   `The Runeterran champion ${parsed_card.name} is not configured, please add a custom origin filter.`
-                ),
-                null
+                )
               )
               return true
             }
@@ -125,8 +123,7 @@ function loadSetPack(
                 `Found card with invalid structure in set pack (cardCode/name: ${
                   card.cardCode ?? card.name
                 })`
-              ),
-              null
+              )
             )
             return true
           }
@@ -141,15 +138,15 @@ function loadSetPack(
       // raised the error to `callback`.
       return
     }
-    callback(OkStatus, cards)
+    callback(makeOkStatus(cards))
   })
 }
 
 export function regionSets(
-  callback: (status: Status, cards: RegionSetMap | null) => void
+  callback: (cards: Status<RegionSetMap>) => void
 ): void {
   if (g_region_sets !== undefined) {
-    callback(OkStatus, g_region_sets)
+    callback(makeOkStatus(g_region_sets))
     return
   }
 
@@ -169,12 +166,12 @@ export function regionSets(
   Promise.allSettled(
     g_set_packs.map((set) => {
       return new Promise<Card[]>((resolve, reject) => {
-        loadSetPack(set, (status, cards) => {
-          if (!isOk(status) || cards === null) {
+        loadSetPack(set, (status) => {
+          if (!isOk(status)) {
             reject(status)
             return
           }
-          resolve(cards)
+          resolve(status.value)
         })
       })
     })
@@ -187,8 +184,7 @@ export function regionSets(
           rejectedResults(set_pack_results).map(
             (rejected_result) => rejected_result.reason as ErrStatusT
           )
-        ),
-        null
+        )
       )
       return
     }
@@ -211,6 +207,6 @@ export function regionSets(
       })
     })
     g_region_sets = region_sets
-    callback(OkStatus, g_region_sets)
+    callback(makeOkStatus(g_region_sets))
   })
 }

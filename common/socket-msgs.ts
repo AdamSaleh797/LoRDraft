@@ -34,21 +34,14 @@ export type SessionCred = Static<typeof SessionCredT>
 
 export interface ServerToClientEvents {
   register_res: (status: Status) => void
-  login_res: (status: Status, session_cred: SessionCred | null) => void
-  join_session_res: (status: Status, session_cred: SessionCred | null) => void
+  login_res: (session_cred: Status<SessionCred>) => void
+  join_session_res: (session_cred: Status<SessionCred>) => void
   logout_res: (status: Status) => void
   game_metadata_res: (metadata: Status<GameMetadata>) => void
   join_draft_res: (status: Status) => void
   close_draft_res: (status: Status) => void
-  current_draft_res: (
-    status: Status,
-    draft_state_info: DraftStateInfo | null
-  ) => void
-  next_pool_res: (
-    status: Status,
-    cards: Card[] | null,
-    draft_state: DraftState | null
-  ) => void
+  current_draft_res: (draft_state_info: Status<DraftStateInfo>) => void
+  next_pool_res: (result: Status<[Card[], DraftState]>) => void
   choose_cards_res: (status: Status) => void
 }
 

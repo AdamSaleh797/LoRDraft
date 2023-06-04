@@ -11,7 +11,7 @@ import { AsyncSocketContext } from 'async_socket'
 import { SessionComponent } from './auth_session'
 import { ManaCurve } from './ManaCurve'
 import { DeckList } from './DeckList'
-import { isOk, makeErrStatus, Status, StatusCode } from 'lor_util'
+import { isOk, makeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
 import { DraftStateInfo } from 'draft'
 import { CachedAuthInfo } from './cached_auth_info'
 import { TypeCounts } from './TypeCounts'
@@ -66,14 +66,14 @@ function Main() {
     session_cred: SessionCred,
     callback: (status: Status) => void
   ) => {
-    socket.call('current_draft', session_cred, (status, draft_state_info) => {
-      if (!isOk(status) || draft_state_info === null) {
+    socket.call('current_draft', session_cred, (status) => {
+      if (!isOk(status)) {
         callback(status)
         return
       }
-
+      const draft_state_info = status.value
       setDraftStateRef.current(draft_state_info)
-      callback(status)
+      callback(OkStatus)
     })
   }
 
@@ -92,9 +92,9 @@ function Main() {
   }
 
   if (authInfo !== null && gameMetadataRef.current === null) {
-    getGameMetadata(socket_ref.current, authInfo, (game_metadata) => {
-      if (isOk(game_metadata)) {
-        gameMetadataRef.current = game_metadata.value
+    getGameMetadata(socket_ref.current, authInfo, (status) => {
+      if (isOk(status)) {
+        gameMetadataRef.current = status.value
       }
     })
   }
