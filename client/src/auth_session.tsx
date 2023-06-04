@@ -312,7 +312,7 @@ export function SessionComponent(props: SessionComponentProps) {
       )
     }
     case SessionState.SIGNED_IN: {
-      const signed_in_state = session_state_machine.state_prop(
+      const signed_in_state = session_state_machine.state_prop_exact(
         SessionState.SIGNED_IN
       )
       if (!isOk(signed_in_state)) {

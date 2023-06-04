@@ -1,4 +1,5 @@
-import { DraftStateInfo, generateDeckCode } from 'draft'
+import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'draft'
+import { isOk } from 'lor_util'
 import React from 'react'
 
 export interface DeckListComponentProps {
@@ -14,11 +15,14 @@ export function DeckList(props: DeckListComponentProps) {
     props.draftState === null ? [] : props.draftState.deck.cardCounts
   if (
     props.draftState !== null &&
-    cardCounts.reduce((count, cardCount) => {
-      return count + cardCount.count
-    }, 0) >= 40
+    props.draftState.deck.numCards >= CARDS_PER_DECK
   ) {
-    deckCode = generateDeckCode(props.draftState.deck)
+    const code = getDeckCode(props.draftState.deck)
+    if (!isOk(code)) {
+      deckCode = null
+    } else {
+      deckCode = code.value
+    }
   } else {
     deckCode = null
   }

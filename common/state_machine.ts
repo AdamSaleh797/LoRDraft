@@ -1,5 +1,6 @@
 import {
   makeErrStatus,
+  makeOkStatus,
   OkStatus,
   ReturnTypeOrNever,
   Status,
@@ -19,6 +20,16 @@ export type StateMachineStateDef<State extends KeyT, StateProp> = Partial<
 export type StateMachineDef<State extends KeyT> = {
   [StateInst in State]: StateMachineStateDef<State, any>
 }
+
+/**
+ * Given the machine type and a state `FromT`, gives the type of all
+ * transitions that can be made from this state.
+ */
+type AllTransitions<
+  StatesT extends KeyT,
+  MachineDef extends StateMachineDef<StatesT>,
+  FromT extends StatesT
+> = MachineDef extends Record<FromT, infer U> ? keyof U : never
 
 type StatePropFromTransitions<
   StatesT extends KeyT,
@@ -64,6 +75,27 @@ type StateProp<
   ? StatePropFromCallers<StatesT, MachineDef, StateT>
   : StatePropFromTransitions<StatesT, MachineDef, StateT>
 
+/**
+ * Given the machine type and a transition from state FromT to state ToT, gives
+ * the types of the arguments that need to be passed to the transition function.
+ */
+type TransitionFnArgsT<
+  StatesT extends KeyT,
+  MachineDef extends StateMachineDef<StatesT>,
+  FromT extends StatesT,
+  ToT extends StatesT
+> = MachineDef extends Record<FromT, infer U>
+  ? U extends Record<ToT, infer V>
+    ? V extends AnyFn<
+        StateProp<StatesT, MachineDef, FromT>,
+        StateProp<StatesT, MachineDef, ToT>,
+        infer FnArgs
+      >
+      ? FnArgs
+      : never
+    : never
+  : never
+
 export class StateMachine<
   MachineDef extends StateMachineDef<State>,
   State extends KeyT
@@ -107,10 +139,13 @@ export class StateMachine<
     return this.state_
   }
 
-  state_prop<
-    StateT extends State,
-    StatePropT extends StateProp<State, MachineDef, StateT>
-  >(state: StateT): Status<StatePropT> {
+  state_prop<StateT extends State>(): StateProp<State, MachineDef, StateT> {
+    return this.state_prop_
+  }
+
+  state_prop_exact<StateT extends State>(
+    state: StateT
+  ): Status<StateProp<State, MachineDef, StateT>> {
     if (this.state_ !== state) {
       return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
@@ -118,29 +153,13 @@ export class StateMachine<
       )
     }
 
-    return this.state_prop_
+    return makeOkStatus(this.state_prop_)
   }
 
   transition<
     FromT extends State,
-    ToT extends MachineDef extends Record<FromT, infer U> ? keyof U : never,
-    StatePropT extends MachineDef extends Record<FromT, infer U>
-      ? U extends StateMachineStateDef<State, infer StateProp>
-        ? StateProp
-        : never
-      : never,
-    ReturnTypeT extends MachineDef extends Record<ToT, infer U>
-      ? U extends StateMachineStateDef<State, infer StateProp>
-        ? StateProp
-        : never
-      : never,
-    UpdateFnArgsT extends MachineDef extends Record<FromT, infer U>
-      ? U extends Record<ToT, infer V>
-        ? V extends AnyFn<StatePropT, ReturnTypeT, infer FnArgs>
-          ? FnArgs
-          : never
-        : never
-      : never
+    ToT extends AllTransitions<State, MachineDef, FromT>,
+    UpdateFnArgsT extends TransitionFnArgsT<State, MachineDef, FromT, ToT>
   >(from: FromT, to: ToT, ...args: UpdateFnArgsT): Status {
     if (this.state_ !== from) {
       return makeErrStatus(
@@ -157,7 +176,11 @@ export class StateMachine<
     const state_def = this.state_machine_def_[from]
     const transition_fn = state_def[to]
     this.state_prop_ = (
-      transition_fn as AnyFn<StatePropT, ReturnTypeT, UpdateFnArgsT>
+      transition_fn as AnyFn<
+        StateProp<State, MachineDef, FromT>,
+        StateProp<State, MachineDef, ToT>,
+        UpdateFnArgsT
+      >
     )(this.state_prop_ as any, ...args)
 
     return OkStatus
@@ -176,8 +199,9 @@ export class StateMachine<
 
   undo_transition<
     FromT extends State,
-    ToT extends MachineDef extends Record<FromT, infer U> ? keyof U : never
-  >(current_state: ToT, prior_state: FromT): Status {
+    ToT extends AllTransitions<State, MachineDef, FromT>,
+    StatePropT extends StateProp<State, MachineDef, FromT>
+  >(current_state: ToT, prior_state: FromT, prior_prop: StatePropT): Status {
     if (this.state_ !== (current_state as unknown as State)) {
       return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
@@ -186,10 +210,15 @@ export class StateMachine<
     }
 
     this.state_ = prior_state
+    this.state_prop_ = prior_prop
     return OkStatus
   }
 
-  undo_transition_any(current_state: State, prior_state: State): Status {
+  undo_transition_any(
+    current_state: State,
+    prior_state: State,
+    prior_prop: any
+  ): Status {
     if (this.state_ !== current_state) {
       return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
@@ -205,6 +234,7 @@ export class StateMachine<
     }
 
     this.state_ = prior_state
+    this.state_prop_ = prior_prop
     return OkStatus
   }
 }

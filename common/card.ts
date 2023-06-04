@@ -11,7 +11,7 @@ import {
 
 export const MAX_CARD_COPIES = 3
 
-export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion'
+export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None'
 
 const RUNETERRA = 'Runeterra' as const
 
@@ -196,7 +196,8 @@ export const SetPackCardT = Record({
     Literal('Common'),
     Literal('Rare'),
     Literal('Epic'),
-    Literal('Champion')
+    Literal('Champion'),
+    Literal('None')
   ),
   subtypes: Array(String),
   supertype: String,
@@ -220,7 +221,8 @@ export const CardT = Record({
     Literal('Common'),
     Literal('Rare'),
     Literal('Epic'),
-    Literal('Champion')
+    Literal('Champion'),
+    Literal('None')
   ),
   imageUrl: String,
   cost: Number,
