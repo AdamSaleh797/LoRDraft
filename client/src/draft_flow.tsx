@@ -1,22 +1,26 @@
-import { DraftOptions, DraftStateInfo } from 'draft'
-import { DraftOptionsComponent } from './draft_options'
-import { isOk, Status, StatusCode } from 'lor_util'
+import { DraftStateInfo } from 'draft'
+import { DraftOptionsComponent } from './DraftOptions'
+import { Empty, isOk, Status, StatusCode } from 'lor_util'
 import { PoolComponent } from './PoolComponent'
 import React from 'react'
 
 import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 
 import { StateMachine } from 'state_machine'
+import { DraftOptions } from 'draft_options'
 
 const enum FlowState {
   DRAFT_OPTIONS = 'DRAFT_OPTIONS',
   DRAFT_POOL = 'DRAFT_POOL',
 }
 
+type DraftOptionsProps = Empty
+
 const machine_def = {
   [FlowState.DRAFT_OPTIONS]: {
-    [FlowState.DRAFT_POOL]: () => {
+    [FlowState.DRAFT_POOL]: (_: DraftOptionsProps) => {
       console.log('options -> pool')
+      return {}
     },
   },
   [FlowState.DRAFT_POOL]: {},
@@ -52,10 +56,13 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   )
   updateDraftStateRef.current = props.updateDraftState
 
-  const flow_state_machine = new StateMachine(
-    machine_def,
-    flowState,
-    setFlowState
+  const flowStateMachineRef = React.useRef(
+    StateMachine.makeStateMachine(
+      machine_def,
+      FlowState.DRAFT_OPTIONS,
+      {} as Empty,
+      setFlowState as (_: FlowState) => void
+    )
   )
 
   function joinDraft(draft_options: DraftOptions) {
@@ -76,7 +83,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
             console.log(status)
           }
         }
-        flow_state_machine.transition(
+        flowStateMachineRef.current.transition(
           FlowState.DRAFT_OPTIONS,
           FlowState.DRAFT_POOL
         )

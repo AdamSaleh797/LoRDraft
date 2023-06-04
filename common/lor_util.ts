@@ -5,6 +5,13 @@ import { v4 as uuidv4 } from 'uuid'
 // Empty object type
 export type Empty = RecordT<any, never>
 
+/**
+ * Gives the return type of a function type, or `never` if the type is not a function.
+ */
+export type ReturnTypeOrNever<T> = T extends (...args: any[]) => infer U
+  ? U
+  : never
+
 export enum StatusCode {
   OK = 'OK',
 
@@ -54,8 +61,9 @@ export enum StatusCode {
   ILLEGAL_CARD_COMBINATION = 'ILLEGAL_CARD_COMBINATION',
 }
 
-export interface OkStatusT {
+export interface OkStatusT<T = null> {
   status: StatusCode.OK
+  value: T
 }
 
 export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>
@@ -66,7 +74,7 @@ export interface ErrStatusT {
   from_statuses?: ErrStatusT[]
 }
 
-export type Status = OkStatusT | ErrStatusT
+export type Status<T = null> = OkStatusT<T> | ErrStatusT
 
 export function makeErrStatus(
   status: ErrStatusCode,
@@ -98,9 +106,16 @@ export function statusFromError<E extends Error>(
   return error === null ? OkStatus : makeErrStatus(code, error.message)
 }
 
-export const OkStatus: OkStatusT = { status: StatusCode.OK }
+export const OkStatus: OkStatusT = { status: StatusCode.OK, value: null }
 
-export function isOk(status: Status): status is OkStatusT {
+export function makeOkStatus<T>(value: T): OkStatusT<T> {
+  return {
+    status: StatusCode.OK,
+    value: value,
+  }
+}
+
+export function isOk<T>(status: Status<T>): status is OkStatusT<T> {
   return status.status === StatusCode.OK
 }
 

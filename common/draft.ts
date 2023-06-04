@@ -7,8 +7,8 @@ import {
   regionContains,
   RegionT,
 } from 'card'
+import { DraftOptions } from 'draft_options'
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import { enumToRuntype } from 'lor_util'
 import {
   Array as ArrayT,
   Null,
@@ -33,20 +33,6 @@ export const enum DraftState {
   GENERATE_CODE = 'GENERATE_CODE',
 }
 
-export enum DraftFormat {
-  STANDARD = 'STANDARD',
-  ETERNAL = 'ETERNAL',
-}
-
-export const DraftFormatT = enumToRuntype(DraftFormat)
-
-export enum DraftRarityRestriction {
-  COMMONS = 'COMMONS',
-  ANY_RARITY = 'ANY_RARITY',
-}
-
-export const DraftRarityRestrictionT = enumToRuntype(DraftRarityRestriction)
-
 export const CardCountT = RecordT({
   card: CardT,
   count: Number,
@@ -55,45 +41,6 @@ export const CardCountT = RecordT({
 export interface CardCount {
   card: Card
   count: number
-}
-
-export const DraftOptionsT = RecordT({
-  rarityRestriction: DraftRarityRestrictionT,
-  draftFormat: DraftFormatT,
-})
-
-export interface DraftOptions {
-  rarityRestriction: DraftRarityRestriction
-  draftFormat: DraftFormat
-}
-
-export function formatContainsCard(
-  draft_options: DraftOptions,
-  card: Card
-): boolean {
-  switch (draft_options.draftFormat) {
-    case DraftFormat.ETERNAL: {
-      break
-    }
-    case DraftFormat.STANDARD: {
-      if (!card.isStandard) {
-        return false
-      }
-    }
-  }
-
-  switch (draft_options.rarityRestriction) {
-    case DraftRarityRestriction.ANY_RARITY: {
-      break
-    }
-    case DraftRarityRestriction.COMMONS: {
-      if (card.rarity !== 'Common') {
-        return false
-      }
-    }
-  }
-
-  return true
 }
 
 export const DraftDeckT = RecordT({

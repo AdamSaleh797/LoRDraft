@@ -11,8 +11,6 @@ import {
   addCardToDeck,
   canAddToDeck,
   DraftDeck,
-  DraftOptions,
-  DraftOptionsT,
   DraftState,
   draftStateCardLimits,
   DraftStateInfo,
@@ -42,6 +40,7 @@ import { regionSets } from './set_packs'
 import { LoRDraftSocket } from 'socket-msgs'
 import { StateMachine } from 'state_machine'
 import { Array as ArrayT } from 'runtypes'
+import { DraftOptions, DraftOptionsT } from 'draft_options'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [

@@ -6,7 +6,8 @@ import { Socket as ClientSocket } from 'socket.io-client'
 import { AsyncSocketContext } from 'async_socket'
 import { Card } from 'card'
 import { Empty, Status } from 'lor_util'
-import { DraftOptions, DraftState, DraftStateInfo } from 'draft'
+import { DraftState, DraftStateInfo } from 'draft'
+import { DraftOptions } from 'draft_options'
 
 export const RegisterInfoT = Record({
   username: String,

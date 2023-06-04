@@ -7,7 +7,7 @@ import {
   RegisterInfo,
   SessionCred,
 } from 'socket-msgs'
-import { isOk, Status, StatusCode } from 'lor_util'
+import { Empty, isOk, Status, StatusCode } from 'lor_util'
 import { StateMachine } from 'state_machine'
 
 interface RegisterComponentProps {
@@ -124,8 +124,13 @@ const enum SessionState {
   SIGNED_IN = 'SIGNED_IN',
 }
 
+type LoginState = Empty
+type RegisterState = Empty
+interface SignedInState {
+  username: string
+}
+
 export function SessionComponent(props: SessionComponentProps) {
-  const [username, setUsername] = React.useState<string | null>(null)
   const [sessionState, setSessionState] = React.useState<SessionState>(
     SessionState.LOGIN
   )
@@ -136,64 +141,68 @@ export function SessionComponent(props: SessionComponentProps) {
 
   const machine_def = {
     [SessionState.LOGIN]: {
-      [SessionState.REGISTER]: () => {
+      [SessionState.REGISTER]: (_: LoginState) => {
         console.log('login -> register')
+        return {}
       },
-      [SessionState.SIGNED_IN]: (session_cred: SessionCred) => {
+      [SessionState.SIGNED_IN]: (_: LoginState, session_cred: SessionCred) => {
         console.log('login -> signed in')
         console.log('saving token to session storage')
         props.setAuthInfo(session_cred)
-        setUsername(session_cred.username)
 
         // Attempt to load the current draft. Ignore failures, since this is
         // likely due to a current draft not existing.
         refreshDraftRef.current(session_cred, () => undefined)
+
+        return {
+          username: session_cred.username,
+        }
       },
     },
     [SessionState.REGISTER]: {
-      [SessionState.LOGIN]: () => {
+      [SessionState.LOGIN]: (_: RegisterState) => {
         console.log('register -> login')
+        return {}
       },
     },
     [SessionState.SIGNED_IN]: {
-      [SessionState.LOGIN]: () => {
+      [SessionState.LOGIN]: (_: SignedInState) => {
         console.log('signed in -> login')
         props.clearAuthInfo()
-        setUsername(null)
+        return {}
       },
     },
   } as const
 
-  const session_state_machine = new StateMachine(
+  const session_state_machine = StateMachine.makeStateMachine(
     machine_def,
     sessionState,
-    setSessionState
+    {} as Empty,
+    setSessionState as (_: SessionState) => void
   )
 
   const socket = props.socket
 
-  if (username === null) {
-    if (props.authInfo !== null) {
-      socket.call('join_session', props.authInfo, (status, session_cred) => {
-        if (!isOk(status) || session_cred === null) {
-          if (sessionState === SessionState.LOGIN) {
-            console.log('failed to join session')
-            console.log(status)
-            console.log('clearing token session storage')
-            props.clearAuthInfo()
-          }
-          return
+  if (props.authInfo !== null && sessionState !== SessionState.SIGNED_IN) {
+    socket.call('join_session', props.authInfo, (status, session_cred) => {
+      if (!isOk(status) || session_cred === null) {
+        if (sessionState === SessionState.LOGIN) {
+          console.log('failed to join session')
+          console.log(status)
+          console.log('clearing token session storage')
+          props.clearAuthInfo()
         }
-        session_cred.token = Buffer.from(session_cred.token)
+        return
+      }
+      session_cred.token = Buffer.from(session_cred.token)
 
-        console.log('joined session')
-        session_state_machine.transition(
-          SessionState.LOGIN,
-          SessionState.SIGNED_IN,
-          session_cred
-        )
-      })
-    }
+      console.log('joined session')
+      session_state_machine.transition(
+        SessionState.LOGIN,
+        SessionState.SIGNED_IN,
+        session_cred
+      )
+    })
   }
 
   switch (sessionState) {
@@ -303,6 +312,14 @@ export function SessionComponent(props: SessionComponentProps) {
       )
     }
     case SessionState.SIGNED_IN: {
+      const signed_in_state = session_state_machine.state_prop(
+        SessionState.SIGNED_IN
+      )
+      if (!isOk(signed_in_state)) {
+        console.log(signed_in_state)
+        return <div></div>
+      }
+
       const logout = () => {
         if (props.authInfo !== null) {
           socket.call('logout', props.authInfo, (status) => {
@@ -322,7 +339,7 @@ export function SessionComponent(props: SessionComponentProps) {
 
       return (
         <UserComponent
-          username={props.authInfo?.username ?? ''}
+          username={signed_in_state.value.username}
           logout_fn={logout}
         />
       )

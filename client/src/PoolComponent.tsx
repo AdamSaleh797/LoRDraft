@@ -59,7 +59,7 @@ export function PoolComponent(props: PoolComponentProps) {
             state: draft_state,
             deck:
               draft_state_info === null
-                ? makeDraftDeck()
+                ? makeDraftDeck(0 as any)
                 : draft_state_info.deck,
             pending_cards: pending_cards,
           }
