@@ -9,7 +9,6 @@ import {
 } from 'card'
 import {
   addCardsToDeck,
-  addCardToDeck,
   canAddToDeck,
   DraftDeck,
   DraftState,
@@ -392,9 +391,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
 
       // Add the chosen cards to the deck.
-      // TODO use addCardsToDeck
-      const new_deck = { ...draft_state.deck }
-      if (chosen_cards.some((card) => !addCardToDeck(new_deck, card))) {
+      if (!addCardsToDeck(draft_state.deck, chosen_cards)) {
         resolve(
           makeErrStatus(
             StatusCode.ILLEGAL_CARD_COMBINATION,
@@ -404,11 +401,11 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      draft_state.deck = new_deck
       draft_state.pending_cards = []
 
       // After initial selection, filter out all origins from the candidate
       // regions that aren't covered by the two chosen champions.
+      // TODO don't think this is necessary
       if (draft_state.state === DraftState.INITIAL_SELECTION) {
         draft_state.deck.regions = draft_state.deck.regions.filter(
           (region) =>
