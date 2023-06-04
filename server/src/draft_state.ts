@@ -403,17 +403,6 @@ export function initDraftState(socket: LoRDraftSocket) {
 
       draft_state.pending_cards = []
 
-      // After initial selection, filter out all origins from the candidate
-      // regions that aren't covered by the two chosen champions.
-      // TODO don't think this is necessary
-      if (draft_state.state === DraftState.INITIAL_SELECTION) {
-        draft_state.deck.regions = draft_state.deck.regions.filter(
-          (region) =>
-            !isOrigin(region) ||
-            chosen_cards.some((card) => regionContains(region, card))
-        )
-      }
-
       resolve(OkStatus)
     })
   })
