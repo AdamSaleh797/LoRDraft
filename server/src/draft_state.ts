@@ -62,13 +62,13 @@ interface InDraftSessionInfo extends SessionInfo {
 }
 
 function choose_champ_cards(
-  draft_state: ServerDraftState,
+  draft_state: DraftState,
   deck: DraftDeck,
   callback: (status: Status, champ_cards: Card[] | null) => void,
   allow_same_region = true
 ) {
   const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
-    draft_state.state
+    draft_state
   )
     ? GUARANTEED_CHAMP_COUNT
     : 0
@@ -172,10 +172,11 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
 }
 
 function choose_next_cards(
-  draft_state: ServerDraftState,
+  draft_state: DraftState,
+  draft_deck: DraftDeck,
   callback: (status: Status, champ_cards: Card[] | null) => void
 ) {
-  switch (draft_state.state) {
+  switch (draft_state) {
     case DraftState.INIT: {
       callback(
         makeErrStatus(
@@ -187,18 +188,18 @@ function choose_next_cards(
       break
     }
     case DraftState.INITIAL_SELECTION: {
-      choose_champ_cards(draft_state, draft_state.deck, callback, false)
+      choose_champ_cards(draft_state, draft_deck, callback, false)
       break
     }
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2: {
-      choose_champ_cards(draft_state, draft_state.deck, callback)
+      choose_champ_cards(draft_state, draft_deck, callback)
       break
     }
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
-      choose_non_champ_cards(draft_state.deck, callback)
+      choose_non_champ_cards(draft_deck, callback)
       break
     }
     case DraftState.GENERATE_CODE: {
@@ -304,13 +305,12 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      choose_next_cards(draft_state, (status, cards) => {
+      choose_next_cards(next_draft_state, draft_state.deck, (status, cards) => {
         if (!isOk(status) || cards === null) {
           resolve(status, null, null)
           return
         }
 
-        console.log(`transition ${draft_state.state} -> ${next_draft_state}`)
         draft_state.state = next_draft_state
         draft_state.pending_cards = cards
         resolve(status, cards, next_draft_state)
