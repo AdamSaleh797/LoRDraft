@@ -13,7 +13,7 @@ export const MAX_CARD_COPIES = 3
 
 export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None'
 
-const RUNETERRA = 'Runeterra' as const
+export const RUNETERRA = 'Runeterra' as const
 
 const g_main_regions = [
   'Demacia',

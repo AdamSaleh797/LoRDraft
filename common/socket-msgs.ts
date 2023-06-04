@@ -8,6 +8,7 @@ import { Card } from 'card'
 import { Empty, Status } from 'lor_util'
 import { DraftState, DraftStateInfo } from 'draft'
 import { DraftOptions } from 'draft_options'
+import { GameMetadata } from 'metadata'
 
 export const RegisterInfoT = Record({
   username: String,
@@ -36,7 +37,7 @@ export interface ServerToClientEvents {
   login_res: (status: Status, session_cred: SessionCred | null) => void
   join_session_res: (status: Status, session_cred: SessionCred | null) => void
   logout_res: (status: Status) => void
-  card_res: (status: Status, card: Card | null) => void
+  game_metadata_res: (metadata: Status<GameMetadata>) => void
   join_draft_res: (status: Status) => void
   close_draft_res: (status: Status) => void
   current_draft_res: (
@@ -56,7 +57,7 @@ export interface ClientToServerEvents {
   login_req: (login_cred?: LoginCred) => void
   join_session_req: (session_cred?: SessionCred) => void
   logout_req: (session_cred?: SessionCred) => void
-  card_req: (name?: string) => void
+  game_metadata_req: (session_cred?: SessionCred) => void
   join_draft_req: (
     session_cred?: SessionCred,
     draft_options?: DraftOptions

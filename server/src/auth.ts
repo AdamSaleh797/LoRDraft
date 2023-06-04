@@ -9,7 +9,14 @@ import {
   SessionCredT,
 } from 'socket-msgs'
 
-import { isOk, makeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
+import {
+  isOk,
+  makeErrStatus,
+  makeOkStatus,
+  OkStatus,
+  Status,
+  StatusCode,
+} from 'lor_util'
 import assert from 'assert'
 import { SessionInfo } from 'session'
 
@@ -85,29 +92,27 @@ export function init_auth(socket: LoRDraftSocket): void {
   })
 
   socket.respond('join_session', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status)) {
-        resolve(status, null)
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user, null)
         return
       }
       assert(auth_user !== undefined)
 
-      resolve(status, {
-        username: auth_user.username,
-        token: auth_user.session_info.auth_info.token,
+      resolve(OkStatus, {
+        username: auth_user.value.username,
+        token: auth_user.value.session_info.auth_info.token,
       })
     })
   })
 
   socket.respond('logout', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status)) {
-        resolve(status)
-        return
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user)
+      } else {
+        resolve(logout(auth_user.value))
       }
-      assert(auth_user !== undefined)
-
-      resolve(logout(auth_user))
     })
   })
 }
@@ -203,7 +208,7 @@ export function logout(auth_user: LoggedInAuthUser): Status {
 
 export function join_session(
   session_cred: SessionCred | undefined,
-  callback: (status: Status, auth_user?: LoggedInAuthUser) => void
+  callback: (auth_user: Status<LoggedInAuthUser>) => void
 ): void {
   if (!SessionCredT.guard(session_cred)) {
     // Invalid input, we can ignore
@@ -268,5 +273,5 @@ export function join_session(
     return
   }
 
-  callback(OkStatus, auth_user)
+  callback(makeOkStatus(auth_user))
 }

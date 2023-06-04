@@ -1,12 +1,5 @@
 import { join_session, LoggedInAuthUser } from './auth'
-import {
-  Card,
-  CardT,
-  isChampion,
-  isOrigin,
-  MAX_CARD_COPIES,
-  regionContains,
-} from 'card'
+import { Card, CardT, isChampion, MAX_CARD_COPIES, regionContains } from 'card'
 import {
   addCardsToDeck,
   canAddToDeck,
@@ -216,13 +209,13 @@ function choose_next_cards(
 
 export function initDraftState(socket: LoRDraftSocket) {
   socket.respond('current_draft', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status) || auth_user === undefined) {
-        resolve(status, null)
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user, null)
         return
       }
 
-      const [draft_status, draft_state] = draftState(auth_user)
+      const [draft_status, draft_state] = draftState(auth_user.value)
       if (!isOk(draft_status) || draft_state === null) {
         resolve(draft_status, null)
         return
@@ -248,35 +241,35 @@ export function initDraftState(socket: LoRDraftSocket) {
       return
     }
 
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status) || auth_user === undefined) {
-        resolve(status)
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user)
         return
       }
 
-      enterDraft(auth_user.session_info, draft_options, resolve)
+      enterDraft(auth_user.value.session_info, draft_options, resolve)
     })
   })
 
   socket.respond('close_draft', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status) || auth_user === undefined) {
-        resolve(status)
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user)
         return
       }
 
-      resolve(exitDraft(auth_user.session_info))
+      resolve(exitDraft(auth_user.value.session_info))
     })
   })
 
   socket.respond('next_pool', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status) || auth_user === undefined) {
-        resolve(status, null, null)
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user, null, null)
         return
       }
 
-      const [draft_info_status, draft_state] = draftState(auth_user)
+      const [draft_info_status, draft_state] = draftState(auth_user.value)
       if (!isOk(draft_info_status) || draft_state === null) {
         resolve(draft_info_status, null, null)
         return
@@ -330,13 +323,13 @@ export function initDraftState(socket: LoRDraftSocket) {
       return
     }
 
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status) || auth_user === undefined) {
-        resolve(status)
+    join_session(session_cred, (auth_user) => {
+      if (!isOk(auth_user)) {
+        resolve(auth_user)
         return
       }
 
-      const [draft_info_status, draft_state] = draftState(auth_user)
+      const [draft_info_status, draft_state] = draftState(auth_user.value)
       if (!isOk(draft_info_status) || draft_state === null) {
         resolve(draft_info_status)
         return

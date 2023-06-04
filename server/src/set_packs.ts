@@ -15,6 +15,7 @@ import {
   allFullfilled,
   ErrStatusT,
   isOk,
+  keyInUnknown,
   makeErrStatus,
   OkStatus,
   rejectedResults,
@@ -47,22 +48,33 @@ function loadSetPack(
   bundle: string,
   callback: (status: Status, cards: Card[] | null) => void = () => undefined
 ): void {
-  readBundle(bundle, (status: Status, data: string | null) => {
-    if (!isOk(status) || data === null) {
-      callback(status, null)
+  readBundle(bundle, (data: Status<string>) => {
+    if (!isOk(data)) {
+      callback(data, null)
       return
     }
-    const obj = JSON.parse(data) as any[]
+    const obj = JSON.parse(data.value) as unknown[]
     const cards: Card[] = []
     if (
-      obj.some((parsed_card: any) => {
+      obj.some((parsed_card: unknown) => {
         if (!SetPackCardT.guard(parsed_card)) {
+          let ident = '?'
+          if (
+            keyInUnknown(parsed_card, 'cardCode') &&
+            typeof parsed_card.cardCode === 'string'
+          ) {
+            ident = parsed_card.cardCode
+          } else if (
+            keyInUnknown(parsed_card, 'name') &&
+            typeof parsed_card.name === 'string'
+          ) {
+            ident = parsed_card.name
+          }
+
           callback(
             makeErrStatus(
               StatusCode.INVALID_SET_PACK_FORMAT,
-              `Found card with invalid structure (cardCode/name: ${
-                parsed_card?.cardCode ?? parsed_card?.name
-              })`
+              `Found card with invalid structure (cardCode/name: ${ident})`
             ),
             null
           )
@@ -106,7 +118,7 @@ function loadSetPack(
             isStandard: parsed_card.formatRefs.includes(StandardFormatRef),
           }
 
-          if (!CardT.guard(card as any)) {
+          if (!CardT.guard(card as unknown)) {
             callback(
               makeErrStatus(
                 StatusCode.INVALID_SET_PACK_FORMAT,
@@ -129,7 +141,7 @@ function loadSetPack(
       // raised the error to `callback`.
       return
     }
-    callback(status, cards)
+    callback(OkStatus, cards)
   })
 }
 
