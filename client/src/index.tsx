@@ -91,7 +91,7 @@ function Main() {
     setCachedAuthInfoRef.current(CachedAuthInfo.clearStorageAuthInfo())
   }
 
-  if (authInfo !== null) {
+  if (authInfo !== null && gameMetadataRef.current === null) {
     getGameMetadata(socket_ref.current, authInfo, (game_metadata) => {
       if (isOk(game_metadata)) {
         gameMetadataRef.current = game_metadata.value

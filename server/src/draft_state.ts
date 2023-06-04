@@ -26,7 +26,7 @@ import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
 import { LoRDraftSocket } from 'socket-msgs'
 import { Array as ArrayT } from 'runtypes'
-import { DraftOptions, DraftOptionsT } from 'draft_options'
+import { DraftOptions, DraftOptionsT, formatContainsCard } from 'draft_options'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [
@@ -538,7 +538,18 @@ function randomNonChampCards(
       const region = randChoice(region_pool)
       const card = randChoice(region_sets[region].nonChamps)
 
-      if (cards.includes(card) && iterations < MAX_CARD_REPICK_ITERATIONS) {
+      if (cards.includes(card) || !formatContainsCard(deck.options, card)) {
+        if (iterations >= MAX_CARD_REPICK_ITERATIONS) {
+          callback(
+            makeErrStatus(
+              StatusCode.MAX_REDRAWS_EXCEEDED,
+              'Failed to choose cards after many attempts.'
+            ),
+            null
+          )
+          return
+        }
+
         continue
       }
 

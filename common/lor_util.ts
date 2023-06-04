@@ -48,6 +48,7 @@ export enum StatusCode {
   // Generic error when retrieving a Card, used to mask internal errors.
   RETRIEVE_CARD_ERROR = 'RETRIEVE_CARD_ERROR',
   UNKNOWN_CARD = 'UNKNOWN_CARD',
+  MAX_REDRAWS_EXCEEDED = 'MAX_REDRAWS_EXCEEDED',
 
   // Async socket errors
   MESSAGE_TIMEOUT = 'MESSAGE_TIMEOUT',
