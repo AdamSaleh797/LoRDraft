@@ -1,16 +1,16 @@
-import { Layout } from "./components/layout";
-import { Draft } from "./components/draft";
+import { Layout } from './components/layout'
+import { Draft } from './components/draft'
 
 import React from 'react'
 
 function App() {
-	return (
-		<div>
-			<Layout>
-				<Draft></Draft>
-			</Layout>
-		</div>
-	);
+  return (
+    <div>
+      <Layout>
+        <Draft></Draft>
+      </Layout>
+    </div>
+  )
 }
 
-export default App;
+export default App
