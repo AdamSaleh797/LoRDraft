@@ -62,8 +62,10 @@ interface AsyncMessage<
 
 type ResponseCallbackArgsT<
   Params extends Parameters<(...args: unknown[]) => void>
-> = Params extends Parameters<(status: Status, ...args: infer U) => void>
-  ? Parameters<(status: Status, ...args: MakeOptional<U>) => void>
+> = Params extends Parameters<
+  (status: Status<infer T>, ...args: infer U) => void
+>
+  ? Parameters<(status: Status<T>, ...args: MakeOptional<U>) => void>
   : never
 
 export type ResponseCallbackT<
@@ -154,7 +156,7 @@ export class AsyncSocketContext<
     return setTimeout(() => {
       this.outstanding_calls.delete(uuid)
 
-      const cb = callback as (status: Status, ...args: null[]) => void
+      const cb = callback as (status: Status<unknown>, ...args: null[]) => void
       cb(
         makeErrStatus(
           StatusCode.MESSAGE_TIMEOUT,
@@ -191,7 +193,10 @@ export class AsyncSocketContext<
     ]
   ): void {
     console.log(`calling ${event_name} with`, ...args.slice(0, -1))
-    const callback = args.at(-1) as ResponseCallbackT<EventName, ListenEvents>
+    const callback = args[args.length - 1] as ResponseCallbackT<
+      EventName,
+      ListenEvents
+    >
     const call_args = args.slice(0, -1) as ReqParams<EventName, EmitEvents>
 
     this._init_callback(event_name)

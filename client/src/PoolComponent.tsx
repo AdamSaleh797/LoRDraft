@@ -45,30 +45,27 @@ export function PoolComponent(props: PoolComponentProps) {
   authInfoRef.current = props.authInfo
 
   function nextPool() {
-    props.socket.call(
-      'next_pool',
-      authInfoRef.current,
-      (status, pending_cards, draft_state) => {
-        if (!isOk(status) || pending_cards === null || draft_state === null) {
-          console.log(status)
-          return
-        }
-
-        updateDraftStateRef.current((draft_state_info) => {
-          return {
-            state: draft_state,
-            deck:
-              draft_state_info === null
-                ? makeDraftDeck()
-                : draft_state_info.deck,
-            pending_cards: pending_cards,
-          }
-        })
-
-        // Clear the selected cards.
-        setSelectedRef.current([])
+    props.socket.call('next_pool', authInfoRef.current, (status) => {
+      if (!isOk(status)) {
+        console.log(status)
+        return
       }
-    )
+      const [pending_cards, draft_state] = status.value
+
+      updateDraftStateRef.current((draft_state_info) => {
+        return {
+          state: draft_state,
+          deck:
+            draft_state_info === null
+              ? makeDraftDeck(0 as any)
+              : draft_state_info.deck,
+          pending_cards: pending_cards,
+        }
+      })
+
+      // Clear the selected cards.
+      setSelectedRef.current([])
+    })
   }
 
   React.useEffect(() => {

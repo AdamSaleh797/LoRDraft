@@ -11,7 +11,9 @@ import {
 
 export const MAX_CARD_COPIES = 3
 
-const RUNETERRA = 'Runeterra' as const
+export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None'
+
+export const RUNETERRA = 'Runeterra' as const
 
 const g_main_regions = [
   'Demacia',
@@ -190,7 +192,13 @@ export const SetPackCardT = Record({
   spellSpeed: String,
   spellSpeedRef: String,
   rarity: String,
-  rarityRef: String,
+  rarityRef: Union(
+    Literal('Common'),
+    Literal('Rare'),
+    Literal('Epic'),
+    Literal('Champion'),
+    Literal('None')
+  ),
   subtypes: Array(String),
   supertype: String,
   type: String,
@@ -209,7 +217,13 @@ export function filterRegions(
 }
 
 export const CardT = Record({
-  rarity: String,
+  rarity: Union(
+    Literal('Common'),
+    Literal('Rare'),
+    Literal('Epic'),
+    Literal('Champion'),
+    Literal('None')
+  ),
   imageUrl: String,
   cost: Number,
   name: String,
@@ -224,7 +238,7 @@ export const CardT = Record({
 
 // export type Card = Static<typeof CardT>
 export interface Card {
-  rarity: string
+  rarity: Rarity
   imageUrl: string
   cost: number
   name: string

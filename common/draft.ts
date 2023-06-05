@@ -7,8 +7,9 @@ import {
   regionContains,
   RegionT,
 } from 'card'
+import { DraftOptions } from 'draft_options'
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import { enumToRuntype } from 'lor_util'
+import { makeErrStatus, makeOkStatus, Status, StatusCode } from 'lor_util'
 import {
   Array as ArrayT,
   Null,
@@ -20,6 +21,11 @@ import {
 
 export const POOL_SIZE = 4
 
+/**
+ * The total number of cards in a complete deck.
+ */
+export const CARDS_PER_DECK = 40
+
 export const enum DraftState {
   INIT = 'INIT',
   INITIAL_SELECTION = 'INITIAL_SELECTION',
@@ -28,24 +34,10 @@ export const enum DraftState {
   RANDOM_SELECTION_2 = 'RANDOM_SELECTION_2',
   CHAMP_ROUND_2 = 'CHAMP_ROUND_2',
   RANDOM_SELECTION_3 = 'RANDOM_SELECTION_3',
-  CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
-  TRIM_DECK = 'TRIM_DECK',
+  // CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
+  // TRIM_DECK = 'TRIM_DECK',
   GENERATE_CODE = 'GENERATE_CODE',
 }
-
-export enum DraftFormat {
-  STANDARD = 'STANDARD',
-  ETERNAL = 'ETERNAL',
-}
-
-export const DraftFormatT = enumToRuntype(DraftFormat)
-
-export enum DraftRarityRestriction {
-  COMMONS = 'COMMONS',
-  ANY_RARITY = 'ANY_RARITY',
-}
-
-export const DraftRarityRestrictionT = enumToRuntype(DraftRarityRestriction)
 
 export const CardCountT = RecordT({
   card: CardT,
@@ -55,16 +47,6 @@ export const CardCountT = RecordT({
 export interface CardCount {
   card: Card
   count: number
-}
-
-export const DraftOptionsT = RecordT({
-  rarityRestriction: DraftRarityRestrictionT,
-  draftFormat: DraftFormatT,
-})
-
-export interface DraftOptions {
-  rarityRestriction: DraftRarityRestriction
-  draftFormat: DraftFormat
 }
 
 export const DraftDeckT = RecordT({
@@ -79,6 +61,7 @@ export interface DraftDeck {
   cardCounts: CardCount[]
   numCards: number
   deckCode: string | null
+  options: DraftOptions
 }
 
 export function addToCardCounts(
@@ -104,12 +87,16 @@ export function addToCardCounts(
   }
 }
 
-export function makeDraftDeck(cards: Card[] = []): DraftDeck {
+export function makeDraftDeck(
+  options: DraftOptions,
+  cards: Card[] = []
+): DraftDeck {
   const deck: DraftDeck = {
     regions: allRegions(),
     cardCounts: [],
     numCards: 0,
     deckCode: null,
+    options: options,
   }
 
   cards.forEach((card) => {
@@ -238,10 +225,10 @@ export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
 
 /**
  * Adds a list of cards to the deck.
- * @param deck The deck to add `card` to.
- * @param card The card to be added.
- * @returns True if the card was successfully added, or false if the card
- * could not be added because adding it would violate a rule of deck building.
+ * @param deck The deck to add `cards` to.
+ * @param cards The cards to be added.
+ * @returns True if the cards were all successfully added, or false if any card
+ * could not be added, not mutating the deck.
  */
 export function addCardsToDeck(deck: DraftDeck, cards: Card[]): boolean {
   const old_deck = { ...deck }
@@ -269,6 +256,9 @@ export function draftStateCardLimits(
   draftState: DraftState
 ): [number, number] | null {
   switch (draftState) {
+    case DraftState.INIT: {
+      return null
+    }
     case DraftState.INITIAL_SELECTION: {
       return [2, 2]
     }
@@ -278,25 +268,38 @@ export function draftStateCardLimits(
       return [1, 1]
     }
     case DraftState.CHAMP_ROUND_1:
-    case DraftState.CHAMP_ROUND_2:
-    case DraftState.CHAMP_ROUND_3: {
+    case DraftState.CHAMP_ROUND_2: {
       return [0, 2]
     }
-    case DraftState.TRIM_DECK: {
-      return [5, 5]
-    }
-    case DraftState.INIT:
+    // case DraftState.CHAMP_ROUND_3: {
+    //   return [0, 2]
+    // }
+    // case DraftState.TRIM_DECK: {
+    //   return [5, 5]
+    // }
     case DraftState.GENERATE_CODE: {
       return null
     }
   }
 }
 
-export function generateDeckCode(deck: DraftDeck): string {
+export function getDeckCode(deck: DraftDeck): Status<string> {
+  if (deck.numCards !== CARDS_PER_DECK) {
+    return makeErrStatus(
+      StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
+      `Cannot generate deck code for deck, expect ${CARDS_PER_DECK} cards, found ${deck.numCards}.`
+    )
+  }
+  if (deck.deckCode !== null) {
+    return makeOkStatus(deck.deckCode)
+  }
+
   const deckcodesDeck = deck.cardCounts.map((cardCount) => ({
     cardCode: cardCount.card.cardCode,
     count: cardCount.count,
   }))
 
-  return getCodeFromDeck(deckcodesDeck)
+  const code = getCodeFromDeck(deckcodesDeck)
+  deck.deckCode = code
+  return makeOkStatus(code)
 }
