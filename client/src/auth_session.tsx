@@ -1,15 +1,16 @@
+import { Buffer } from 'buffer'
+
 import React from 'react'
 
-import { Buffer } from 'buffer'
 import {
-  LoginCred,
   LoRDraftClientSocket,
+  LoginCred,
   RegisterInfo,
   SessionCred,
 } from 'game/socket-msgs'
-import { isOk, Status, StatusCode } from 'util/status'
-import { StateMachine } from 'util/state_machine'
 import { Empty } from 'util/lor_util'
+import { StateMachine } from 'util/state_machine'
+import { Status, StatusCode, isOk } from 'util/status'
 
 interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void

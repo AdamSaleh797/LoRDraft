@@ -1,15 +1,4 @@
-import {
-  allRegions,
-  Card,
-  CardT,
-  MAX_CARD_COPIES,
-  Region,
-  regionContains,
-  RegionT,
-} from 'game/card'
-import { DraftOptions } from 'game/draft_options'
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import { makeErrStatus, makeOkStatus, Status, StatusCode } from 'util/status'
 import {
   Array as ArrayT,
   Null,
@@ -18,6 +7,18 @@ import {
   String,
   Union,
 } from 'runtypes'
+
+import {
+  Card,
+  CardT,
+  MAX_CARD_COPIES,
+  Region,
+  RegionT,
+  allRegions,
+  regionContains,
+} from 'game/card'
+import { DraftOptions } from 'game/draft_options'
+import { Status, StatusCode, makeErrStatus, makeOkStatus } from 'util/status'
 
 export const POOL_SIZE = 4
 

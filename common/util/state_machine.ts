@@ -1,10 +1,11 @@
 import {
-  makeErrStatus,
-  makeOkStatus,
   OkStatus,
   Status,
   StatusCode,
+  makeErrStatus,
+  makeOkStatus,
 } from 'util/status'
+
 import { ReturnTypeOrNever } from './lor_util'
 
 type KeyT = string | number

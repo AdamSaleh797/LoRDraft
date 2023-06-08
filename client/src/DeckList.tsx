@@ -1,8 +1,9 @@
+import React from 'react'
+
 import { allRegions } from 'game/card'
 import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
-import { isOk } from 'util/status'
 import { GameMetadata } from 'game/metadata'
-import React from 'react'
+import { isOk } from 'util/status'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null

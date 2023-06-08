@@ -3,12 +3,12 @@ import { InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
-import { AsyncSocketContext } from 'util/async_socket'
 import { Card } from 'game/card'
-import { Empty } from 'util/lor_util'
 import { DraftState, DraftStateInfo } from 'game/draft'
 import { DraftOptions } from 'game/draft_options'
 import { GameMetadata } from 'game/metadata'
+import { AsyncSocketContext } from 'util/async_socket'
+import { Empty } from 'util/lor_util'
 import { Status } from 'util/status'
 
 export const RegisterInfoT = Record({

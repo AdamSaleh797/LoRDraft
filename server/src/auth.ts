@@ -1,23 +1,23 @@
 import crypto from 'crypto'
+import { SessionInfo } from 'session'
+
 import {
+  LoRDraftSocket,
   LoginCred,
   LoginCredT,
-  LoRDraftSocket,
   RegisterInfo,
   RegisterInfoT,
   SessionCred,
   SessionCredT,
 } from 'game/socket-msgs'
-
 import {
-  isOk,
-  makeErrStatus,
-  makeOkStatus,
   OkStatus,
   Status,
   StatusCode,
+  isOk,
+  makeErrStatus,
+  makeOkStatus,
 } from 'util/status'
-import { SessionInfo } from 'session'
 
 // Expiration time of sessions in milliseconds.
 const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000
