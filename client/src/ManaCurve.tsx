@@ -76,7 +76,6 @@ export function ManaCurve(props: ManaCurveComponentProps) {
       </div>
       <div>
         {histogram.map((manaValueCount) => {
-
           const textStyle = {
             'text-align': 'center',
             display: 'inline-block',
