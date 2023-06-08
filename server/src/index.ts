@@ -1,12 +1,13 @@
 import fs from 'fs'
 import http from 'http'
 import mime from 'mime'
-import path from 'path'
 import minimist from 'minimist'
+import path from 'path'
+
+import { isOk } from 'util/status'
 
 import { InitSocket } from './socket_init'
 import { updateAssets } from './update_assets'
-import { isOk } from 'lor_util'
 
 const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
 

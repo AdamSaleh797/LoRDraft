@@ -1,14 +1,15 @@
 import React from 'react'
 
 import {
-  DraftOptions,
   DraftFormat,
+  DraftOptions,
   DraftRarityRestriction,
-} from 'draft_options'
-import { StateMachine } from 'state_machine'
+} from 'game/draft_options'
+import { StateMachine } from 'util/state_machine'
+import { isOk } from 'util/status'
+
 import { DraftFormatComponent } from './draft_format'
 import { DraftRarityRestrictionComponent } from './draft_rarity_restriction'
-import { isOk } from 'lor_util'
 
 interface DraftOptionsComponentProps {
   join_draft_fn: (draft_options: DraftOptions) => void

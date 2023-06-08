@@ -1,4 +1,4 @@
-import { Region, RegionT, RUNETERRA } from 'card'
+import { Region, RegionT, RUNETERRA } from 'game/card'
 import { Literal, Record as RecordT, String, Union } from 'runtypes'
 
 const g_region_abbreviations = [

@@ -7,7 +7,7 @@ import {
   RegisterInfoT,
   SessionCred,
   SessionCredT,
-} from 'socket-msgs'
+} from 'game/socket-msgs'
 
 import {
   isOk,
@@ -16,7 +16,7 @@ import {
   OkStatus,
   Status,
   StatusCode,
-} from 'lor_util'
+} from 'util/status'
 import { SessionInfo } from 'session'
 
 // Expiration time of sessions in milliseconds.

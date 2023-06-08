@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { DraftRarityRestriction } from 'draft_options'
+import { DraftRarityRestriction } from 'game/draft_options'
 
 interface DraftRarityRestrictionComponentProps {
   select_rarity_restriction_fn: (

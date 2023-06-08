@@ -6,10 +6,10 @@ import {
   Region,
   regionContains,
   RegionT,
-} from 'card'
-import { DraftOptions } from 'draft_options'
+} from 'game/card'
+import { DraftOptions } from 'game/draft_options'
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import { makeErrStatus, makeOkStatus, Status, StatusCode } from 'lor_util'
+import { makeErrStatus, makeOkStatus, Status, StatusCode } from 'util/status'
 import {
   Array as ArrayT,
   Null,

@@ -1,5 +1,5 @@
-import { Card } from 'card'
-import { enumToRuntype } from 'lor_util'
+import { Card } from 'game/card'
+import { enumToRuntype } from 'util/lor_util'
 import { Record as RecordT } from 'runtypes'
 
 export enum DraftFormat {

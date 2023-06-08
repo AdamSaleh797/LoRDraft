@@ -1,5 +1,6 @@
-import { CardCount, DraftStateInfo } from 'draft'
 import React from 'react'
+
+import { CardCount, DraftStateInfo } from 'game/draft'
 
 export const MAX_DISPLAY_COST = 8
 const MANA_CURVE_HEIGHT = 150
@@ -76,7 +77,6 @@ export function ManaCurve(props: ManaCurveComponentProps) {
       </div>
       <div>
         {histogram.map((manaValueCount) => {
-
           const textStyle = {
             'text-align': 'center',
             display: 'inline-block',
