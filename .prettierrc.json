@@ -5,5 +5,8 @@
   "useTabs": false,
   "semi": false,
   "singleQuote": true,
-  "jsxSingleQuote": true
+  "jsxSingleQuote": true,
+  "importOrder": ["^react$", "^(game|util)/(.*)$", "^\\./(.*)$"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }

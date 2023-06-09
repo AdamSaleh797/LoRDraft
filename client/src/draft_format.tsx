@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { DraftFormat } from 'draft_options'
+import { DraftFormat } from 'game/draft_options'
 
 interface DraftFormatComponentProps {
   select_format_fn: (draft_format: DraftFormat) => void

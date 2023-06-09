@@ -1,33 +1,47 @@
-import { join_session, LoggedInAuthUser } from './auth'
-import { Card, CardT, isChampion, MAX_CARD_COPIES, regionContains } from 'card'
+import { Array as ArrayT } from 'runtypes'
+
 import {
-  addCardsToDeck,
-  canAddToDeck,
+  Card,
+  CardT,
+  MAX_CARD_COPIES,
+  isChampion,
+  regionContains,
+} from 'game/card'
+import {
   DraftDeck,
   DraftState,
+  POOL_SIZE,
+  addCardsToDeck,
+  canAddToDeck,
   draftStateCardLimits,
   makeDraftDeck,
-  POOL_SIZE,
-} from 'draft'
+} from 'game/draft'
+import {
+  DraftOptions,
+  DraftOptionsT,
+  formatContainsCard,
+} from 'game/draft_options'
+import { LoRDraftSocket } from 'game/socket-msgs'
 import {
   binarySearch,
   containsDuplicates,
-  isOk,
-  makeErrStatus,
-  OkStatus,
-  randChoice,
-  Status,
-  StatusCode,
   intersectListsPred,
+  randChoice,
   randSample,
   randSampleNumbersAvoidingRepeats,
+} from 'util/lor_util'
+import {
+  OkStatus,
+  Status,
+  StatusCode,
+  isOk,
+  makeErrStatus,
   makeOkStatus,
-} from 'lor_util'
+} from 'util/status'
+
+import { LoggedInAuthUser, join_session } from './auth'
 import { SessionInfo } from './session'
 import { regionSets } from './set_packs'
-import { LoRDraftSocket } from 'socket-msgs'
-import { Array as ArrayT } from 'runtypes'
-import { DraftOptions, DraftOptionsT, formatContainsCard } from 'draft_options'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [

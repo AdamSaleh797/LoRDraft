@@ -1,12 +1,17 @@
 import http from 'http'
 import { Server } from 'socket.io'
 
-import { LoRDraftServer, LoRDraftSocket, LoRDraftSocketIO } from 'socket-msgs'
+import {
+  LoRDraftServer,
+  LoRDraftSocket,
+  LoRDraftSocketIO,
+} from 'game/socket-msgs'
+import { AsyncSocketContext } from 'util/async_socket'
+import { isOk } from 'util/status'
+
 import { init_auth, join_session } from './auth'
-import { AsyncSocketContext } from 'async_socket'
-import { initDraftState } from './draft_state'
-import { isOk } from 'lor_util'
 import { gameMetadata } from './core_bundle'
+import { initDraftState } from './draft_state'
 
 function initStaticMessages(socket: LoRDraftSocket) {
   socket.respond('game_metadata', (resolve, session_cred) => {

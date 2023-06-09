@@ -1,8 +1,9 @@
 import child_process from 'child_process'
 import fs from 'fs'
 import https from 'https'
-import { isOk, Status, StatusCode, statusFromError } from 'lor_util'
 import path from 'path'
+
+import { Status, StatusCode, isOk, statusFromError } from 'util/status'
 
 const _ASSET_DIR = path.join(__dirname, '../assets')
 

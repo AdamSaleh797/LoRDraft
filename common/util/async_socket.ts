@@ -1,6 +1,8 @@
-import { Socket as ClientSocket } from 'socket.io-client'
 import { Socket as ServerSocket } from 'socket.io'
-import { Empty, gen_uuid, makeErrStatus, Status, StatusCode } from 'lor_util'
+import { Socket as ClientSocket } from 'socket.io-client'
+
+import { Empty, gen_uuid } from 'util/lor_util'
+import { Status, StatusCode, makeErrStatus } from 'util/status'
 
 interface EventsMap {
   [event: string]: any

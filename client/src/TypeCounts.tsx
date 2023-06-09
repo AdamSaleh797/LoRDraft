@@ -1,5 +1,6 @@
-import { CardCount, DraftStateInfo } from 'draft'
 import React from 'react'
+
+import { CardCount, DraftStateInfo } from 'game/draft'
 
 export const CARD_TYPE_COUNT = 4
 

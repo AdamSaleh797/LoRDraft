@@ -1,20 +1,20 @@
-import { readBundle } from './bundle'
-import {
-  isArray,
-  isOk,
-  keyInUnknown,
-  makeErrStatus,
-  makeOkStatus,
-  Status,
-  StatusCode,
-} from 'lor_util'
+import { allRegions } from 'game/card'
 import {
   GameMetadata,
   RegionMetadata,
   RegionRef,
   SetPackRegionMetadataT,
-} from 'metadata'
-import { allRegions } from 'card'
+} from 'game/metadata'
+import { isArray, keyInUnknown } from 'util/lor_util'
+import {
+  Status,
+  StatusCode,
+  isOk,
+  makeErrStatus,
+  makeOkStatus,
+} from 'util/status'
+
+import { readBundle } from './bundle'
 
 const g_core_bundle = 'globals-en_us.json'
 

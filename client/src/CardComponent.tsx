@@ -1,5 +1,6 @@
-import { Card } from 'card'
 import React from 'react'
+
+import { Card } from 'game/card'
 
 export interface CardComponentProps {
   card: Card | null

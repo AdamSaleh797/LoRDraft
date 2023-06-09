@@ -1,13 +1,14 @@
-import { DraftStateInfo } from 'draft'
-import { DraftOptionsComponent } from './DraftOptions'
-import { Empty, isOk, Status, StatusCode } from 'lor_util'
-import { PoolComponent } from './PoolComponent'
 import React from 'react'
 
-import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
+import { DraftStateInfo } from 'game/draft'
+import { DraftOptions } from 'game/draft_options'
+import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
+import { Empty } from 'util/lor_util'
+import { StateMachine } from 'util/state_machine'
+import { Status, StatusCode, isOk } from 'util/status'
 
-import { StateMachine } from 'state_machine'
-import { DraftOptions } from 'draft_options'
+import { DraftOptionsComponent } from './DraftOptions'
+import { PoolComponent } from './PoolComponent'
 
 const enum FlowState {
   DRAFT_OPTIONS = 'DRAFT_OPTIONS',
