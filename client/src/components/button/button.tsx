@@ -6,7 +6,7 @@ type ButtonProps = {
   onClick?: MouseEventHandler<HTMLButtonElement>
 }
 
-export const Button: React.FC<ButtonProps> = ({ children, onClick }) => {
+export function Button({ children, onClick }: ButtonProps) {
   return (
     <button className={'button'} onClick={onClick}>
       {children}
