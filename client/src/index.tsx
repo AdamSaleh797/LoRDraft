@@ -19,6 +19,7 @@ import { TypeCounts } from './TypeCounts'
 import { SessionComponent } from './auth_session'
 import { CachedAuthInfo } from './cached_auth_info'
 import { DraftFlowComponent } from './draft_flow'
+import './styles/global_styles.css'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)

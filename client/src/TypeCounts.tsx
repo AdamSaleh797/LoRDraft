@@ -2,6 +2,11 @@ import React from 'react'
 
 import { CardCount, DraftStateInfo } from 'game/draft'
 
+import { EquipmentIcon } from './card_types/equipment_icon'
+import { FollowerIcon } from './card_types/follower_icon'
+import { LandmarkIcon } from './card_types/landmark_icon'
+import { SpellIcon } from './card_types/spell_icon'
+
 export const CARD_TYPE_COUNT = 4
 
 export const UNITS = 0
@@ -46,16 +51,31 @@ export function TypeCounts(props: TypeCountsComponentProps) {
     marginBottom: '10px',
   }
 
+  const typeCountText = {
+    'text-align': 'center',
+    'font-family': '"Gill Sans", sans-serif',
+    display: 'inline-block',
+    marginRight: '10px',
+  }
+
   return (
     <div style={typeCountContainer}>
-      Units: {type_counts[UNITS]}
-      <br></br>
-      Spells: {type_counts[SPELLS]}
-      <br></br>
-      Landmarks: {type_counts[LANDMARKS]}
-      <br></br>
-      Equipment: {type_counts[EQUIPMENTS]}
-      <br></br>
+      <div style={typeCountText}>
+        <FollowerIcon />
+        <div>{type_counts[UNITS]}</div>
+      </div>
+      <div style={typeCountText}>
+        <SpellIcon />
+        <div>{type_counts[SPELLS]}</div>
+      </div>
+      <div style={typeCountText}>
+        <LandmarkIcon />
+        <div>{type_counts[LANDMARKS]}</div>
+      </div>
+      <div style={typeCountText}>
+        <EquipmentIcon />
+        <div>{type_counts[EQUIPMENTS]}</div>
+      </div>
     </div>
   )
 }
