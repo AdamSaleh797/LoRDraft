@@ -25,6 +25,7 @@ export function gameMetadata(
 ) {
   if (g_metadata !== undefined) {
     callback(makeOkStatus(g_metadata))
+    return
   }
 
   readBundle(g_core_bundle, (data: Status<string>) => {
