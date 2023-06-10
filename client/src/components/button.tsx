@@ -1,5 +1,5 @@
-import React, { ReactNode, MouseEventHandler } from 'react'
 import './Button.css'
+import React, { ReactNode, MouseEventHandler } from 'react'
 
 type ButtonProps = {
   children: ReactNode
@@ -7,8 +7,8 @@ type ButtonProps = {
   className?: string
 }
 
-export function Button({ children, onClick, className}: ButtonProps) {
-  const buttonClassName = className ? className : 'button'
+export function Button({ children, onClick, className }: ButtonProps) {
+  const buttonClassName = className !== undefined ? className : 'button'
 
   return (
     <button className={buttonClassName} onClick={onClick}>

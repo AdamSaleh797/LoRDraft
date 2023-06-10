@@ -1,8 +1,8 @@
-import React from 'react'
-import './modal.css'
-import { LoginComponent } from '../auth/login-component'
 import { APP_TITLE } from '../../utils/constants'
-import { Button } from '../button/button'
+import { LoginComponent } from '../auth/login-component'
+import { Button } from './button'
+import './modal.css'
+import React from 'react'
 
 export function Modal({ setOpenModal }: { setOpenModal(b: boolean): void }) {
   return (
