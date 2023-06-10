@@ -1,17 +1,24 @@
 import crypto from 'crypto'
+
 import {
+  LoRDraftSocket,
   LoginCred,
   LoginCredT,
-  LoRDraftSocket,
   RegisterInfo,
   RegisterInfoT,
   SessionCred,
   SessionCredT,
-} from 'socket-msgs'
+} from 'game/socket-msgs'
+import {
+  OkStatus,
+  Status,
+  StatusCode,
+  isOk,
+  makeErrStatus,
+  makeOkStatus,
+} from 'util/status'
 
-import { isOk, makeErrStatus, OkStatus, Status, StatusCode } from 'lor_util'
-import assert from 'assert'
-import { SessionInfo } from 'session'
+import { SessionInfo } from 'server/session'
 
 // Expiration time of sessions in milliseconds.
 const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000
@@ -69,45 +76,46 @@ export function init_auth(socket: LoRDraftSocket): void {
       return
     }
 
-    login(login_cred, (status, auth_user) => {
-      if (!isOk(status)) {
-        resolve(status, null)
-        return
-      }
-
-      assert(auth_user !== undefined && logged_in(auth_user))
-
-      resolve(status, {
-        username: login_cred.username,
-        token: auth_user.session_info.auth_info.token,
-      })
-    })
-  })
-
-  socket.respond('join_session', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
-      if (!isOk(status)) {
-        resolve(status, null)
-        return
-      }
-      assert(auth_user !== undefined)
-
-      resolve(status, {
-        username: auth_user.username,
-        token: auth_user.session_info.auth_info.token,
-      })
-    })
-  })
-
-  socket.respond('logout', (resolve, session_cred) => {
-    join_session(session_cred, (status, auth_user) => {
+    login(login_cred, (status) => {
       if (!isOk(status)) {
         resolve(status)
         return
       }
-      assert(auth_user !== undefined)
+      const auth_user = status.value
 
-      resolve(logout(auth_user))
+      resolve(
+        makeOkStatus({
+          username: login_cred.username,
+          token: auth_user.session_info.auth_info.token,
+        })
+      )
+    })
+  })
+
+  socket.respond('join_session', (resolve, session_cred) => {
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
+        return
+      }
+      const auth_user = status.value
+
+      resolve(
+        makeOkStatus({
+          username: auth_user.username,
+          token: auth_user.session_info.auth_info.token,
+        })
+      )
+    })
+  })
+
+  socket.respond('logout', (resolve, session_cred) => {
+    join_session(session_cred, (status) => {
+      if (!isOk(status)) {
+        resolve(status)
+      } else {
+        resolve(logout(status.value))
+      }
     })
   })
 }
@@ -144,7 +152,7 @@ function register(
 
 export function login(
   login_cred: LoginCred,
-  callback: (status: Status, auth_user?: AuthUser) => void
+  callback: (auth_user: Status<LoggedInAuthUser>) => void
 ): void {
   const auth_user = users.get(login_cred.username)
   if (auth_user === undefined) {
@@ -192,7 +200,7 @@ export function login(
       login_time: now,
     },
   }
-  callback(OkStatus, auth_user)
+  callback(makeOkStatus(auth_user as LoggedInAuthUser))
 }
 
 export function logout(auth_user: LoggedInAuthUser): Status {
@@ -203,7 +211,7 @@ export function logout(auth_user: LoggedInAuthUser): Status {
 
 export function join_session(
   session_cred: SessionCred | undefined,
-  callback: (status: Status, auth_user?: LoggedInAuthUser) => void
+  callback: (auth_user: Status<LoggedInAuthUser>) => void
 ): void {
   if (!SessionCredT.guard(session_cred)) {
     // Invalid input, we can ignore
@@ -268,5 +276,5 @@ export function join_session(
     return
   }
 
-  callback(OkStatus, auth_user)
+  callback(makeOkStatus(auth_user))
 }

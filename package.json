@@ -12,10 +12,14 @@
     "lint": "npx eslint .",
     "start": "cd server && npm run start",
     "start-prod": "cd server && npm run start-prod",
+    "start-prod-ec2": "cd server && npm run start-prod-ec2",
     "build-common": "cd common && npm run build",
     "build-client": "cd client && npm run build",
+    "build-client-prod": "cd client && npm run build-prod",
     "build-server": "cd server && npm run build",
-    "build": "npm run build-common && npm run build-client && npm run build-server"
+    "build-server-prod": "cd server && npm run build-prod",
+    "build": "npm run build-common && npm run build-client && npm run build-server",
+    "build-prod": "npm run build-common && npm run build-client-prod && npm run build-server-prod"
   },
   "author": "",
   "license": "ISC",
@@ -29,6 +33,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "@babel/preset-typescript": "^7.18.6",
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@types/mime": "^3.0.1",
     "@types/minimist": "^1.2.2",
     "@types/react": "^18.0.26",
@@ -50,7 +55,8 @@
     "typescript": "^4.9.4",
     "utf-8-validate": "^6.0.0",
     "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
+    "webpack-cli": "^5.0.1",
+    "webpack-merge": "^5.9.0"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -63,7 +69,6 @@
     "http": "^0.0.1-security",
     "lor-deckcodes-ts": "^1.1.0",
     "mime": "^3.0.0",
-    "minimist": "^1.2.8",
     "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

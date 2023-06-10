@@ -1,8 +1,14 @@
-import { DraftStateInfo, generateDeckCode } from 'draft'
 import React from 'react'
+
+import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
+import { GameMetadata } from 'game/metadata'
+import { isOk } from 'util/status'
+
+import { RegionIconList } from 'client/RegionIconList'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null
+  gameMetadata: GameMetadata | null
 }
 
 export const ROWS = 10
@@ -14,11 +20,14 @@ export function DeckList(props: DeckListComponentProps) {
     props.draftState === null ? [] : props.draftState.deck.cardCounts
   if (
     props.draftState !== null &&
-    cardCounts.reduce((count, cardCount) => {
-      return count + cardCount.count
-    }, 0) >= 40
+    props.draftState.deck.numCards >= CARDS_PER_DECK
   ) {
-    deckCode = generateDeckCode(props.draftState.deck)
+    const code = getDeckCode(props.draftState.deck)
+    if (!isOk(code)) {
+      deckCode = null
+    } else {
+      deckCode = code.value
+    }
   } else {
     deckCode = null
   }
@@ -37,6 +46,10 @@ export function DeckList(props: DeckListComponentProps) {
       <div style={deckCodeContainer as any}>
         {deckCode === null ? [] : deckCode}
       </div>
+      <RegionIconList
+        draftState={props.draftState}
+        gameMetadata={props.gameMetadata}
+      />
       <br></br>
       {Array(ROWS * COLUMNS)
         .fill(0)

@@ -1,18 +1,22 @@
-import { downloadZipAsset, extractFromBundle, removeBundle } from './bundle'
-import {
-  allFullfilled,
-  ErrStatusT,
-  isOk,
-  makeErrStatus,
-  OkStatus,
-  OkStatusT,
-  rejectedResults,
-  Status,
-  StatusCode,
-} from 'lor_util'
 import path from 'path'
 
-import bundles from './config/bundles.json'
+import { allFullfilled, rejectedResults } from 'util/lor_util'
+import {
+  ErrStatusT,
+  OkStatus,
+  OkStatusT,
+  Status,
+  StatusCode,
+  isOk,
+  makeErrStatus,
+} from 'util/status'
+
+import {
+  downloadZipAsset,
+  extractFromBundle,
+  removeBundle,
+} from 'server/bundle'
+import bundles from 'server/config/bundles.json'
 
 export function updateAssets(
   sequential = false,

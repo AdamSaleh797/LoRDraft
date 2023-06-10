@@ -1,8 +1,9 @@
 import child_process from 'child_process'
 import fs from 'fs'
 import https from 'https'
-import { isOk, Status, StatusCode, statusFromError } from 'lor_util'
 import path from 'path'
+
+import { Status, StatusCode, isOk, statusFromError } from 'util/status'
 
 const _ASSET_DIR = path.join(__dirname, '../assets')
 
@@ -28,7 +29,7 @@ function unzip_file(
     cmd = `unzip -u ${file} -d ${output_dir}`
   }
   child_process.exec(cmd, { cwd: _ASSET_DIR }, (err) => {
-    callback(statusFromError(err, StatusCode.CHILD_PROCESS_EXEC_ERROR))
+    callback(statusFromError(err, StatusCode.CHILD_PROCESS_EXEC_ERROR, null))
   })
 }
 
@@ -53,14 +54,14 @@ export function downloadZipAsset(
           callback(status)
         } else {
           fs.unlink(zip_path, (err: Error | null) => {
-            callback(statusFromError(err, StatusCode.UNZIP_ERROR))
+            callback(statusFromError(err, StatusCode.UNZIP_ERROR, null))
           })
         }
       })
     })
 
     file.on('error', (err: Error) => {
-      callback(statusFromError(err, StatusCode.FILE_ERROR))
+      callback(statusFromError(err, StatusCode.FILE_ERROR, null))
     })
   })
 }
@@ -81,7 +82,7 @@ export function extractFromBundle(
     path.join(_ASSET_DIR, bundle, rel_path),
     path.join(_ASSET_DIR, name),
     (err) => {
-      callback(statusFromError(err, StatusCode.FILE_CP_ERROR))
+      callback(statusFromError(err, StatusCode.FILE_CP_ERROR, null))
     }
   )
 }
@@ -93,15 +94,15 @@ export function removeBundle(
   prepareAssetsDir()
 
   fs.rm(path.join(_ASSET_DIR, bundle), { recursive: true }, (err) => {
-    callback(statusFromError(err, StatusCode.FILE_RM_ERROR))
+    callback(statusFromError(err, StatusCode.FILE_RM_ERROR, null))
   })
 }
 
 export function readBundle(
   bundle: string,
-  callback: (status: Status, data: string | null) => void = () => undefined
+  callback: (data: Status<string>) => void = () => undefined
 ) {
   fs.readFile(path.join(_ASSET_DIR, bundle), 'utf-8', (err, data) => {
-    callback(statusFromError(err, StatusCode.FILE_READ_ERROR), data)
+    callback(statusFromError(err, StatusCode.FILE_READ_ERROR, data))
   })
 }

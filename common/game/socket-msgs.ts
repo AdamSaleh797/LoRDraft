@@ -1,12 +1,16 @@
 import { Buffer } from 'buffer'
 import { InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
+
 import { Socket as ClientSocket } from 'socket.io-client'
 
-import { AsyncSocketContext } from 'async_socket'
-import { Card } from 'card'
-import { Empty, Status } from 'lor_util'
-import { DraftOptions, DraftState, DraftStateInfo } from 'draft'
+import { Card } from 'game/card'
+import { DraftState, DraftStateInfo } from 'game/draft'
+import { DraftOptions } from 'game/draft_options'
+import { GameMetadata } from 'game/metadata'
+import { AsyncSocketContext } from 'util/async_socket'
+import { Empty } from 'util/lor_util'
+import { Status } from 'util/status'
 
 export const RegisterInfoT = Record({
   username: String,
@@ -32,21 +36,14 @@ export type SessionCred = Static<typeof SessionCredT>
 
 export interface ServerToClientEvents {
   register_res: (status: Status) => void
-  login_res: (status: Status, session_cred: SessionCred | null) => void
-  join_session_res: (status: Status, session_cred: SessionCred | null) => void
+  login_res: (session_cred: Status<SessionCred>) => void
+  join_session_res: (session_cred: Status<SessionCred>) => void
   logout_res: (status: Status) => void
-  card_res: (status: Status, card: Card | null) => void
+  game_metadata_res: (metadata: Status<GameMetadata>) => void
   join_draft_res: (status: Status) => void
   close_draft_res: (status: Status) => void
-  current_draft_res: (
-    status: Status,
-    draft_state_info: DraftStateInfo | null
-  ) => void
-  next_pool_res: (
-    status: Status,
-    cards: Card[] | null,
-    draft_state: DraftState | null
-  ) => void
+  current_draft_res: (draft_state_info: Status<DraftStateInfo>) => void
+  next_pool_res: (result: Status<[Card[], DraftState]>) => void
   choose_cards_res: (status: Status) => void
 }
 
@@ -55,7 +52,7 @@ export interface ClientToServerEvents {
   login_req: (login_cred?: LoginCred) => void
   join_session_req: (session_cred?: SessionCred) => void
   logout_req: (session_cred?: SessionCred) => void
-  card_req: (name?: string) => void
+  game_metadata_req: (session_cred?: SessionCred) => void
   join_draft_req: (
     session_cred?: SessionCred,
     draft_options?: DraftOptions

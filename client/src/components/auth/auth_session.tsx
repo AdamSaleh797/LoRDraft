@@ -1,15 +1,18 @@
-import { APP_TITLE } from '../../utils/constants'
-import { Button } from '../button'
+import { APP_TITLE } from 'client/utils/constants'
 import { Buffer } from 'buffer'
-import { isOk, Status, StatusCode } from 'lor_util'
+
 import React from 'react'
+
 import {
-  LoginCred,
   LoRDraftClientSocket,
+  LoginCred,
   RegisterInfo,
   SessionCred,
-} from 'socket-msgs'
-import { StateMachine } from 'state_machine'
+} from 'game/socket-msgs'
+import { Empty } from 'util/lor_util'
+import { StateMachine } from 'util/state_machine'
+import { Status, StatusCode, isOk } from 'util/status'
+import { Button } from 'client/components/button'
 
 interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void
@@ -127,8 +130,13 @@ const enum SessionState {
   SIGNED_IN = 'SIGNED_IN',
 }
 
+type LoginState = Empty
+type RegisterState = Empty
+interface SignedInState {
+  username: string
+}
+
 export function SessionComponent(props: SessionComponentProps) {
-  const [username, setUsername] = React.useState<string | null>(null)
   const [sessionState, setSessionState] = React.useState<SessionState>(
     SessionState.LOGIN
   )
@@ -139,64 +147,69 @@ export function SessionComponent(props: SessionComponentProps) {
 
   const machine_def = {
     [SessionState.LOGIN]: {
-      [SessionState.REGISTER]: () => {
+      [SessionState.REGISTER]: (_: LoginState) => {
         console.log('login -> register')
+        return {}
       },
-      [SessionState.SIGNED_IN]: (session_cred: SessionCred) => {
+      [SessionState.SIGNED_IN]: (_: LoginState, session_cred: SessionCred) => {
         console.log('login -> signed in')
         console.log('saving token to session storage')
         props.setAuthInfo(session_cred)
-        setUsername(session_cred.username)
 
         // Attempt to load the current draft. Ignore failures, since this is
         // likely due to a current draft not existing.
         refreshDraftRef.current(session_cred, () => undefined)
+
+        return {
+          username: session_cred.username,
+        }
       },
     },
     [SessionState.REGISTER]: {
-      [SessionState.LOGIN]: () => {
+      [SessionState.LOGIN]: (_: RegisterState) => {
         console.log('register -> login')
+        return {}
       },
     },
     [SessionState.SIGNED_IN]: {
-      [SessionState.LOGIN]: () => {
+      [SessionState.LOGIN]: (_: SignedInState) => {
         console.log('signed in -> login')
         props.clearAuthInfo()
-        setUsername(null)
+        return {}
       },
     },
   } as const
 
-  const session_state_machine = new StateMachine(
+  const session_state_machine = StateMachine.makeStateMachine(
     machine_def,
     sessionState,
-    setSessionState
+    {} as Empty,
+    setSessionState as (_: SessionState) => void
   )
 
   const socket = props.socket
 
-  if (username === null) {
-    if (props.authInfo !== null) {
-      socket.call('join_session', props.authInfo, (status, session_cred) => {
-        if (!isOk(status) || session_cred === null) {
-          if (sessionState === SessionState.LOGIN) {
-            console.log('failed to join session')
-            console.log(status)
-            console.log('clearing token session storage')
-            props.clearAuthInfo()
-          }
-          return
+  if (props.authInfo !== null && sessionState !== SessionState.SIGNED_IN) {
+    socket.call('join_session', props.authInfo, (status) => {
+      if (!isOk(status)) {
+        if (sessionState === SessionState.LOGIN) {
+          console.log('failed to join session')
+          console.log(status)
+          console.log('clearing token session storage')
+          props.clearAuthInfo()
         }
-        session_cred.token = Buffer.from(session_cred.token)
+        return
+      }
+      const session_cred = status.value
+      session_cred.token = Buffer.from(session_cred.token)
 
-        console.log('joined session')
-        session_state_machine.transition(
-          SessionState.LOGIN,
-          SessionState.SIGNED_IN,
-          session_cred
-        )
-      })
-    }
+      console.log('joined session')
+      session_state_machine.transition(
+        SessionState.LOGIN,
+        SessionState.SIGNED_IN,
+        session_cred
+      )
+    })
   }
 
   switch (sessionState) {
@@ -222,11 +235,12 @@ export function SessionComponent(props: SessionComponentProps) {
     }
     case SessionState.LOGIN: {
       const login = (login_cred: LoginCred) => {
-        socket.call('login', login_cred, (status, session_cred) => {
-          if (!isOk(status) || session_cred === null) {
+        socket.call('login', login_cred, (status) => {
+          if (!isOk(status)) {
             console.log(status)
             return
           }
+          const session_cred = status.value
           session_cred.token = Buffer.from(session_cred.token)
 
           console.log('logged in!')
@@ -272,11 +286,12 @@ export function SessionComponent(props: SessionComponentProps) {
             socket.call(
               'login',
               { username: username, password: password },
-              (status, session_cred) => {
-                if (!isOk(status) || session_cred === null) {
+              (status) => {
+                if (!isOk(status)) {
                   console.log(status)
                   return
                 }
+                const session_cred = status.value
                 session_cred.token = Buffer.from(session_cred.token)
 
                 session_state_machine.transition(
@@ -307,6 +322,15 @@ export function SessionComponent(props: SessionComponentProps) {
       )
     }
     case SessionState.SIGNED_IN: {
+      const status = session_state_machine.state_prop_exact(
+        SessionState.SIGNED_IN
+      )
+      if (!isOk(status)) {
+        console.log(status)
+        return <div></div>
+      }
+      const signed_in_state = status.value
+
       const logout = () => {
         if (props.authInfo !== null) {
           socket.call('logout', props.authInfo, (status) => {
@@ -325,10 +349,7 @@ export function SessionComponent(props: SessionComponentProps) {
       }
 
       return (
-        <UserComponent
-          username={props.authInfo?.username ?? ''}
-          logout_fn={logout}
-        />
+        <UserComponent username={signed_in_state.username} logout_fn={logout} />
       )
     }
   }

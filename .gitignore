@@ -1,7 +1,4 @@
 node_modules
-assets
-dist
-/static
+/dist
 *.swp
 .vscode/sftp.json
-package-lock.json

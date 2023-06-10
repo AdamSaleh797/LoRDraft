@@ -5,5 +5,12 @@
   "useTabs": false,
   "semi": false,
   "singleQuote": true,
-  "jsxSingleQuote": true
+  "jsxSingleQuote": true,
+  "importOrder": [
+    "^(react|react-dom/client|socket.io-client)$",
+    "^(game|util)/(.*)$",
+    "^(client|server)/(.*)$"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }

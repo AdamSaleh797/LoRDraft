@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer'
 
-import { SessionCred, SessionCredT } from 'socket-msgs'
+import { SessionCred, SessionCredT } from 'game/socket-msgs'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
 
