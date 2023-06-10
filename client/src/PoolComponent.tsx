@@ -11,7 +11,7 @@ import {
 import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
 import { Status, isOk } from 'util/status'
 
-import { CardComponent } from './CardComponent'
+import { CardComponent } from 'client/CardComponent'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
@@ -20,6 +20,7 @@ export interface PoolComponentProps {
     session_cred: SessionCred,
     callback: (status: Status) => void
   ) => void
+  closeDraft: () => void
   draftState: DraftStateInfo | null
   updateDraftState: (
     mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
@@ -74,15 +75,6 @@ export function PoolComponent(props: PoolComponentProps) {
     nextPool()
   }, [])
 
-  function closeDraft() {
-    props.socket.call('close_draft', authInfoRef.current, (status) => {
-      if (!isOk(status)) {
-        console.log(status)
-      }
-      updateDraftStateRef.current(() => null)
-    })
-  }
-
   function confirm() {
     const revertedCards = selected.map(
       (cardCode) =>
@@ -119,7 +111,7 @@ export function PoolComponent(props: PoolComponentProps) {
           console.log(status)
           return
         }
-        props.updateDraftState((draft_state_info) => {
+        updateDraftStateRef.current((draft_state_info) => {
           if (draft_state_info === null) {
             // This should not happen.
             return null
@@ -160,7 +152,7 @@ export function PoolComponent(props: PoolComponentProps) {
         )
       })}
       <button onClick={confirm}>CONFIRM!</button>
-      <button onClick={closeDraft}>EXIT!</button>
+      <button onClick={props.closeDraft}>EXIT!</button>
     </div>
   )
 }

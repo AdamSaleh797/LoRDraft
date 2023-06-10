@@ -1,18 +1,16 @@
 import React from 'react'
 
-import {
-  DraftFormat,
-  DraftOptions,
-  DraftRarityRestriction,
-} from 'game/draft_options'
+import { DraftOptions, DraftRarityRestriction } from 'game/draft_options'
+import { DraftFormat, GameMetadata } from 'game/metadata'
 import { StateMachine } from 'util/state_machine'
 import { isOk } from 'util/status'
 
-import { DraftFormatComponent } from './draft_format'
-import { DraftRarityRestrictionComponent } from './draft_rarity_restriction'
+import { DraftFormatComponent } from 'client/draft_format'
+import { DraftRarityRestrictionComponent } from 'client/draft_rarity_restriction'
 
 interface DraftOptionsComponentProps {
   join_draft_fn: (draft_options: DraftOptions) => void
+  gameMetadata: GameMetadata | null
 }
 
 const enum SelectionState {
@@ -70,6 +68,7 @@ export function DraftOptionsComponent(props: DraftOptionsComponentProps) {
               draft_format
             )
           }}
+          gameMetadata={props.gameMetadata}
         />
       )
     }

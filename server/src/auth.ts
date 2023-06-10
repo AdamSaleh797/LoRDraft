@@ -1,5 +1,4 @@
 import crypto from 'crypto'
-import { SessionInfo } from 'session'
 
 import {
   LoRDraftSocket,
@@ -18,6 +17,8 @@ import {
   makeErrStatus,
   makeOkStatus,
 } from 'util/status'
+
+import { SessionInfo } from 'server/session'
 
 // Expiration time of sessions in milliseconds.
 const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000

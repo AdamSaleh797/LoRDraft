@@ -4,10 +4,6 @@ module.exports = {
   entry: {
     'index.ts': [path.resolve(__dirname, 'src/index.ts')],
   },
-  output: {
-    filename: 'index.js',
-    path: path.resolve(__dirname, 'dist'),
-  },
   module: {
     rules: [
       {
@@ -26,6 +22,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.mts', '.ts', '.jsx', '.mjs', '.js'],
+    alias: {
+      server: path.resolve(__dirname, 'src/'),
+    },
     modules: ['../node_modules', '../common'],
   },
   target: 'node',

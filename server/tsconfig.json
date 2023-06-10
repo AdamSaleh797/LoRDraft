@@ -13,7 +13,8 @@
     "moduleSuffixes": [".tsx", ".mts", ".ts", ""],
     "baseUrl": "./",
     "paths": {
-      "*": ["src/*", "../node_modules/*", "../common/*"]
+      "server/*": ["./src/*"],
+      "*": ["../node_modules/*", "../common/*"]
     }
   }
 }

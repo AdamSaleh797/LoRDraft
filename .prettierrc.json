@@ -6,7 +6,11 @@
   "semi": false,
   "singleQuote": true,
   "jsxSingleQuote": true,
-  "importOrder": ["^react$", "^(game|util)/(.*)$", "^\\./(.*)$"],
+  "importOrder": [
+    "^(react|react-dom/client|socket.io-client)$",
+    "^(game|util)/(.*)$",
+    "^(client|server)/(.*)$"
+  ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true
 }
