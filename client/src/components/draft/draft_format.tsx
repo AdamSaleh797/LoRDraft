@@ -1,7 +1,6 @@
-import React from 'react'
-
+import { Button } from '../button'
 import { DraftFormat } from 'draft'
-import { Button } from '../button/button'
+import React from 'react'
 
 interface DraftFormatComponentProps {
   select_format_fn: (draft_format: DraftFormat) => void

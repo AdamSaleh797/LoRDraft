@@ -1,4 +1,5 @@
-import React from 'react'
+import { Button } from '../button'
+import { CardComponent } from './CardComponent'
 import { Card } from 'card'
 import {
   addCardsToDeck,
@@ -7,10 +8,9 @@ import {
   makeDraftDeck,
   POOL_SIZE,
 } from 'draft'
-import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 import { isOk, Status } from 'lor_util'
-import { CardComponent } from './CardComponent'
-import { Button } from '../button/button'
+import React from 'react'
+import { LoRDraftClientSocket, SessionCred } from 'socket-msgs'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket

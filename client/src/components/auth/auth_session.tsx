@@ -1,16 +1,15 @@
-import React from 'react'
-
+import { APP_TITLE } from '../../utils/constants'
+import { Button } from '../button'
 import { Buffer } from 'buffer'
+import { isOk, Status, StatusCode } from 'lor_util'
+import React from 'react'
 import {
   LoginCred,
   LoRDraftClientSocket,
   RegisterInfo,
   SessionCred,
 } from 'socket-msgs'
-import { isOk, Status, StatusCode } from 'lor_util'
 import { StateMachine } from 'state_machine'
-import { Button } from '../button/button'
-import { APP_TITLE } from '../../utils/constants'
 
 interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void
