@@ -1,0 +1,28 @@
+.header {
+  height: 60px;
+  width: 100%;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.left-element,
+.center-title,
+.right-element {
+  margin: 0 10px;
+}
+
+/* Adjust the styles for each element as needed */
+.left-element {
+  color: #333;
+}
+
+.center-title {
+  font-weight: bold;
+}
+
+.right-element {
+  color: #888;
+}
