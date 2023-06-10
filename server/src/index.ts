@@ -27,7 +27,7 @@ const app = http.createServer(function (req, resp) {
   }
 
   let reqFile = req.url
-  if (reqFile === null || reqFile === '/') {
+  if (reqFile === '/') {
     reqFile = '/index.html'
   }
 
