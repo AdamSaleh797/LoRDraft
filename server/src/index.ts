@@ -1,27 +1,17 @@
 import fs from 'fs'
 import http from 'http'
 import mime from 'mime'
-import minimist from 'minimist'
 import path from 'path'
 
 import { isOk } from 'util/status'
 
-import { InitSocket } from './socket_init'
-import { updateAssets } from './update_assets'
+import { config } from 'server/args'
+import { InitSocket } from 'server/socket_init'
+import { updateAssets } from 'server/update_assets'
 
-const _STATIC_DIR = path.resolve(path.join(__dirname, '../../static'))
-
-const args = minimist(process.argv.slice(2), {
-  default: {
-    port: 2000,
-    download: false,
-    sequential: false,
-  },
-})
-
-if (args.download as boolean) {
+if (config.download) {
   console.log('downloading assets.')
-  updateAssets(args.sequential as boolean, (status) => {
+  updateAssets(config.sequential, (status) => {
     if (!isOk(status)) {
       console.log(status)
       return
@@ -29,30 +19,6 @@ if (args.download as boolean) {
     console.log('done downloading!')
   })
 }
-
-/*
-const sets = [
-  'set1-en_us.json', 'set2-en_us.json', 'set3-en_us.json', 'set4-en_us.json',
-  'set5-en_us.json', 'set6-en_us.json', 'set6cde-en_us.json'
-];
-
-let cnt = 0;
-sets.forEach((set) => {
-  loadSetPack(set, (status, cards) => {
-    if (status || !cards) {
-      console.log(status);
-      return;
-    }
-    cards.forEach((card) => {
-      if (isCollectable(card) && cnt < 10) {
-        cnt++;
-        console.log(card.name);
-        console.log(card.subtypes);
-      }
-    });
-  });
-});
-*/
 
 const app = http.createServer(function (req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
@@ -65,7 +31,7 @@ const app = http.createServer(function (req, resp) {
     reqFile = '/index.html'
   }
 
-  const filename = path.join(_STATIC_DIR, reqFile)
+  const filename = path.join(config.root_dir, 'static/', reqFile)
   fs.access(filename, fs.constants.R_OK, (err) => {
     if (err !== null) {
       // The file does not exist.
@@ -102,7 +68,7 @@ const app = http.createServer(function (req, resp) {
 
 InitSocket(app)
 
-app.listen(args.port)
+app.listen(config.port)
 
 {
   let addr = app.address()

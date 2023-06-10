@@ -5,11 +5,14 @@
   "scripts": {
     "check-types": "tsc --noemit",
     "lint": "cd .. && npx eslint ./server",
-    "start": "node dist/index.js",
-    "start-prod": "node dist/index.js --port 80 --download --sequential",
+    "start": "node ../dist/dev/index.js",
+    "start-prod": "node ../dist/prod/index.js",
+    "start-prod-ec2": "ON_EC2=1 node ../dist/prod/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-tsc": "npx webpack --mode development --progress --config webpack.config.js",
-    "build": "npm run check-types && npm run build-tsc && npm run lint"
+    "build-tsc": "npx webpack --progress --config webpack.dev.js",
+    "build-tsc-prod": "npx webpack --progress --config webpack.prod.js",
+    "build": "npm run check-types && npm run build-tsc && npm run lint",
+    "build-prod": "npm run check-types && npm run build-tsc-prod && npm run lint"
   },
   "author": "",
   "license": "ISC"

@@ -20,7 +20,8 @@
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
-      "*": ["src/*", "../node_modules/*", "../common/*"]
+      "client/*": ["./src/*"],
+      "*": ["../node_modules/*", "../common/*"]
     }
   },
   "include": ["src"]

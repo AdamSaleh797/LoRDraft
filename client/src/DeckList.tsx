@@ -4,7 +4,7 @@ import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
 import { GameMetadata } from 'game/metadata'
 import { isOk } from 'util/status'
 
-import { RegionIconList } from './RegionIconList'
+import { RegionIconList } from 'client/RegionIconList'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null

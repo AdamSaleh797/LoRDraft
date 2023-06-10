@@ -21,7 +21,7 @@ import {
   makeOkStatus,
 } from 'util/status'
 
-import { readBundle } from './bundle'
+import { readBundle } from 'server/bundle'
 
 interface RegionSet {
   champs: readonly Card[]

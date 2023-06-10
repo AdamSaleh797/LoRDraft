@@ -11,8 +11,12 @@ import {
   makeErrStatus,
 } from 'util/status'
 
-import { downloadZipAsset, extractFromBundle, removeBundle } from './bundle'
-import bundles from './config/bundles.json'
+import {
+  downloadZipAsset,
+  extractFromBundle,
+  removeBundle,
+} from 'server/bundle'
+import bundles from 'server/config/bundles.json'
 
 export function updateAssets(
   sequential = false,

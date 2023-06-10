@@ -1,7 +1,6 @@
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
-
-import React from 'react'
 
 import { DraftStateInfo } from 'game/draft'
 import { GameMetadata } from 'game/metadata'
@@ -13,13 +12,13 @@ import {
 import { AsyncSocketContext } from 'util/async_socket'
 import { OkStatus, Status, StatusCode, isOk, makeErrStatus } from 'util/status'
 
-import { DeckList } from './DeckList'
-import { ManaCurve } from './ManaCurve'
-import { TypeCounts } from './TypeCounts'
-import { SessionComponent } from './auth_session'
-import { CachedAuthInfo } from './cached_auth_info'
-import { DraftFlowComponent } from './draft_flow'
-import './styles/global_styles.css'
+import { DeckList } from 'client/DeckList'
+import { ManaCurve } from 'client/ManaCurve'
+import { TypeCounts } from 'client/TypeCounts'
+import { SessionComponent } from 'client/auth_session'
+import { CachedAuthInfo } from 'client/cached_auth_info'
+import { DraftFlowComponent } from 'client/draft_flow'
+import 'client/styles/global_styles.css'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)

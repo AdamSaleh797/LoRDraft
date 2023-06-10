@@ -11,7 +11,7 @@ import {
 import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
 import { Status, isOk } from 'util/status'
 
-import { CardComponent } from './CardComponent'
+import { CardComponent } from 'client/CardComponent'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket

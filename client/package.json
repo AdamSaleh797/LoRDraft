@@ -5,9 +5,12 @@
   "scripts": {
     "check-types": "tsc --noemit",
     "lint": "cd .. && npx eslint ./client",
-    "build-react": "npx webpack --mode development --progress --config webpack.config.js",
-    "build-public": "npx copyfiles --flat public/* ../static/",
-    "build": "npm run check-types && npm run build-react && npm run build-public && npm run lint"
+    "build-react": "npx webpack --progress --config webpack.dev.js",
+    "build-react-prod": "npx webpack --progress --config webpack.prod.js",
+    "build-public": "npx copyfiles --flat public/* ../dist/dev/static/",
+    "build-public-prod": "npx copyfiles --flat public/* ../dist/prod/static/",
+    "build": "npm run check-types && npm run build-react && npm run build-public && npm run lint",
+    "build-prod": "npm run check-types && npm run build-react-prod && npm run build-public-prod && npm run lint"
   },
   "browserslist": {
     "production": [

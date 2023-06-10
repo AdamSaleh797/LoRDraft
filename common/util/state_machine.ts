@@ -1,3 +1,4 @@
+import { ReturnTypeOrNever } from 'util/lor_util'
 import {
   OkStatus,
   Status,
@@ -5,8 +6,6 @@ import {
   makeErrStatus,
   makeOkStatus,
 } from 'util/status'
-
-import { ReturnTypeOrNever } from './lor_util'
 
 type KeyT = string | number
 type AnyFn<ArgT, ReturnT, ArgsT extends unknown[]> = (

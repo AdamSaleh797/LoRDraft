@@ -20,7 +20,7 @@ import {
   makeOkStatus,
 } from 'util/status'
 
-import { readBundle } from './bundle'
+import { readBundle } from 'server/bundle'
 
 const g_core_bundle = 'globals-en_us.json'
 
