@@ -1,7 +1,6 @@
-import { LoginComponent } from '../auth/login-component'
-import { APP_TITLE } from '../utils/constants'
-import { Button } from './button'
-import './modal.css'
+// import { LoginComponent } from '../auth/login-component'
+import { Button } from 'client/components/button'
+import 'client/components/modal.css'
 import React from 'react'
 
 export function Modal({ setOpenModal }: { setOpenModal(b: boolean): void }) {
@@ -20,7 +19,7 @@ export function Modal({ setOpenModal }: { setOpenModal(b: boolean): void }) {
           <h3>Login | Registration</h3>
         </div>
         <div className='body'>
-          <LoginComponent></LoginComponent>{' '}
+          {/* <LoginComponent></LoginComponent>{' '} */}
         </div>
         <div className='footer'>
           <Button

@@ -1,5 +1,5 @@
 import React from 'react'
-import './layout.css'
+import 'client/components/layout.css'
 
 export function Layout(props: { children: any }) {
   return (

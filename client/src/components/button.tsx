@@ -1,4 +1,4 @@
-import './Button.css'
+import 'client/components/Button.css'
 import React, { ReactNode, MouseEventHandler } from 'react'
 
 type ButtonProps = {

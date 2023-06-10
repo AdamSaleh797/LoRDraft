@@ -1,23 +1,45 @@
 import React from 'react'
 import io from 'socket.io-client'
 
+import { DraftStateInfo } from 'game/draft'
+import { GameMetadata } from 'game/metadata'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
-} from 'socket-msgs'
-import { AsyncSocketContext } from 'async_socket'
-import { SessionComponent } from '../auth/auth_session'
-import { ManaCurve } from './ManaCurve'
-import { DeckList } from './DeckList'
-import { isOk, Status } from 'lor_util'
-import { DraftStateInfo } from 'draft'
-import { CachedAuthInfo } from '../auth/cached_auth_info'
-import { TypeCounts } from './TypeCounts'
-import { DraftFlowComponent } from './draft_flow'
+} from 'game/socket-msgs'
+import { AsyncSocketContext } from 'util/async_socket'
+import { OkStatus, Status, StatusCode, isOk, makeErrStatus } from 'util/status'
+
+import { DeckList } from 'client/components/draft/DeckList'
+import { ManaCurve } from 'client/components/draft/ManaCurve'
+import { TypeCounts } from 'client/components/draft/TypeCounts'
+import { SessionComponent } from 'client/components/auth/auth_session'
+import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
+import { DraftFlowComponent } from 'client/components/draft/draft_flow'
+import 'client/styles/global_styles.css'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
+}
+
+let g_inflight = false
+
+function getGameMetadata(
+  socket: LoRDraftClientSocket,
+  session_cred: SessionCred,
+  callback: (game_metadata: Status<GameMetadata>) => void
+) {
+  if (g_inflight) {
+    callback(makeErrStatus(StatusCode.THROTTLE, 'Message already in-flight'))
+    return
+  }
+
+  g_inflight = true
+  socket.call('game_metadata', session_cred, (game_metadata) => {
+    g_inflight = false
+    callback(game_metadata)
+  })
 }
 
 export function Draft() {
@@ -29,6 +51,7 @@ export function Draft() {
   )
 
   const socket_ref = React.useRef(createLoRSocket())
+  const gameMetadataRef = React.useRef<GameMetadata | null>(null)
   const draftStateRef = React.useRef<DraftStateInfo | null>(draftState)
   const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
   const setCachedAuthInfoRef =
@@ -44,14 +67,14 @@ export function Draft() {
     session_cred: SessionCred,
     callback: (status: Status) => void
   ) => {
-    socket.call('current_draft', session_cred, (status, draft_state_info) => {
-      if (!isOk(status) || draft_state_info === null) {
+    socket.call('current_draft', session_cred, (status) => {
+      if (!isOk(status)) {
         callback(status)
         return
       }
-
+      const draft_state_info = status.value
       setDraftStateRef.current(draft_state_info)
-      callback(status)
+      callback(OkStatus)
     })
   }
 
@@ -67,6 +90,16 @@ export function Draft() {
   }
   const clearAuthInfo = () => {
     setCachedAuthInfoRef.current(CachedAuthInfo.clearStorageAuthInfo())
+  }
+
+  if (authInfo !== null && gameMetadataRef.current === null) {
+    getGameMetadata(socket_ref.current, authInfo, (status) => {
+      if (isOk(status)) {
+        gameMetadataRef.current = status.value
+      } else {
+        console.log(status)
+      }
+    })
   }
 
   const deckInfoDisplay = {
@@ -97,6 +130,7 @@ export function Draft() {
             refreshDraft={refreshDraft}
             draftState={draftState}
             updateDraftState={updateDraftState}
+            gameMetadata={gameMetadataRef.current}
           />
         )}
       </div>
@@ -107,7 +141,10 @@ export function Draft() {
         <TypeCounts draftState={draftState} />
       </div>
       <div>
-        <DeckList draftState={draftState} />
+        <DeckList
+          draftState={draftState}
+          gameMetadata={gameMetadataRef.current}
+        />
       </div>
     </div>
   )

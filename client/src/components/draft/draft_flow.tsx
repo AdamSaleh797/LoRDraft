@@ -8,8 +8,8 @@ import { Empty } from 'util/lor_util'
 import { StateMachine } from 'util/state_machine'
 import { Status, StatusCode, isOk } from 'util/status'
 
-import { DraftOptionsComponent } from 'client/DraftOptions'
-import { PoolComponent } from 'client/PoolComponent'
+import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
+import { PoolComponent } from 'client/components/draft/PoolComponent'
 
 const enum FlowState {
   DRAFT_OPTIONS = 'DRAFT_OPTIONS',
