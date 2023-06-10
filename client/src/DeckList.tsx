@@ -1,9 +1,10 @@
 import React from 'react'
 
-import { allRegions } from 'game/card'
 import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
 import { GameMetadata } from 'game/metadata'
 import { isOk } from 'util/status'
+
+import { RegionIconList } from './RegionIconList'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null
@@ -31,10 +32,6 @@ export function DeckList(props: DeckListComponentProps) {
     deckCode = null
   }
 
-  const regionIconStyle = {
-    width: '30px',
-  }
-
   const deckListContainer = {
     width: `${100 / COLUMNS}%`,
     display: 'inline-block',
@@ -49,24 +46,10 @@ export function DeckList(props: DeckListComponentProps) {
       <div style={deckCodeContainer as any}>
         {deckCode === null ? [] : deckCode}
       </div>
-      <div>
-        {allRegions()
-          .filter((region) => {
-            return props.draftState?.deck.regions.includes(region)
-          })
-          .map((region) => {
-            if (props.gameMetadata !== null) {
-              return (
-                <img
-                  src={props.gameMetadata.regions[region].imageUrl}
-                  style={regionIconStyle}
-                ></img>
-              )
-            } else {
-              return <span>{region}, </span>
-            }
-          })}
-      </div>
+      <RegionIconList
+        draftState={props.draftState}
+        gameMetadata={props.gameMetadata}
+      />
       <br></br>
       {Array(ROWS * COLUMNS)
         .fill(0)

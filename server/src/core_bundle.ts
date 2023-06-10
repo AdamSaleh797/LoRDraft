@@ -1,4 +1,4 @@
-import { allRegions } from 'game/card'
+import { allRegions, originRegions } from 'game/card'
 import {
   GameMetadata,
   RegionMetadata,
@@ -24,7 +24,7 @@ export function gameMetadata(
   callback: (game_metadata: Status<GameMetadata>) => void = () => undefined
 ) {
   if (g_metadata !== undefined) {
-    return g_metadata
+    callback(makeOkStatus(g_metadata))
   }
 
   readBundle(g_core_bundle, (data: Status<string>) => {
@@ -55,7 +55,8 @@ export function gameMetadata(
       return
     }
 
-    const region_metadata: Partial<Record<RegionRef, RegionMetadata>> = {}
+    const region_metadata_builder: Partial<Record<RegionRef, RegionMetadata>> =
+      {}
 
     if (
       regions.some((region) => {
@@ -78,7 +79,7 @@ export function gameMetadata(
           return true
         }
 
-        region_metadata[region.nameRef as RegionRef] = {
+        region_metadata_builder[region.nameRef as RegionRef] = {
           abbreviation: region.abbreviation,
           imageUrl: region.iconAbsolutePath,
           name: region.nameRef as RegionRef,
@@ -94,7 +95,7 @@ export function gameMetadata(
     // Check that all regions are in the region metadata map.
     if (
       allRegions().some((region_abbreviation) => {
-        return !(region_abbreviation in region_metadata)
+        return !(region_abbreviation in region_metadata_builder)
       })
     ) {
       callback(
@@ -102,7 +103,7 @@ export function gameMetadata(
           StatusCode.INVALID_SET_PACK_FORMAT,
           `Missing regions in core bundle: ${allRegions().filter(
             (region_abbreviation) => {
-              return !(region_abbreviation in region_metadata)
+              return !(region_abbreviation in region_metadata_builder)
             }
           )}`
         )
@@ -110,8 +111,18 @@ export function gameMetadata(
       return
     }
 
+    const region_metadata: Record<RegionRef, RegionMetadata> =
+      region_metadata_builder as Record<RegionRef, RegionMetadata>
+
+    // For some reason, the icon URLs for non-main regions point to nothing,
+    // so set them all to the runeterran region.
+    originRegions().forEach((region_name) => {
+      region_metadata[region_name].imageUrl =
+        region_metadata['Runeterra'].imageUrl
+    })
+
     const game_metadata = {
-      regions: region_metadata as Record<RegionRef, RegionMetadata>,
+      regions: region_metadata_builder as Record<RegionRef, RegionMetadata>,
     }
     g_metadata = game_metadata
     callback(makeOkStatus(game_metadata))

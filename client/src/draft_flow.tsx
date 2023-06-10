@@ -24,7 +24,12 @@ const machine_def = {
       return {}
     },
   },
-  [FlowState.DRAFT_POOL]: {},
+  [FlowState.DRAFT_POOL]: {
+    [FlowState.DRAFT_OPTIONS]: (_: DraftOptionsProps) => {
+      console.log('pool -> options')
+      return {}
+    },
+  },
 } as const
 
 interface DraftFlowComponentProps {
@@ -92,6 +97,19 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     )
   }
 
+  function closeDraft() {
+    props.socket.call('close_draft', authInfoRef.current, (status) => {
+      if (!isOk(status)) {
+        console.log(status)
+      }
+      updateDraftStateRef.current(() => null)
+      flowStateMachineRef.current.transition(
+        FlowState.DRAFT_POOL,
+        FlowState.DRAFT_OPTIONS
+      )
+    })
+  }
+
   switch (flowState) {
     case FlowState.DRAFT_OPTIONS: {
       return <DraftOptionsComponent join_draft_fn={joinDraft} />
@@ -102,6 +120,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
           socket={props.socket}
           authInfo={props.authInfo}
           refreshDraft={props.refreshDraft}
+          closeDraft={closeDraft}
           draftState={props.draftState}
           updateDraftState={props.updateDraftState}
         />

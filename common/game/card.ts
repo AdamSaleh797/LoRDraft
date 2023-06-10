@@ -127,6 +127,14 @@ const g_all_regions: Region[] = [
   ...(Object.keys(g_origins) as Region[]),
 ]
 
+export function mainRegions(): readonly MainRegion[] {
+  return g_main_regions
+}
+
+export function originRegions(): readonly Origin[] {
+  return Object.keys(g_origins) as Origin[]
+}
+
 export function allRegions(): readonly Region[] {
   return g_all_regions
 }
