@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { DraftFormat } from 'draft'
+import { Button } from '../button/button'
 
 interface DraftFormatComponentProps {
   select_format_fn: (draft_format: DraftFormat) => void
@@ -9,20 +10,20 @@ interface DraftFormatComponentProps {
 export function DraftFormatComponent(props: DraftFormatComponentProps) {
   return (
     <div>
-      <button
+      <Button
         onClick={() => {
           props.select_format_fn(DraftFormat.STANDARD)
         }}
       >
         STANDARD
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => {
           props.select_format_fn(DraftFormat.ETERNAL)
         }}
       >
         ETERNAL
-      </button>
+      </Button>
     </div>
   )
 }

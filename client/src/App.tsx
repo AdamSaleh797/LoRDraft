@@ -1,10 +1,10 @@
-import { Layout } from './components/layout'
-import { Draft } from './components/draft'
+import { Layout } from './components/layout/layout'
+import { Draft } from './components/draft/draft-main'
 import './App.css'
 import React, { useState } from 'react'
-import { Header } from './components/header'
-import { Modal } from './components/modal'
-import { Button } from './components/button'
+import { Header } from './components/header/header'
+import { Modal } from './components/modal/modal'
+import { Button } from './components/button/button'
 
 function App() {
   const [modalOpen, setModalOpen] = useState(false)

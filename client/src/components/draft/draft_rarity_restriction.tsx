@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { DraftRarityRestriction } from 'draft'
+import { Button } from '../button/button'
 
 interface DraftRarityRestrictionComponentProps {
   select_rarity_restriction_fn: (
@@ -13,20 +14,20 @@ export function DraftRarityRestrictionComponent(
 ) {
   return (
     <div>
-      <button
+      <Button
         onClick={() => {
           props.select_rarity_restriction_fn(DraftRarityRestriction.COMMONS)
         }}
       >
         PAUPER(COMMONS ONLY)
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => {
           props.select_rarity_restriction_fn(DraftRarityRestriction.ANY_RARITY)
         }}
       >
         ANY RARITY
-      </button>
+      </Button>
     </div>
   )
 }
