@@ -1,10 +1,11 @@
 import React from 'react'
 
 import { CardCount, DraftStateInfo } from 'game/draft'
-import { FollowerIcon } from './card_types/follower_icon'
-import { SpellIcon } from './card_types/spell_icon'
-import { LandmarkIcon } from './card_types/landmark_icon'
+
 import { EquipmentIcon } from './card_types/equipment_icon'
+import { FollowerIcon } from './card_types/follower_icon'
+import { LandmarkIcon } from './card_types/landmark_icon'
+import { SpellIcon } from './card_types/spell_icon'
 
 export const CARD_TYPE_COUNT = 4
 

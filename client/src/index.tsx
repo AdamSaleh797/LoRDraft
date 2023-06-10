@@ -2,7 +2,6 @@ import ReactDOM from 'react-dom/client'
 import io from 'socket.io-client'
 
 import React from 'react'
-import './styles/global_styles.css'
 
 import { DraftStateInfo } from 'game/draft'
 import { GameMetadata } from 'game/metadata'
@@ -20,11 +19,7 @@ import { TypeCounts } from './TypeCounts'
 import { SessionComponent } from './auth_session'
 import { CachedAuthInfo } from './cached_auth_info'
 import { DraftFlowComponent } from './draft_flow'
-import { ChampIcon } from './card_types/champion_icon'
-import { EquipmentIcon } from './card_types/equipment_icon'
-import { FollowerIcon } from './card_types/follower_icon'
-import { LandmarkIcon } from './card_types/landmark_icon'
-import { SpellIcon } from './card_types/spell_icon'
+import './styles/global_styles.css'
 
 function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
