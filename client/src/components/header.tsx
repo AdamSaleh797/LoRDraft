@@ -1,6 +1,6 @@
-import React from 'react'
+import { APP_TITLE } from '../utils/constants'
 import './header.css'
-import { APP_TITLE } from '../../utils/constants'
+import React from 'react'
 
 export function Header(props: { children: any }) {
   return (

@@ -1,5 +1,5 @@
-import { APP_TITLE } from '../../utils/constants'
 import { LoginComponent } from '../auth/login-component'
+import { APP_TITLE } from '../utils/constants'
 import { Button } from './button'
 import './modal.css'
 import React from 'react'
