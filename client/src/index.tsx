@@ -95,17 +95,13 @@ function Main() {
   }
 
   if (authInfo !== null && gameMetadataRef.current === null) {
-    getGameMetadata(
-      socket_ref.current,
-      authInfo,
-      (status: Status<GameMetadata>) => {
-        if (isOk(status)) {
-          gameMetadataRef.current = status.value
-        } else {
-          console.log(status)
-        }
+    getGameMetadata(socket_ref.current, authInfo, (status) => {
+      if (isOk(status)) {
+        gameMetadataRef.current = status.value
+      } else {
+        console.log(status)
       }
-    )
+    })
   }
 
   const deckInfoDisplay = {
