@@ -132,6 +132,7 @@ function Main() {
             refreshDraft={refreshDraft}
             draftState={draftState}
             updateDraftState={updateDraftState}
+            gameMetadata={gameMetadataRef.current}
           />
         )}
       </div>

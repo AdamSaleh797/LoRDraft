@@ -3,12 +3,7 @@ import { Record as RecordT } from 'runtypes'
 import { Card } from 'game/card'
 import { enumToRuntype } from 'util/lor_util'
 
-export enum DraftFormat {
-  STANDARD = 'STANDARD',
-  ETERNAL = 'ETERNAL',
-}
-
-export const DraftFormatT = enumToRuntype(DraftFormat)
+import { DraftFormat, DraftFormatT } from './metadata'
 
 export enum DraftRarityRestriction {
   COMMONS = 'COMMONS',
@@ -35,10 +30,10 @@ export function formatContainsCard(
   card: Card
 ): boolean {
   switch (draft_options.draftFormat) {
-    case DraftFormat.ETERNAL: {
+    case 'Eternal': {
       break
     }
-    case DraftFormat.STANDARD: {
+    case 'Standard': {
       if (!card.isStandard) {
         return false
       }

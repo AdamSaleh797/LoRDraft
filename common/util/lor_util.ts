@@ -12,6 +12,22 @@ export type ReturnTypeOrNever<T> = T extends (...args: any[]) => infer U
   ? U
   : never
 
+/**
+ * Gives the type of the union of all values of a map type.
+ *
+ * Example:
+ * ```
+ * type T = {
+ *   field1: 'a'
+ *   field2: number
+ *   x: 'y'
+ * }
+ *
+ * InterfaceKeys<T> = 'a' | 'y' | number
+ * ```
+ */
+export type MapTypeValues<T> = T extends Record<any, infer U> ? U : never
+
 export function rejectedResults(
   promise_results: PromiseSettledResult<unknown>[]
 ): PromiseRejectedResult[] {

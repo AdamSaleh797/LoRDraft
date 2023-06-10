@@ -2,6 +2,7 @@ import React from 'react'
 
 import { DraftStateInfo } from 'game/draft'
 import { DraftOptions } from 'game/draft_options'
+import { GameMetadata } from 'game/metadata'
 import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
 import { Empty } from 'util/lor_util'
 import { StateMachine } from 'util/state_machine'
@@ -43,6 +44,7 @@ interface DraftFlowComponentProps {
   updateDraftState: (
     mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
   ) => void
+  gameMetadata: GameMetadata | null
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
@@ -112,7 +114,12 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
 
   switch (flowState) {
     case FlowState.DRAFT_OPTIONS: {
-      return <DraftOptionsComponent join_draft_fn={joinDraft} />
+      return (
+        <DraftOptionsComponent
+          join_draft_fn={joinDraft}
+          gameMetadata={props.gameMetadata}
+        />
+      )
     }
     case FlowState.DRAFT_POOL: {
       return (
