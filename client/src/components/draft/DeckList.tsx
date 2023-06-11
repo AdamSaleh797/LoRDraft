@@ -1,5 +1,3 @@
-import { CardDisplay } from './card_display'
-
 import React from 'react'
 
 import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
@@ -7,6 +5,7 @@ import { GameMetadata } from 'game/metadata'
 import { isOk } from 'util/status'
 
 import { RegionIconList } from 'client/RegionIconList'
+import { CardDisplay } from 'client/components/draft/card_display'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null
@@ -34,8 +33,12 @@ export function DeckList(props: DeckListComponentProps) {
     deckCode = null
   }
 
+  //ratio of height to width should be 18%
   const deckListContainer = {
     width: `${100 / COLUMNS}%`,
+    //height: '35px',
+    aspectRatio: 1 / 0.18,
+    //width: '277px',
     display: 'inline-block',
   }
 
