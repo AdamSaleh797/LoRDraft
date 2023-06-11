@@ -12,6 +12,9 @@ import { Empty } from 'util/lor_util'
 import { StateMachine } from 'util/state_machine'
 import { Status, StatusCode, isOk } from 'util/status'
 
+import { Button } from 'client/components/button'
+import { APP_TITLE } from 'client/utils/constants'
+
 interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void
 }
@@ -42,7 +45,7 @@ export function RegisterComponent(props: RegisterComponentProps) {
           setEmail(change_event.target.value)
         }}
       />
-      <button
+      <Button
         onClick={() => {
           if (username.length > 0 && password.length > 0) {
             props.register_fn({
@@ -54,7 +57,7 @@ export function RegisterComponent(props: RegisterComponentProps) {
         }}
       >
         Register
-      </button>
+      </Button>
     </div>
   )
 }
@@ -83,14 +86,14 @@ export function LoginComponent(props: LoginComponentProps) {
           setPassword(change_event.target.value)
         }}
       />
-      <button
+      <Button
         onClick={() => {
           props.login_fn({ username: username, password: password })
         }}
       >
         Log in
-      </button>
-      <button onClick={props.to_register_fn}>Register</button>
+      </Button>
+      <Button onClick={props.to_register_fn}>Register</Button>
     </div>
   )
 }
@@ -103,8 +106,10 @@ interface UserComponentProps {
 export function UserComponent(props: UserComponentProps) {
   return (
     <div>
-      <div>{props.username}</div>
-      <button onClick={props.logout_fn}>Log out</button>
+      <div>
+        You are logged in as <b>{props.username}</b>
+      </div>
+      <Button onClick={props.logout_fn}>Log out</Button>
     </div>
   )
 }
@@ -303,7 +308,8 @@ export function SessionComponent(props: SessionComponentProps) {
 
       return (
         <div>
-          <button onClick={auto_login}>Auto login</button>
+          <p>You need an Account to use {APP_TITLE}</p>
+          <Button onClick={auto_login}>Auto login</Button>
           <LoginComponent
             to_register_fn={() => {
               session_state_machine.transition(

@@ -7,7 +7,7 @@
   "singleQuote": true,
   "jsxSingleQuote": true,
   "importOrder": [
-    "^(react|react-dom/client|socket.io-client)$",
+    "^(react|react-.*|socket.io-client)$",
     "^(game|util)/(.*)$",
     "^(client|server)/(.*)$"
   ],

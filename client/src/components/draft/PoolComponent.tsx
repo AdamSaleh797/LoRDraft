@@ -11,7 +11,8 @@ import {
 import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
 import { Status, isOk } from 'util/status'
 
-import { CardComponent } from 'client/CardComponent'
+import { Button } from 'client/components/button'
+import { CardComponent } from 'client/components/draft/CardComponent'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
@@ -151,8 +152,8 @@ export function PoolComponent(props: PoolComponentProps) {
           />
         )
       })}
-      <button onClick={confirm}>CONFIRM!</button>
-      <button onClick={props.closeDraft}>EXIT!</button>
+      <Button onClick={confirm}>CONFIRM!</Button>
+      <Button onClick={props.closeDraft}>EXIT!</Button>
     </div>
   )
 }
