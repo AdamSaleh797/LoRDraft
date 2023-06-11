@@ -1,3 +1,5 @@
+import { CardDisplay } from './card_display'
+
 import React from 'react'
 
 import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
@@ -58,9 +60,7 @@ export function DeckList(props: DeckListComponentProps) {
           if (array_index < cardCounts.length) {
             return (
               <div style={deckListContainer}>
-                {cardCounts[array_index].count === 1
-                  ? cardCounts[array_index].card.name
-                  : `${cardCounts[array_index].card.name} x${cardCounts[array_index].count}`}
+                <CardDisplay card={cardCounts[array_index].card} />
               </div>
             )
           } else {

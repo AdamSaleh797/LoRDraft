@@ -233,6 +233,7 @@ export const CardT = Record({
     Literal('None')
   ),
   imageUrl: String,
+  fullImageUrl: String,
   cost: Number,
   name: String,
   cardCode: CardCodeT,
@@ -248,6 +249,7 @@ export const CardT = Record({
 export interface Card {
   rarity: Rarity
   imageUrl: string
+  fullImageUrl: string
   cost: number
   name: string
   cardCode: CardCode

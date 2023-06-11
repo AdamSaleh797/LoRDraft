@@ -101,6 +101,7 @@ function loadSetPack(
           const card = {
             rarity: parsed_card.rarityRef,
             imageUrl: parsed_card.assets[0].gameAbsolutePath,
+            fullImageUrl: parsed_card.assets[0].fullAbsolutePath,
             cost: parsed_card.cost,
             name: parsed_card.name,
             cardCode: parsed_card.cardCode,
