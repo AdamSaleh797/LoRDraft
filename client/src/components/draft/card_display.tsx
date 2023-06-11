@@ -21,7 +21,8 @@ export function CardDisplay(props: CardDisplayProps) {
   } as React.CSSProperties
 
   const fade_style = {
-    backgroundImage: 'linear-gradient(90deg,#4066ba 30%,rgba(12,161,132,0) 70%)',
+    backgroundImage:
+      'linear-gradient(90deg,#4066ba 30%,rgba(12,161,132,0) 70%)',
     height: '100%',
     width: '100%',
     position: 'relative',
