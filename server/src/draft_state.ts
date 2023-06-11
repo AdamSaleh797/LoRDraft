@@ -171,7 +171,6 @@ function choose_next_cards(
 ) {
   const cur_state = draft_state.state
   const next_draft_state = nextDraftState(cur_state, draft_state.deck)
-  //TODO: Check if in right state
   if (next_draft_state === null) {
     callback(
       makeErrStatus(
