@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { Button } from 'client/components/button'
 import { DraftRarityRestriction } from 'game/draft_options'
+
+import { Button } from 'client/components/button'
 
 interface DraftRarityRestrictionComponentProps {
   select_rarity_restriction_fn: (

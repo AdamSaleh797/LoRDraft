@@ -1,19 +1,17 @@
-import { Button } from 'client/components/button'
-
 import React from 'react'
 
 import { Card } from 'game/card'
 import {
   DraftStateInfo,
+  POOL_SIZE,
   addCardsToDeck,
   draftStateCardLimits,
   makeDraftDeck,
-  POOL_SIZE,
 } from 'game/draft'
+import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
 import { Status, isOk } from 'util/status'
 
-import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
-
+import { Button } from 'client/components/button'
 import { CardComponent } from 'client/components/draft/CardComponent'
 
 export interface PoolComponentProps {

@@ -1,8 +1,9 @@
-import React from 'react'
+import App from './App'
+import './index.css'
 import ReactDOM from 'react-dom'
 import { Helmet } from 'react-helmet'
-import './index.css'
-import App from './App'
+
+import React from 'react'
 
 const APP_TITLE = 'Lor Draft'
 const APP_DESCRIPTION = 'a cool tool to Draft Lor Decks'

@@ -11,11 +11,11 @@ import {
 import { AsyncSocketContext } from 'util/async_socket'
 import { OkStatus, Status, StatusCode, isOk, makeErrStatus } from 'util/status'
 
+import { SessionComponent } from 'client/components/auth/auth_session'
+import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
 import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { TypeCounts } from 'client/components/draft/TypeCounts'
-import { SessionComponent } from 'client/components/auth/auth_session'
-import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
 import { DraftFlowComponent } from 'client/components/draft/draft_flow'
 import 'client/styles/global_styles.css'
 

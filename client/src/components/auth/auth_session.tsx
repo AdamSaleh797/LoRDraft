@@ -1,4 +1,3 @@
-import { APP_TITLE } from 'client/utils/constants'
 import { Buffer } from 'buffer'
 
 import React from 'react'
@@ -12,7 +11,9 @@ import {
 import { Empty } from 'util/lor_util'
 import { StateMachine } from 'util/state_machine'
 import { Status, StatusCode, isOk } from 'util/status'
+
 import { Button } from 'client/components/button'
+import { APP_TITLE } from 'client/utils/constants'
 
 interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void

@@ -1,15 +1,16 @@
 import React from 'react'
 import io from 'socket.io-client'
 
+import { DraftStateInfo } from 'game/draft'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
 } from 'game/socket-msgs'
 import { AsyncSocketContext } from 'util/async_socket'
+import { OkStatus, Status, isOk } from 'util/status'
+
 import { SessionComponent } from 'client/components/auth/auth_session'
-import { isOk, OkStatus, Status } from 'util/status'
-import { DraftStateInfo } from 'game/draft'
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
 
 function createLoRSocket(): LoRDraftClientSocket {

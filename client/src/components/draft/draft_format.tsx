@@ -1,7 +1,8 @@
-import { Button } from 'client/components/button'
 import React from 'react'
 
 import { DraftFormat, GameMetadata, allDraftFormats } from 'game/metadata'
+
+import { Button } from 'client/components/button'
 
 interface DraftFormatComponentProps {
   select_format_fn: (draft_format: DraftFormat) => void
