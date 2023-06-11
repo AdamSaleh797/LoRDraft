@@ -51,9 +51,9 @@ export function TypeCounts(props: TypeCountsComponentProps) {
     marginBottom: '10px',
   }
 
-  const typeCountText = {
-    'text-align': 'center',
-    'font-family': '"Gill Sans", sans-serif',
+  const typeCountText: React.CSSProperties = {
+    textAlign: 'center',
+    fontFamily: '"Gill Sans", sans-serif',
     display: 'inline-block',
     marginRight: '10px',
   }

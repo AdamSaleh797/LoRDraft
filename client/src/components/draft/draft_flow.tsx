@@ -4,34 +4,10 @@ import { DraftStateInfo } from 'game/draft'
 import { DraftOptions } from 'game/draft_options'
 import { GameMetadata } from 'game/metadata'
 import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
-import { Empty } from 'util/lor_util'
-import { StateMachine } from 'util/state_machine'
 import { Status, StatusCode, isOk } from 'util/status'
 
 import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
 import { PoolComponent } from 'client/components/draft/PoolComponent'
-
-const enum FlowState {
-  DRAFT_OPTIONS = 'DRAFT_OPTIONS',
-  DRAFT_POOL = 'DRAFT_POOL',
-}
-
-type DraftOptionsProps = Empty
-
-const machine_def = {
-  [FlowState.DRAFT_OPTIONS]: {
-    [FlowState.DRAFT_POOL]: (_: DraftOptionsProps) => {
-      console.log('options -> pool')
-      return {}
-    },
-  },
-  [FlowState.DRAFT_POOL]: {
-    [FlowState.DRAFT_OPTIONS]: (_: DraftOptionsProps) => {
-      console.log('pool -> options')
-      return {}
-    },
-  },
-} as const
 
 interface DraftFlowComponentProps {
   socket: LoRDraftClientSocket
@@ -41,16 +17,11 @@ interface DraftFlowComponentProps {
     callback: (status: Status) => void
   ) => void
   draftState: DraftStateInfo | null
-  updateDraftState: (
-    mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
-  ) => void
+  setDraftState: (draft_state: DraftStateInfo | null) => void
   gameMetadata: GameMetadata | null
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
-  const [flowState, setFlowState] = React.useState<FlowState>(
-    FlowState.DRAFT_OPTIONS
-  )
   const authInfoRef = React.useRef<SessionCred>(props.authInfo)
   authInfoRef.current = props.authInfo
 
@@ -59,19 +30,10 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   )
   refreshDraftRef.current = props.refreshDraft
 
-  const updateDraftStateRef = React.useRef<typeof props.updateDraftState>(
+  const setDraftStateRef = React.useRef<typeof props.setDraftState>(
     () => undefined
   )
-  updateDraftStateRef.current = props.updateDraftState
-
-  const flowStateMachineRef = React.useRef(
-    StateMachine.makeStateMachine(
-      machine_def,
-      FlowState.DRAFT_OPTIONS,
-      {} as Empty,
-      setFlowState as (_: FlowState) => void
-    )
-  )
+  setDraftStateRef.current = props.setDraftState
 
   function joinDraft(draft_options: DraftOptions) {
     props.socket.call(
@@ -90,11 +52,9 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
           } else {
             console.log(status)
           }
+        } else {
+          setDraftStateRef.current(status.value)
         }
-        flowStateMachineRef.current.transition(
-          FlowState.DRAFT_OPTIONS,
-          FlowState.DRAFT_POOL
-        )
       }
     )
   }
@@ -104,34 +64,27 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
       if (!isOk(status)) {
         console.log(status)
       }
-      updateDraftStateRef.current(() => null)
-      flowStateMachineRef.current.transition(
-        FlowState.DRAFT_POOL,
-        FlowState.DRAFT_OPTIONS
-      )
+      setDraftStateRef.current(null)
     })
   }
 
-  switch (flowState) {
-    case FlowState.DRAFT_OPTIONS: {
-      return (
-        <DraftOptionsComponent
-          join_draft_fn={joinDraft}
-          gameMetadata={props.gameMetadata}
-        />
-      )
-    }
-    case FlowState.DRAFT_POOL: {
-      return (
-        <PoolComponent
-          socket={props.socket}
-          authInfo={props.authInfo}
-          refreshDraft={props.refreshDraft}
-          closeDraft={closeDraft}
-          draftState={props.draftState}
-          updateDraftState={props.updateDraftState}
-        />
-      )
-    }
+  if (props.draftState === null) {
+    return (
+      <DraftOptionsComponent
+        join_draft_fn={joinDraft}
+        gameMetadata={props.gameMetadata}
+      />
+    )
+  } else {
+    return (
+      <PoolComponent
+        socket={props.socket}
+        authInfo={props.authInfo}
+        refreshDraft={props.refreshDraft}
+        closeDraft={closeDraft}
+        draftState={props.draftState}
+        setDraftState={props.setDraftState}
+      />
+    )
   }
 }

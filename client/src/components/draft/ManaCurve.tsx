@@ -20,13 +20,13 @@ export function ManaCurve(props: ManaCurveComponentProps) {
       cardCount.count
   })
 
-  const graphContainer = {
+  const graphContainer: React.CSSProperties = {
     height: `${MANA_CURVE_HEIGHT}px`,
     borderBottom: '1px solid black',
     width: `${MANA_CURVE_WIDTH}px`,
   }
 
-  const barOutlineStyle = {
+  const barOutlineStyle: React.CSSProperties = {
     height: '100%',
     width: `calc(${100 / histogram.length}% - 4px)`,
     display: 'inline-block',
@@ -37,7 +37,7 @@ export function ManaCurve(props: ManaCurveComponentProps) {
     marginLeft: '2px',
     marginRight: '2px',
     position: 'relative',
-  } as React.CSSProperties
+  }
 
   return (
     <div>
@@ -45,7 +45,7 @@ export function ManaCurve(props: ManaCurveComponentProps) {
         {histogram.map((manaValueCount, count) => {
           const maxCount = Math.max(...histogram, 1)
 
-          const barStyle = {
+          const barStyle: React.CSSProperties = {
             width: `calc(${100}%)`,
             height: `${(manaValueCount / maxCount) * 100}%`,
             backgroundImage:
@@ -55,16 +55,20 @@ export function ManaCurve(props: ManaCurveComponentProps) {
             position: 'absolute',
             left: 0,
             bottom: 0,
-          } as React.CSSProperties
+          }
 
-          const manaValueStyle = {
+          const manaValueStyle: React.CSSProperties = {
             textAlign: 'center',
             position: 'absolute',
             width: '100%',
-          } as React.CSSProperties
+          }
 
           return (
-            <div className='barOutline' style={barOutlineStyle}>
+            <div
+              key={`${manaValueCount}${count}`}
+              className='barOutline'
+              style={barOutlineStyle}
+            >
               <div className='histogram' style={barStyle}></div>
               <div className='manaValue' style={manaValueStyle}>
                 {count === 8 ? `${count}+` : count}
@@ -74,15 +78,19 @@ export function ManaCurve(props: ManaCurveComponentProps) {
         })}
       </div>
       <div>
-        {histogram.map((manaValueCount) => {
-          const textStyle = {
-            'text-align': 'center',
+        {histogram.map((manaValueCount, index) => {
+          const textStyle: React.CSSProperties = {
+            textAlign: 'center',
             display: 'inline-block',
             width: `calc(${MANA_CURVE_WIDTH / histogram.length}px)`,
           }
 
           return (
-            <div className='label' style={textStyle}>
+            <div
+              key={`${manaValueCount}${index}`}
+              className='label'
+              style={textStyle}
+            >
               {manaValueCount === 0 ? '' : `x${manaValueCount}`}
             </div>
           )

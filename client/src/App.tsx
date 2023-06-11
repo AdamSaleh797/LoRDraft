@@ -7,7 +7,7 @@ import { Header } from 'client/components/header'
 import { Layout } from 'client/components/layout'
 import { Modal } from 'client/components/modal'
 
-function App() {
+export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
   return (
     <div>
@@ -27,5 +27,3 @@ function App() {
     </div>
   )
 }
-
-export default App

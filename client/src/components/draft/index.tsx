@@ -78,12 +78,6 @@ export function Draft() {
     })
   }
 
-  const updateDraftState = (
-    mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
-  ) => {
-    setDraftStateRef.current(mutator(draftStateRef.current))
-  }
-
   const authInfo = cachedAuthInfo.getStorageAuthInfo()
   const setAuthInfo = (authInfo: SessionCred) => {
     setCachedAuthInfoRef.current(CachedAuthInfo.setStorageAuthInfo(authInfo))
@@ -96,8 +90,6 @@ export function Draft() {
     getGameMetadata(socket_ref.current, authInfo, (status) => {
       if (isOk(status)) {
         gameMetadataRef.current = status.value
-      } else {
-        console.log(status)
       }
     })
   }
@@ -129,7 +121,7 @@ export function Draft() {
             authInfo={authInfo}
             refreshDraft={refreshDraft}
             draftState={draftState}
-            updateDraftState={updateDraftState}
+            setDraftState={setDraftState}
             gameMetadata={gameMetadataRef.current}
           />
         )}

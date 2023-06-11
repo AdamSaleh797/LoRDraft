@@ -36,16 +36,17 @@ export function RegionIconList(props: RegionIconListComponentProps) {
             })
             .slice(0, render_all_runeterran_icons ? undefined : 1)
         )
-        .map((region) => {
+        .map((region, index) => {
           if (props.gameMetadata !== null) {
             return (
               <img
+                key={`${region}${index}`}
                 src={props.gameMetadata.regions[region].imageUrl}
                 style={regionIconStyle}
               ></img>
             )
           } else {
-            return <span>{region}, </span>
+            return <span key={index}>{region}, </span>
           }
         })}
     </div>

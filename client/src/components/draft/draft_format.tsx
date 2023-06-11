@@ -14,6 +14,7 @@ export function DraftFormatComponent(props: DraftFormatComponentProps) {
     <div>
       {allDraftFormats().map((format) => (
         <Button
+          key={format}
           onClick={() => {
             props.select_format_fn(format)
           }}

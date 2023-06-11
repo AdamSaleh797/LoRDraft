@@ -1,13 +1,7 @@
 import React from 'react'
 
 import { Card } from 'game/card'
-import {
-  DraftStateInfo,
-  POOL_SIZE,
-  addCardsToDeck,
-  draftStateCardLimits,
-  makeDraftDeck,
-} from 'game/draft'
+import { DraftStateInfo, draftStateCardLimits } from 'game/draft'
 import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
 import { Status, isOk } from 'util/status'
 
@@ -22,10 +16,8 @@ export interface PoolComponentProps {
     callback: (status: Status) => void
   ) => void
   closeDraft: () => void
-  draftState: DraftStateInfo | null
-  updateDraftState: (
-    mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
-  ) => void
+  draftState: DraftStateInfo
+  setDraftState: (draft_state: DraftStateInfo | null) => void
 }
 
 export function PoolComponent(props: PoolComponentProps) {
@@ -33,48 +25,19 @@ export function PoolComponent(props: PoolComponentProps) {
   const setSelectedRef = React.useRef<typeof setSelected>(setSelected)
   const authInfoRef = React.useRef<SessionCred>(props.authInfo)
 
-  const cards: (Card | null)[] =
-    props.draftState?.pending_cards ?? new Array(POOL_SIZE).fill(null)
+  const cards: (Card | null)[] = props.draftState.pending_cards
 
   const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
     () => undefined
   )
-  const updateDraftStateRef = React.useRef<typeof props.updateDraftState>(
+  const setDraftStateRef = React.useRef<typeof props.setDraftState>(
     () => undefined
   )
 
   refreshDraftRef.current = props.refreshDraft
-  updateDraftStateRef.current = props.updateDraftState
+  setDraftStateRef.current = props.setDraftState
   setSelectedRef.current = setSelected
   authInfoRef.current = props.authInfo
-
-  function nextPool() {
-    props.socket.call('next_pool', authInfoRef.current, (status) => {
-      if (!isOk(status)) {
-        console.log(status)
-        return
-      }
-      const [pending_cards, draft_state] = status.value
-
-      updateDraftStateRef.current((draft_state_info) => {
-        return {
-          state: draft_state,
-          deck:
-            draft_state_info === null
-              ? makeDraftDeck(0 as any)
-              : draft_state_info.deck,
-          pending_cards: pending_cards,
-        }
-      })
-
-      // Clear the selected cards.
-      setSelectedRef.current([])
-    })
-  }
-
-  React.useEffect(() => {
-    nextPool()
-  }, [])
 
   function confirm() {
     const revertedCards = selected.map(
@@ -87,10 +50,6 @@ export function PoolComponent(props: PoolComponentProps) {
   }
 
   function chooseCards(revertedCards: Card[]) {
-    if (props.draftState === null) {
-      return
-    }
-
     const min_max = draftStateCardLimits(props.draftState.state)
     if (min_max === null) {
       return
@@ -107,28 +66,21 @@ export function PoolComponent(props: PoolComponentProps) {
       'choose_cards',
       authInfoRef.current,
       revertedCards,
-      (status: Status) => {
+      (status) => {
         if (!isOk(status)) {
           console.log(status)
           return
         }
-        updateDraftStateRef.current((draft_state_info) => {
-          if (draft_state_info === null) {
-            // This should not happen.
-            return null
-          }
-          draft_state_info = { ...draft_state_info }
-          addCardsToDeck(draft_state_info.deck, revertedCards)
-          return draft_state_info
-        })
-        nextPool()
+
+        setSelectedRef.current([])
+        setDraftStateRef.current(status.value)
       }
     )
   }
 
   return (
     <div>
-      {cards.map((card) => {
+      {cards.map((card, index) => {
         function select() {
           if (card === null) {
             return
@@ -140,9 +92,9 @@ export function PoolComponent(props: PoolComponentProps) {
             : setSelected(selected.concat(card.cardCode))
         }
 
-        console.log(card?.cardCode)
         return (
           <CardComponent
+            key={`${index}${card?.cardCode ?? ''}`}
             card={card}
             numCards={cards.length}
             isSelected={
