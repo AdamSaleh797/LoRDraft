@@ -27,8 +27,8 @@ export function ManaCurve(props: ManaCurveComponentProps) {
   }
 
   const barOutlineStyle = {
-    height: `calc(${100}% - 1px)`,
-    width: `calc(${100 / histogram.length}% - 6px)`,
+    height: '100%',
+    width: `calc(${100 / histogram.length}% - 4px)`,
     display: 'inline-block',
     borderStyle: 'solid',
     borderWidth: '1px',
@@ -47,16 +47,14 @@ export function ManaCurve(props: ManaCurveComponentProps) {
 
           const barStyle = {
             width: `calc(${100}%)`,
-            height: `${(manaValueCount / maxCount) * MANA_CURVE_HEIGHT}px`,
+            height: `${(manaValueCount / maxCount) * 100}%`,
             backgroundImage:
               'linear-gradient(0deg, rgba(36,104,238) 0%, rgba(36,104,238,0.8) 60%, rgba(36,104,238,0.4) 90%, rgba(36,104,238,0.2) 100%)',
             display: 'inline-block',
-            marginTop: `calc(${
-              (1 - manaValueCount / maxCount) * MANA_CURVE_HEIGHT
-            }px)`,
             borderRadius: '10px 10px 0px 0px',
             position: 'absolute',
             left: 0,
+            bottom: 0,
           } as React.CSSProperties
 
           const manaValueStyle = {

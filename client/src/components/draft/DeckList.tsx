@@ -5,6 +5,7 @@ import { GameMetadata } from 'game/metadata'
 import { isOk } from 'util/status'
 
 import { RegionIconList } from 'client/RegionIconList'
+import { CardDisplay } from 'client/components/draft/card_display'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null
@@ -32,8 +33,12 @@ export function DeckList(props: DeckListComponentProps) {
     deckCode = null
   }
 
+  //ratio of height to width should be 18%
   const deckListContainer = {
     width: `${100 / COLUMNS}%`,
+    //height: '35px',
+    aspectRatio: 1 / 0.18,
+    //width: '277px',
     display: 'inline-block',
   }
 
@@ -58,9 +63,7 @@ export function DeckList(props: DeckListComponentProps) {
           if (array_index < cardCounts.length) {
             return (
               <div style={deckListContainer}>
-                {cardCounts[array_index].count === 1
-                  ? cardCounts[array_index].card.name
-                  : `${cardCounts[array_index].card.name} x${cardCounts[array_index].count}`}
+                <CardDisplay card={cardCounts[array_index].card} />
               </div>
             )
           } else {
