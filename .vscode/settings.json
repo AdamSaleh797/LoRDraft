@@ -1,9 +1,6 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
+  "prettier.prettierPath": "./node_modules/prettier",
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "prettier.prettierPath": "./node_modules/prettier"
+  "editor.formatOnSaveMode": "file"
 }
