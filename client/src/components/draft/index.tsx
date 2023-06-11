@@ -49,17 +49,22 @@ export function Draft() {
   const [cachedAuthInfo, setCachedAuthInfo] = React.useState<CachedAuthInfo>(
     CachedAuthInfo.initialStorageAuthInfo()
   )
+  const [gameMetadata, setGameMetadata] = React.useState<GameMetadata | null>(
+    null
+  )
 
   const socket_ref = React.useRef(createLoRSocket())
-  const gameMetadataRef = React.useRef<GameMetadata | null>(null)
   const draftStateRef = React.useRef<DraftStateInfo | null>(draftState)
   const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
   const setCachedAuthInfoRef =
     React.useRef<typeof setCachedAuthInfo>(setCachedAuthInfo)
+  const setGameMetadataRef =
+    React.useRef<typeof setGameMetadata>(setGameMetadata)
 
   draftStateRef.current = draftState
   setDraftStateRef.current = setDraftState
   setCachedAuthInfoRef.current = setCachedAuthInfo
+  setGameMetadataRef.current = setGameMetadata
 
   const socket = socket_ref.current
 
@@ -86,10 +91,10 @@ export function Draft() {
     setCachedAuthInfoRef.current(CachedAuthInfo.clearStorageAuthInfo())
   }
 
-  if (authInfo !== null && gameMetadataRef.current === null) {
+  if (authInfo !== null && gameMetadata === null) {
     getGameMetadata(socket_ref.current, authInfo, (status) => {
       if (isOk(status)) {
-        gameMetadataRef.current = status.value
+        setGameMetadataRef.current(status.value)
       }
     })
   }
@@ -122,7 +127,7 @@ export function Draft() {
             refreshDraft={refreshDraft}
             draftState={draftState}
             setDraftState={setDraftState}
-            gameMetadata={gameMetadataRef.current}
+            gameMetadata={gameMetadata}
           />
         )}
       </div>
@@ -133,10 +138,7 @@ export function Draft() {
         <TypeCounts draftState={draftState} />
       </div>
       <div>
-        <DeckList
-          draftState={draftState}
-          gameMetadata={gameMetadataRef.current}
-        />
+        <DeckList draftState={draftState} gameMetadata={gameMetadata} />
       </div>
     </div>
   )
