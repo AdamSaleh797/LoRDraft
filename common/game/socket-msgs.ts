@@ -1,7 +1,6 @@
 import { Buffer } from 'buffer'
 import { InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
-
 import { Socket as ClientSocket } from 'socket.io-client'
 
 import { Card } from 'common/game/card'

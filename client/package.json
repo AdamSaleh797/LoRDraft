@@ -2,6 +2,7 @@
   "name": "lordraft-client",
   "version": "0.1.0",
   "private": true,
+  "sideEffects": false,
   "scripts": {
     "check-types": "tsc --noemit",
     "lint": "cd .. && npx eslint ./client",
