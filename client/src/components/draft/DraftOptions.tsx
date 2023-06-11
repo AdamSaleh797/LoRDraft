@@ -1,9 +1,9 @@
 import React from 'react'
 
-import { DraftOptions, DraftRarityRestriction } from 'game/draft_options'
-import { DraftFormat, GameMetadata } from 'game/metadata'
-import { StateMachine } from 'util/state_machine'
-import { isOk } from 'util/status'
+import { DraftOptions, DraftRarityRestriction } from 'common/game/draft_options'
+import { DraftFormat, GameMetadata } from 'common/game/metadata'
+import { StateMachine } from 'common/util/state_machine'
+import { isOk } from 'common/util/status'
 
 import { DraftFormatComponent } from 'client/components/draft/draft_format'
 import { DraftRarityRestrictionComponent } from 'client/components/draft/draft_rarity_restriction'

@@ -1,9 +1,9 @@
 import React from 'react'
 
-import { Card } from 'game/card'
-import { DraftStateInfo, draftStateCardLimits } from 'game/draft'
-import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
-import { Status, isOk } from 'util/status'
+import { Card } from 'common/game/card'
+import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
+import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { Status, isOk } from 'common/util/status'
 
 import { Button } from 'client/components/button'
 import { CardComponent } from 'client/components/draft/CardComponent'

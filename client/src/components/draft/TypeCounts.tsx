@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { CardCount, DraftStateInfo } from 'game/draft'
+import { CardCount, DraftStateInfo } from 'common/game/draft'
 
 import { EquipmentIcon } from 'client/card_types/equipment_icon'
 import { FollowerIcon } from 'client/card_types/follower_icon'

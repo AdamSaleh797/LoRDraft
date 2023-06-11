@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { Region, isOrigin, mainRegions, originRegions } from 'game/card'
-import { DraftStateInfo } from 'game/draft'
-import { GameMetadata } from 'game/metadata'
+import { Region, isOrigin, mainRegions, originRegions } from 'common/game/card'
+import { DraftStateInfo } from 'common/game/draft'
+import { GameMetadata } from 'common/game/metadata'
 
 export interface RegionIconListComponentProps {
   draftState: DraftStateInfo | null

@@ -1,4 +1,4 @@
-import { DraftStateInfo } from 'game/draft'
+import { DraftStateInfo } from 'common/game/draft'
 
 import { SessionAuthInfo } from 'server/auth'
 

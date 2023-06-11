@@ -1,14 +1,14 @@
 import React from 'react'
 import io from 'socket.io-client'
 
-import { DraftStateInfo } from 'game/draft'
+import { DraftStateInfo } from 'common/game/draft'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
-} from 'game/socket-msgs'
-import { AsyncSocketContext } from 'util/async_socket'
-import { OkStatus, Status, isOk } from 'util/status'
+} from 'common/game/socket-msgs'
+import { AsyncSocketContext } from 'common/util/async_socket'
+import { OkStatus, Status, isOk } from 'common/util/status'
 
 import { SessionComponent } from 'client/components/auth/auth_session'
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'

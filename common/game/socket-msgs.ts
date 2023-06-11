@@ -4,13 +4,13 @@ import { Server, Socket as ServerSocket } from 'socket.io'
 
 import { Socket as ClientSocket } from 'socket.io-client'
 
-import { Card } from 'game/card'
-import { DraftStateInfo } from 'game/draft'
-import { DraftOptions } from 'game/draft_options'
-import { GameMetadata } from 'game/metadata'
-import { AsyncSocketContext } from 'util/async_socket'
-import { Empty } from 'util/lor_util'
-import { Status } from 'util/status'
+import { Card } from 'common/game/card'
+import { DraftStateInfo } from 'common/game/draft'
+import { DraftOptions } from 'common/game/draft_options'
+import { GameMetadata } from 'common/game/metadata'
+import { AsyncSocketContext } from 'common/util/async_socket'
+import { Empty } from 'common/util/lor_util'
+import { Status } from 'common/util/status'
 
 export const RegisterInfoT = Record({
   username: String,

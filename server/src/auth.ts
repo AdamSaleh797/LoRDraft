@@ -8,7 +8,7 @@ import {
   RegisterInfoT,
   SessionCred,
   SessionCredT,
-} from 'game/socket-msgs'
+} from 'common/game/socket-msgs'
 import {
   OkStatus,
   Status,
@@ -16,7 +16,7 @@ import {
   isOk,
   makeErrStatus,
   makeOkStatus,
-} from 'util/status'
+} from 'common/util/status'
 
 import { SessionInfo } from 'server/session'
 

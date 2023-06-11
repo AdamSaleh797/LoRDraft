@@ -24,7 +24,8 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
     alias: {
       client: path.resolve(__dirname, 'src/'),
+      common: path.resolve(__dirname, '../common/'),
     },
-    modules: ['../node_modules', '../common'],
+    modules: ['../node_modules'],
   },
 }

@@ -1,7 +1,7 @@
 import { Literal, Record as RecordT, String, Union } from 'runtypes'
 
-import { RUNETERRA, Region, RegionT } from 'game/card'
-import { MapTypeValues } from 'util/lor_util'
+import { RUNETERRA, Region, RegionT } from 'common/game/card'
+import { MapTypeValues } from 'common/util/lor_util'
 
 // A mapping from the draft format name ref found in the core config file to
 // the colliquial name, which we also use internally as the name ref.

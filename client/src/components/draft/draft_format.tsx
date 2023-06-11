@@ -1,6 +1,10 @@
 import React from 'react'
 
-import { DraftFormat, GameMetadata, allDraftFormats } from 'game/metadata'
+import {
+  DraftFormat,
+  GameMetadata,
+  allDraftFormats,
+} from 'common/game/metadata'
 
 import { Button } from 'client/components/button'
 

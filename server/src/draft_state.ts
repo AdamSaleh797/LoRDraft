@@ -6,7 +6,7 @@ import {
   MAX_CARD_COPIES,
   isChampion,
   regionContains,
-} from 'game/card'
+} from 'common/game/card'
 import {
   DraftDeck,
   DraftState,
@@ -16,13 +16,13 @@ import {
   canAddToDeck,
   draftStateCardLimits,
   makeDraftDeck,
-} from 'game/draft'
+} from 'common/game/draft'
 import {
   DraftOptions,
   DraftOptionsT,
   formatContainsCard,
-} from 'game/draft_options'
-import { LoRDraftSocket } from 'game/socket-msgs'
+} from 'common/game/draft_options'
+import { LoRDraftSocket } from 'common/game/socket-msgs'
 import {
   binarySearch,
   containsDuplicates,
@@ -30,7 +30,7 @@ import {
   randChoice,
   randSample,
   randSampleNumbersAvoidingRepeats,
-} from 'util/lor_util'
+} from 'common/util/lor_util'
 import {
   OkStatus,
   Status,
@@ -38,7 +38,7 @@ import {
   isOk,
   makeErrStatus,
   makeOkStatus,
-} from 'util/status'
+} from 'common/util/status'
 
 import { LoggedInAuthUser, join_session } from 'server/auth'
 import { SessionInfo } from 'server/session'

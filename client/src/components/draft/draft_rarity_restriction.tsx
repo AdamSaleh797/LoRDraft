@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { DraftRarityRestriction } from 'game/draft_options'
+import { DraftRarityRestriction } from 'common/game/draft_options'
 
 import { Button } from 'client/components/button'
 

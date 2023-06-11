@@ -1,8 +1,8 @@
 import { Record as RecordT } from 'runtypes'
 
-import { Card } from 'game/card'
-import { DraftFormat, DraftFormatT } from 'game/metadata'
-import { enumToRuntype } from 'util/lor_util'
+import { Card } from 'common/game/card'
+import { DraftFormat, DraftFormatT } from 'common/game/metadata'
+import { enumToRuntype } from 'common/util/lor_util'
 
 export enum DraftRarityRestriction {
   COMMONS = 'COMMONS',

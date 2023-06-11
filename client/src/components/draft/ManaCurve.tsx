@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { CardCount, DraftStateInfo } from 'game/draft'
+import { CardCount, DraftStateInfo } from 'common/game/draft'
 
 export const MAX_DISPLAY_COST = 8
 const MANA_CURVE_HEIGHT = 150

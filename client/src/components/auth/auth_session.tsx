@@ -7,10 +7,10 @@ import {
   LoginCred,
   RegisterInfo,
   SessionCred,
-} from 'game/socket-msgs'
-import { Empty } from 'util/lor_util'
-import { StateMachine } from 'util/state_machine'
-import { Status, StatusCode, isOk } from 'util/status'
+} from 'common/game/socket-msgs'
+import { Empty } from 'common/util/lor_util'
+import { StateMachine } from 'common/util/state_machine'
+import { Status, StatusCode, isOk } from 'common/util/status'
 
 import { Button } from 'client/components/button'
 import { APP_TITLE } from 'client/utils/constants'

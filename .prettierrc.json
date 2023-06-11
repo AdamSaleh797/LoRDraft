@@ -8,7 +8,7 @@
   "jsxSingleQuote": true,
   "importOrder": [
     "^(react|react-.*|socket.io-client)$",
-    "^(game|util)/(.*)$",
+    "^(common)/(.*)$",
     "^(client|server)/(.*)$"
   ],
   "importOrderSeparation": true,

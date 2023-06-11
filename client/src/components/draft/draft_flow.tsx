@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { DraftStateInfo } from 'game/draft'
-import { DraftOptions } from 'game/draft_options'
-import { GameMetadata } from 'game/metadata'
-import { LoRDraftClientSocket, SessionCred } from 'game/socket-msgs'
-import { Status, StatusCode, isOk } from 'util/status'
+import { DraftStateInfo } from 'common/game/draft'
+import { DraftOptions } from 'common/game/draft_options'
+import { GameMetadata } from 'common/game/metadata'
+import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { Status, StatusCode, isOk } from 'common/util/status'
 
 import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
 import { PoolComponent } from 'client/components/draft/PoolComponent'

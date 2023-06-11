@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
-import { GameMetadata } from 'game/metadata'
-import { isOk } from 'util/status'
+import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'common/game/draft'
+import { GameMetadata } from 'common/game/metadata'
+import { isOk } from 'common/util/status'
 
 import { RegionIconList } from 'client/components/draft/RegionIconList'
 import { CardDisplay } from 'client/components/draft/card_display'

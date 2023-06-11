@@ -3,7 +3,7 @@ import fs from 'fs'
 import https from 'https'
 import path from 'path'
 
-import { Status, StatusCode, isOk, statusFromError } from 'util/status'
+import { Status, StatusCode, isOk, statusFromError } from 'common/util/status'
 
 const _ASSET_DIR = path.join(__dirname, '../assets')
 

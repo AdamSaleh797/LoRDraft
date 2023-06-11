@@ -1,6 +1,6 @@
 import path from 'path'
 
-import { allFullfilled, rejectedResults } from 'util/lor_util'
+import { allFullfilled, rejectedResults } from 'common/util/lor_util'
 import {
   ErrStatusT,
   OkStatus,
@@ -9,7 +9,7 @@ import {
   StatusCode,
   isOk,
   makeErrStatus,
-} from 'util/status'
+} from 'common/util/status'
 
 import {
   downloadZipAsset,
