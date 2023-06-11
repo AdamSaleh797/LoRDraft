@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ReturnTypeOrNever } from 'common/util/lor_util'
 import {
   OkStatus,
@@ -50,7 +51,7 @@ type StatesContainingTransition<
   MachineDef extends StateMachineDef<StatesT>,
   TransitionT extends StatesT
 > = {
-  [Key in StatesT]: MachineDef[Key] extends Record<TransitionT, any>
+  [Key in StatesT]: MachineDef[Key] extends Record<TransitionT, unknown>
     ? Key
     : never
 }[StatesT]
@@ -102,13 +103,13 @@ export class StateMachine<
 > {
   private state_machine_def_: MachineDef
   private state_: State
-  private state_prop_: any
+  private state_prop_: unknown
   private state_update_fn_?: (state: State) => void
 
   private constructor(
     state_machine_def: MachineDef,
     initial_state: State,
-    state_prop: any,
+    state_prop: unknown,
     state_update_fn?: (state: State) => void
   ) {
     this.state_machine_def_ = state_machine_def
@@ -140,7 +141,7 @@ export class StateMachine<
   }
 
   state_prop<StateT extends State>(): StateProp<State, MachineDef, StateT> {
-    return this.state_prop_
+    return this.state_prop_ as StateProp<State, MachineDef, StateT>
   }
 
   state_prop_exact<StateT extends State>(
@@ -153,7 +154,9 @@ export class StateMachine<
       )
     }
 
-    return makeOkStatus(this.state_prop_)
+    return makeOkStatus(
+      this.state_prop_ as StateProp<State, MachineDef, StateT>
+    )
   }
 
   transition<
@@ -181,12 +184,12 @@ export class StateMachine<
         StateProp<State, MachineDef, ToT>,
         UpdateFnArgsT
       >
-    )(this.state_prop_ as any, ...args)
+    )(this.state_prop_ as StateProp<State, MachineDef, FromT>, ...args)
 
     return OkStatus
   }
 
-  transition_any(from: State, to: State, ...args: any): Status {
+  transition_any(from: State, to: State, ...args: unknown[]): Status {
     if (this.state_machine_def_[from][to] === undefined) {
       return makeErrStatus(
         StatusCode.INVALID_STATE_TRANSITION,
@@ -194,7 +197,16 @@ export class StateMachine<
       )
     }
 
-    return this.transition(from, to as any, ...args)
+    return this.transition(
+      from,
+      to as AllTransitions<State, MachineDef, State>,
+      ...(args as TransitionFnArgsT<
+        State,
+        MachineDef,
+        State,
+        AllTransitions<State, MachineDef, State>
+      >)
+    )
   }
 
   undo_transition<
@@ -217,7 +229,7 @@ export class StateMachine<
   undo_transition_any(
     current_state: State,
     prior_state: State,
-    prior_prop: any
+    prior_prop: unknown
   ): Status {
     if (this.state_ !== current_state) {
       return makeErrStatus(

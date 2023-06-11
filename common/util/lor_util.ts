@@ -1,13 +1,15 @@
 import { Literal, Record as RecordT, Union } from 'runtypes'
-import { Runtype, Static } from 'runtypes/lib/runtype'
+import { RuntypeBase, Static } from 'runtypes/lib/runtype'
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Empty = RecordT<any, never>
 
 /**
  * Gives the return type of a function type, or `never` if the type is not a function.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ReturnTypeOrNever<T> = T extends (...args: any[]) => infer U
   ? U
   : never
@@ -26,7 +28,12 @@ export type ReturnTypeOrNever<T> = T extends (...args: any[]) => infer U
  * InterfaceKeys<T> = 'a' | 'y' | number
  * ```
  */
-export type MapTypeValues<T> = T extends Record<any, infer U> ? U : never
+export type MapTypeValues<T> = T extends Record<
+  string | number | symbol,
+  infer U
+>
+  ? U
+  : never
 
 export function rejectedResults(
   promise_results: PromiseSettledResult<unknown>[]
@@ -165,20 +172,20 @@ export function randSampleNumbersAvoidingRepeats(
  * @param obj
  * @returns
  */
-export function narrowType<T extends RecordT<any, false>, U extends Static<T>>(
-  type: T,
-  obj: U
-): Static<T> | null {
+export function narrowType<
+  T extends RecordT<{ [_: string]: RuntypeBase }, false>,
+  U extends Static<T>
+>(type: T, obj: U): Static<T> | null {
   const res: Static<T> = {}
 
-  for (const [key, runtype] of Object.entries<Runtype>(type.fields)) {
+  for (const [key, runtype] of Object.entries(type.fields)) {
     const val = obj[key]
     if (!runtype.guard(val)) {
       return null
     }
 
     if (val !== undefined) {
-      res[key as keyof Static<T>] = val as any
+      res[key as keyof Static<T>] = val as Static<T>[keyof Static<T>]
     }
   }
 
@@ -225,7 +232,7 @@ export function binarySearch<T>(arr: readonly T[], el: T): number {
  */
 export function containsDuplicates<T>(
   arr: readonly T[],
-  key_fn: (val: T) => any = (val) => val
+  key_fn: (val: T) => unknown = (val) => val
 ): boolean {
   const sorted_keys = arr.map(key_fn).sort()
 

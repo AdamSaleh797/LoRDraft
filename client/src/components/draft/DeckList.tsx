@@ -4,8 +4,8 @@ import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 import { isOk } from 'common/util/status'
 
+import { CardDisplay } from 'client/components/draft/CardDisplay'
 import { RegionIconList } from 'client/components/draft/RegionIconList'
-import { CardDisplay } from 'client/components/draft/card_display'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo | null
@@ -42,15 +42,13 @@ export function DeckList(props: DeckListComponentProps) {
     display: 'inline-block',
   }
 
-  const deckCodeContainer = {
+  const deckCodeContainer: React.CSSProperties = {
     overflowWrap: 'break-word',
   }
 
   return (
     <div>
-      <div style={deckCodeContainer as any}>
-        {deckCode === null ? [] : deckCode}
-      </div>
+      <div style={deckCodeContainer}>{deckCode === null ? [] : deckCode}</div>
       <RegionIconList
         draftState={props.draftState}
         gameMetadata={props.gameMetadata}

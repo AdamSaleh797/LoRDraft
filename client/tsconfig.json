@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "commonjs",
-    "moduleSuffixes": [".tsx", ".mts", ".ts", ""],
+    "moduleSuffixes": [".tsx", ".mts", ".ts", ".module.css", ""],
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -23,7 +23,8 @@
       "client/*": ["./src/*"],
       "common/*": ["../common/*"],
       "*": ["../node_modules/*"]
-    }
+    },
+    "plugins": [{ "name": "typescript-plugin-css-modules" }]
   },
   "include": ["src"]
 }

@@ -5,8 +5,8 @@ import { DraftFormat, GameMetadata } from 'common/game/metadata'
 import { StateMachine } from 'common/util/state_machine'
 import { isOk } from 'common/util/status'
 
-import { DraftFormatComponent } from 'client/components/draft/draft_format'
-import { DraftRarityRestrictionComponent } from 'client/components/draft/draft_rarity_restriction'
+import { DraftFormatComponent } from 'client/components/draft/DraftFormat'
+import { DraftRarityRestrictionComponent } from 'client/components/draft/DraftRarityRestriction'
 
 interface DraftOptionsComponentProps {
   join_draft_fn: (draft_options: DraftOptions) => void

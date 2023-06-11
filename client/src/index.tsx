@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Helmet } from 'react-helmet'
 
 import App from 'client/App'
-import 'client/index.css'
+import 'client/styles/global_styles.css'
 
 const APP_TITLE = 'Lor Draft'
 const APP_DESCRIPTION = 'a cool tool to Draft Lor Decks'

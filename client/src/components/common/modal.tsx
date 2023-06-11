@@ -1,13 +1,14 @@
 import React from 'react'
 
+import modalStyle from './modal.module.css'
+
 import { LoginComponent } from 'client/components/auth/login-component'
-import { Button } from 'client/components/button'
-import 'client/components/modal.css'
+import { Button } from 'client/components/common/button'
 
 export function Modal({ setOpenModal }: { setOpenModal(b: boolean): void }) {
   return (
-    <div className='modalBackground'>
-      <div className='modalContainer'>
+    <div className={modalStyle.modalBackground}>
+      <div className={modalStyle.modalContainer}>
         <Button
           onClick={() => {
             setOpenModal(false)
@@ -16,15 +17,15 @@ export function Modal({ setOpenModal }: { setOpenModal(b: boolean): void }) {
           Close &times;
         </Button>
 
-        <div className='title'>
+        <div className={modalStyle.title}>
           <h3>Login | Registration</h3>
         </div>
-        <div className='body'>
+        <div className={modalStyle.body}>
           <LoginComponent></LoginComponent>
         </div>
-        <div className='footer'>
+        <div className={modalStyle.footer}>
           <Button
-            className='#cancelBtn '
+            className={modalStyle.cancelBtn}
             onClick={() => {
               setOpenModal(false)
             }}

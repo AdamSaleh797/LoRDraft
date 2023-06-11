@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, ReactNode } from 'react'
 
-import 'client/components/Button.css'
+import buttonStyle from './button.module.css'
 
 type ButtonProps = {
   children: ReactNode
@@ -9,10 +9,8 @@ type ButtonProps = {
 }
 
 export function Button({ children, onClick, className }: ButtonProps) {
-  const buttonClassName = className !== undefined ? className : 'button'
-
   return (
-    <button className={buttonClassName} onClick={onClick}>
+    <button className={className ?? buttonStyle.button} onClick={onClick}>
       {children}
     </button>
   )
