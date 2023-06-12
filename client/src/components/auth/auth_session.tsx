@@ -11,7 +11,7 @@ import { Empty } from 'common/util/lor_util'
 import { StateMachine } from 'common/util/state_machine'
 import { Status, StatusCode, isOk } from 'common/util/status'
 
-import { Button } from 'client/components/button'
+import { Button } from 'client/components/common/button'
 import { APP_TITLE } from 'client/utils/constants'
 
 interface RegisterComponentProps {

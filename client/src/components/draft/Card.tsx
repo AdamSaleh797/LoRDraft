@@ -1,5 +1,7 @@
 import React from 'react'
 
+import style from './Card.module.css'
+
 import { Card } from 'common/game/card'
 
 export interface CardComponentProps {
@@ -11,31 +13,19 @@ export interface CardComponentProps {
 
 export function CardComponent(props: CardComponentProps) {
   // Card size is controlled entirely by the width of its container
-  const style = {
+  const card_style = {
     width: `${100 / props.numCards}%`,
-    display: 'inline-block',
-  }
-  const img_style = {
-    width: '100%',
-    height: '100%',
-    userDrag: 'none',
-    WebkitUserDrag: 'none',
-    UserSelect: 'none',
-
-    filter: props.isSelected
-      ? 'sepia(100%) saturate(300%) brightness(70%) hue-rotate(180deg)'
-      : '',
   }
 
   return (
-    <div className='card' style={style} onClick={props.select}>
+    <div className={style.card} style={card_style} onClick={props.select}>
       {props.card === null ? (
         <div />
       ) : (
         <img
+          className={props.isSelected ? style.selected : ''}
           src={props.card.imageUrl}
           alt={props.card.name}
-          style={img_style}
         ></img>
       )}
     </div>

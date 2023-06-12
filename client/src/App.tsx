@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
 
-import 'client/App.css'
-import { Button } from 'client/components/button'
-import { Draft } from 'client/components/draft'
-import { Header } from 'client/components/header'
-import { Layout } from 'client/components/layout'
-import { Modal } from 'client/components/modal'
+import style from './App.module.css'
+
+import { Button } from 'client/components/common/button'
+import { Header } from 'client/components/common/header'
+import { Layout } from 'client/components/common/layout'
+import { Modal } from 'client/components/common/modal'
+import Draft from 'client/components/draft'
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
   return (
-    <div>
+    <div className={style.App}>
       <Header>
         <Button
           onClick={() => {

@@ -1,0 +1,17 @@
+.card {
+  display: inline-block;
+}
+
+.card > img {
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-select: none;
+}
+
+.card > .selected {
+  filter: sepia(100%) saturate(300%) brightness(70%) hue-rotate(180deg);
+}

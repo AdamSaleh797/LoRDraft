@@ -8,21 +8,21 @@
   padding: 0 20px;
 }
 
-.left-element,
-.center-title,
-.right-element {
+.leftElement,
+.centerTitle,
+.rightElement {
   margin: 0 10px;
 }
 
 /* Adjust the styles for each element as needed */
-.left-element {
+.leftElement {
   color: #333;
 }
 
-.center-title {
+.centerTitle {
   font-weight: bold;
 }
 
-.right-element {
+.rightElement {
   color: #888;
 }
