@@ -1,6 +1,6 @@
 import React from 'react'
 
-import style, { cost } from './CardInfo.module.css'
+import style from './CardInfo.module.css'
 
 import { Card, isMainRegion } from 'common/game/card'
 import { DraftStateInfo, findCardCount } from 'common/game/draft'
