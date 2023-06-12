@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { SessionComponent } from '../auth/auth_session'
 import style from './modal.module.css'
 
 import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
 
+import { SessionComponent } from 'client/components/auth/auth_session'
 import { Button } from 'client/components/common/button'
 
 export interface ModalProps {
