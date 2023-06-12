@@ -10,8 +10,12 @@ import {
   isRuneterran,
   regionContains,
   runeterranOrigin,
-} from 'game/card'
-import { allFullfilled, keyInUnknown, rejectedResults } from 'util/lor_util'
+} from 'common/game/card'
+import {
+  allFullfilled,
+  keyInUnknown,
+  rejectedResults,
+} from 'common/util/lor_util'
 import {
   ErrStatusT,
   Status,
@@ -19,7 +23,7 @@ import {
   isOk,
   makeErrStatus,
   makeOkStatus,
-} from 'util/status'
+} from 'common/util/status'
 
 import { readBundle } from 'server/bundle'
 

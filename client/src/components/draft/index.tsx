@@ -1,15 +1,21 @@
 import React from 'react'
 import io from 'socket.io-client'
 
-import { DraftStateInfo } from 'game/draft'
-import { GameMetadata } from 'game/metadata'
+import { DraftStateInfo } from 'common/game/draft'
+import { GameMetadata } from 'common/game/metadata'
 import {
   LoRDraftClientSocket,
   LoRDraftClientSocketIO,
   SessionCred,
-} from 'game/socket-msgs'
-import { AsyncSocketContext } from 'util/async_socket'
-import { OkStatus, Status, StatusCode, isOk, makeErrStatus } from 'util/status'
+} from 'common/game/socket-msgs'
+import { AsyncSocketContext } from 'common/util/async_socket'
+import {
+  OkStatus,
+  Status,
+  StatusCode,
+  isOk,
+  makeErrStatus,
+} from 'common/util/status'
 
 import { SessionComponent } from 'client/components/auth/auth_session'
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
@@ -49,17 +55,22 @@ export function Draft() {
   const [cachedAuthInfo, setCachedAuthInfo] = React.useState<CachedAuthInfo>(
     CachedAuthInfo.initialStorageAuthInfo()
   )
+  const [gameMetadata, setGameMetadata] = React.useState<GameMetadata | null>(
+    null
+  )
 
   const socket_ref = React.useRef(createLoRSocket())
-  const gameMetadataRef = React.useRef<GameMetadata | null>(null)
   const draftStateRef = React.useRef<DraftStateInfo | null>(draftState)
   const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
   const setCachedAuthInfoRef =
     React.useRef<typeof setCachedAuthInfo>(setCachedAuthInfo)
+  const setGameMetadataRef =
+    React.useRef<typeof setGameMetadata>(setGameMetadata)
 
   draftStateRef.current = draftState
   setDraftStateRef.current = setDraftState
   setCachedAuthInfoRef.current = setCachedAuthInfo
+  setGameMetadataRef.current = setGameMetadata
 
   const socket = socket_ref.current
 
@@ -78,12 +89,6 @@ export function Draft() {
     })
   }
 
-  const updateDraftState = (
-    mutator: (draft_state: DraftStateInfo | null) => DraftStateInfo | null
-  ) => {
-    setDraftStateRef.current(mutator(draftStateRef.current))
-  }
-
   const authInfo = cachedAuthInfo.getStorageAuthInfo()
   const setAuthInfo = (authInfo: SessionCred) => {
     setCachedAuthInfoRef.current(CachedAuthInfo.setStorageAuthInfo(authInfo))
@@ -92,12 +97,10 @@ export function Draft() {
     setCachedAuthInfoRef.current(CachedAuthInfo.clearStorageAuthInfo())
   }
 
-  if (authInfo !== null && gameMetadataRef.current === null) {
+  if (authInfo !== null && gameMetadata === null) {
     getGameMetadata(socket_ref.current, authInfo, (status) => {
       if (isOk(status)) {
-        gameMetadataRef.current = status.value
-      } else {
-        console.log(status)
+        setGameMetadataRef.current(status.value)
       }
     })
   }
@@ -129,8 +132,8 @@ export function Draft() {
             authInfo={authInfo}
             refreshDraft={refreshDraft}
             draftState={draftState}
-            updateDraftState={updateDraftState}
-            gameMetadata={gameMetadataRef.current}
+            setDraftState={setDraftState}
+            gameMetadata={gameMetadata}
           />
         )}
       </div>
@@ -141,10 +144,7 @@ export function Draft() {
         <TypeCounts draftState={draftState} />
       </div>
       <div>
-        <DeckList
-          draftState={draftState}
-          gameMetadata={gameMetadataRef.current}
-        />
+        <DeckList draftState={draftState} gameMetadata={gameMetadata} />
       </div>
     </div>
   )

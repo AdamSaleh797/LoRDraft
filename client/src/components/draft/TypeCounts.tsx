@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { CardCount, DraftStateInfo } from 'game/draft'
+import { CardCount, DraftStateInfo } from 'common/game/draft'
 
 import { EquipmentIcon } from 'client/card_types/equipment_icon'
 import { FollowerIcon } from 'client/card_types/follower_icon'
@@ -51,9 +51,9 @@ export function TypeCounts(props: TypeCountsComponentProps) {
     marginBottom: '10px',
   }
 
-  const typeCountText = {
-    'text-align': 'center',
-    'font-family': '"Gill Sans", sans-serif',
+  const typeCountText: React.CSSProperties = {
+    textAlign: 'center',
+    fontFamily: '"Gill Sans", sans-serif',
     display: 'inline-block',
     marginRight: '10px',
   }

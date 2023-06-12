@@ -16,9 +16,14 @@ import {
   RegionT,
   allRegions,
   regionContains,
-} from 'game/card'
-import { DraftOptions } from 'game/draft_options'
-import { Status, StatusCode, makeErrStatus, makeOkStatus } from 'util/status'
+} from 'common/game/card'
+import { DraftOptions } from 'common/game/draft_options'
+import {
+  Status,
+  StatusCode,
+  makeErrStatus,
+  makeOkStatus,
+} from 'common/util/status'
 
 export const POOL_SIZE = 4
 

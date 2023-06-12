@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Card } from 'game/card'
+import { Card } from 'common/game/card'
 
 export interface CardComponentProps {
   card: Card | null
@@ -21,9 +21,6 @@ export function CardComponent(props: CardComponentProps) {
     userDrag: 'none',
     WebkitUserDrag: 'none',
     UserSelect: 'none',
-    mozUserSelect: 'none',
-    webkitUserSelect: 'none',
-    MsUserSelect: 'none',
 
     filter: props.isSelected
       ? 'sepia(100%) saturate(300%) brightness(70%) hue-rotate(180deg)'

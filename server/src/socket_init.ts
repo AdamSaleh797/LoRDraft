@@ -5,9 +5,9 @@ import {
   LoRDraftServer,
   LoRDraftSocket,
   LoRDraftSocketIO,
-} from 'game/socket-msgs'
-import { AsyncSocketContext } from 'util/async_socket'
-import { isOk } from 'util/status'
+} from 'common/game/socket-msgs'
+import { AsyncSocketContext } from 'common/util/async_socket'
+import { isOk } from 'common/util/status'
 
 import { init_auth, join_session } from 'server/auth'
 import { gameMetadata } from 'server/core_bundle'

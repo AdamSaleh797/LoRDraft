@@ -19,7 +19,8 @@
     "jsx": "react-jsx",
     "baseUrl": "./",
     "paths": {
-      "*": ["./*", "../node_modules/*"]
+      "common/*": ["./*"],
+      "*": ["../node_modules/*"]
     }
   },
   "include": ["."]

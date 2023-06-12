@@ -14,7 +14,8 @@
     "baseUrl": "./",
     "paths": {
       "server/*": ["./src/*"],
-      "*": ["../node_modules/*", "../common/*"]
+      "common/*": ["../common/*"],
+      "*": ["../node_modules/*"]
     }
   }
 }

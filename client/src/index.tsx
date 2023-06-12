@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { Helmet } from 'react-helmet'
 
 import App from 'client/App'
@@ -8,7 +8,9 @@ import 'client/index.css'
 const APP_TITLE = 'Lor Draft'
 const APP_DESCRIPTION = 'a cool tool to Draft Lor Decks'
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root') as HTMLElement)
+
+root.render(
   <React.StrictMode>
     <Helmet>
       <title>{APP_TITLE}</title>
@@ -20,6 +22,5 @@ ReactDOM.render(
       <meta name='viewport' content='initial-scale=1, width=device-width' />
     </Helmet>
     <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 )

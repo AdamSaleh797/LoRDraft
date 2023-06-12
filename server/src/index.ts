@@ -3,7 +3,7 @@ import http from 'http'
 import mime from 'mime'
 import path from 'path'
 
-import { isOk } from 'util/status'
+import { isOk } from 'common/util/status'
 
 import { config } from 'server/args'
 import { InitSocket } from 'server/socket_init'

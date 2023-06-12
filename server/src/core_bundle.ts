@@ -1,4 +1,4 @@
-import { allRegions, originRegions } from 'game/card'
+import { allRegions, originRegions } from 'common/game/card'
 import {
   DraftFormat,
   DraftFormatMetadata,
@@ -10,15 +10,15 @@ import {
   SetPackRegionMetadataT,
   allDraftFormats,
   draftFormatRefToName,
-} from 'game/metadata'
-import { isArray, keyInUnknown } from 'util/lor_util'
+} from 'common/game/metadata'
+import { isArray, keyInUnknown } from 'common/util/lor_util'
 import {
   Status,
   StatusCode,
   isOk,
   makeErrStatus,
   makeOkStatus,
-} from 'util/status'
+} from 'common/util/status'
 
 import { readBundle } from 'server/bundle'
 

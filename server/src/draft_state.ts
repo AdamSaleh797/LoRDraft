@@ -6,22 +6,23 @@ import {
   MAX_CARD_COPIES,
   isChampion,
   regionContains,
-} from 'game/card'
+} from 'common/game/card'
 import {
   DraftDeck,
   DraftState,
+  DraftStateInfo,
   POOL_SIZE,
   addCardsToDeck,
   canAddToDeck,
   draftStateCardLimits,
   makeDraftDeck,
-} from 'game/draft'
+} from 'common/game/draft'
 import {
   DraftOptions,
   DraftOptionsT,
   formatContainsCard,
-} from 'game/draft_options'
-import { LoRDraftSocket } from 'game/socket-msgs'
+} from 'common/game/draft_options'
+import { LoRDraftSocket } from 'common/game/socket-msgs'
 import {
   binarySearch,
   containsDuplicates,
@@ -29,7 +30,7 @@ import {
   randChoice,
   randSample,
   randSampleNumbersAvoidingRepeats,
-} from 'util/lor_util'
+} from 'common/util/lor_util'
 import {
   OkStatus,
   Status,
@@ -37,7 +38,7 @@ import {
   isOk,
   makeErrStatus,
   makeOkStatus,
-} from 'util/status'
+} from 'common/util/status'
 
 import { LoggedInAuthUser, join_session } from 'server/auth'
 import { SessionInfo } from 'server/session'
@@ -57,15 +58,8 @@ const RANDOM_SELECTION_2_CARD_CUTOFF = 37
 //FIXME: REVERT THIS BACK TO 43
 const RANDOM_SELECTION_3_CARD_CUTOFF = 46
 
-// export type ServerDraftState = StateMachine<typeof draft_states_def, DraftState>
-export interface ServerDraftState {
-  state: DraftState
-  deck: DraftDeck
-  pending_cards: Card[]
-}
-
 interface InDraftSessionInfo extends SessionInfo {
-  draft_state: ServerDraftState
+  draft_state: DraftStateInfo
 }
 
 function choose_champ_cards(
@@ -111,7 +105,7 @@ function choose_non_champ_cards(
   randomNonChampCards(deck, POOL_SIZE, callback)
 }
 
-function draftState(auth_user: LoggedInAuthUser): Status<ServerDraftState> {
+function draftState(auth_user: LoggedInAuthUser): Status<DraftStateInfo> {
   if (!inDraft(auth_user.session_info)) {
     return makeErrStatus(
       StatusCode.NOT_IN_DRAFT_SESSION,
@@ -165,35 +159,64 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
   }
 }
 
+/**
+ * Chooses the next set of cards for draft state `draft_state`, adding the
+ * chosen cards to the `pending_cards` of the state and potentially changing
+ * the `state` if successful. If this fails, `callback` will be called with a
+ * non-OK status and `draft_state` will not have changed.
+ */
 function choose_next_cards(
-  draft_state: DraftState,
-  draft_deck: DraftDeck,
-  callback: (champ_cards: Status<Card[]>) => void
+  draft_state: DraftStateInfo,
+  callback: (status: Status) => void
 ) {
-  switch (draft_state) {
+  const cur_state = draft_state.state
+  const next_draft_state = nextDraftState(cur_state, draft_state.deck)
+  if (next_draft_state === null) {
+    callback(
+      makeErrStatus(
+        StatusCode.DRAFT_COMPLETE,
+        'The draft is complete, no more card selections to be made.'
+      )
+    )
+    return
+  }
+
+  const cards_callback = (status: Status<Card[]>) => {
+    if (!isOk(status)) {
+      callback(status)
+      return
+    }
+
+    // If cards were chosen successfully, then update the draft state.
+    draft_state.pending_cards = status.value
+    draft_state.state = next_draft_state
+    callback(OkStatus)
+  }
+
+  switch (next_draft_state) {
     case DraftState.INIT: {
       callback(
         makeErrStatus(
           StatusCode.INTERNAL_SERVER_ERROR,
-          'Should not have called `choose_next_cards` on a newly initialized draft before generating the pending pool.'
+          'Cannot have next draft state be `INIT`.'
         )
       )
-      break
+      return
     }
     case DraftState.INITIAL_SELECTION: {
-      choose_champ_cards(draft_state, draft_deck, callback, false)
-      break
+      choose_champ_cards(cur_state, draft_state.deck, cards_callback, false)
+      return
     }
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2: {
-      choose_champ_cards(draft_state, draft_deck, callback)
-      break
+      choose_champ_cards(cur_state, draft_state.deck, cards_callback)
+      return
     }
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
-      choose_non_champ_cards(draft_deck, callback)
-      break
+      choose_non_champ_cards(draft_state.deck, cards_callback)
+      return
     }
     case DraftState.GENERATE_CODE: {
       callback(
@@ -202,7 +225,7 @@ function choose_next_cards(
           'The draft is complete, no more card selections to be made.'
         )
       )
-      break
+      return
     }
   }
 }
@@ -216,19 +239,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
       const auth_user = auth_user_status.value
 
-      const draft_state_status = draftState(auth_user)
-      if (!isOk(draft_state_status)) {
-        resolve(draft_state_status)
-        return
-      }
-      const draft_state = draft_state_status.value
-
-      const draft_info = {
-        state: draft_state.state,
-        deck: draft_state.deck,
-        pending_cards: [],
-      }
-      resolve(makeOkStatus(draft_info))
+      resolve(draftState(auth_user))
     })
   })
 
@@ -263,55 +274,6 @@ export function initDraftState(socket: LoRDraftSocket) {
       const auth_user = status.value
 
       resolve(exitDraft(auth_user.session_info))
-    })
-  })
-
-  socket.respond('next_pool', (resolve, session_cred) => {
-    join_session(session_cred, (status) => {
-      if (!isOk(status)) {
-        resolve(status)
-        return
-      }
-      const auth_user = status.value
-
-      const draft_state_status = draftState(auth_user)
-      if (!isOk(draft_state_status)) {
-        resolve(draft_state_status)
-        return
-      }
-      const draft_state = draft_state_status.value
-
-      // If there are still pending cards, then one hasn't been chosen yet.
-      // Re-return the current card pool.
-      if (draft_state.pending_cards.length !== 0) {
-        resolve(makeOkStatus([draft_state.pending_cards, draft_state.state]))
-        return
-      }
-
-      const cur_state = draft_state.state
-      const next_draft_state = nextDraftState(cur_state, draft_state.deck)
-      //TODO: Check if in right state
-      if (next_draft_state === null) {
-        resolve(
-          makeErrStatus(
-            StatusCode.DRAFT_COMPLETE,
-            'The draft is complete, no more pools to choose from.'
-          )
-        )
-        return
-      }
-
-      choose_next_cards(next_draft_state, draft_state.deck, (status) => {
-        if (!isOk(status)) {
-          resolve(status)
-          return
-        }
-        const cards = status.value
-
-        draft_state.state = next_draft_state
-        draft_state.pending_cards = cards
-        resolve(makeOkStatus([cards, next_draft_state]))
-      })
     })
   })
 
@@ -401,9 +363,16 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
 
-      draft_state.pending_cards = []
+      choose_next_cards(draft_state, (status) => {
+        if (!isOk(status)) {
+          resolve(status)
+          return
+        }
 
-      resolve(OkStatus)
+        // If OK, `choose_next_cards` will have updated `draft_state`, so
+        // return it directly.
+        resolve(makeOkStatus(draft_state))
+      })
     })
   })
 }
@@ -602,7 +571,7 @@ function randomNonChampCards(
 export function enterDraft(
   session_info: SessionInfo,
   draft_options: DraftOptions,
-  callback: (status: Status) => void
+  callback: (status: Status<DraftStateInfo>) => void
 ) {
   if (inDraft(session_info)) {
     callback(
@@ -620,8 +589,17 @@ export function enterDraft(
     pending_cards: [],
   }
 
-  session_info.draft_state = draft_state
-  callback(OkStatus)
+  // Choose the first set of pending cards to show.
+  choose_next_cards(draft_state, (status) => {
+    if (!isOk(status)) {
+      callback(status)
+      return
+    }
+
+    // If successful, join the draft by adding it to the session info.
+    session_info.draft_state = draft_state
+    callback(makeOkStatus(draft_state))
+  })
 }
 
 export function exitDraft(session_info: SessionInfo): Status {

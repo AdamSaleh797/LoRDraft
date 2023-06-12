@@ -1,6 +1,10 @@
 import React from 'react'
 
-import { DraftFormat, GameMetadata, allDraftFormats } from 'game/metadata'
+import {
+  DraftFormat,
+  GameMetadata,
+  allDraftFormats,
+} from 'common/game/metadata'
 
 import { Button } from 'client/components/button'
 
@@ -14,6 +18,7 @@ export function DraftFormatComponent(props: DraftFormatComponentProps) {
     <div>
       {allDraftFormats().map((format) => (
         <Button
+          key={format}
           onClick={() => {
             props.select_format_fn(format)
           }}

@@ -1,4 +1,4 @@
-import { Status, isOk } from 'util/status'
+import { Status, isOk } from 'common/util/status'
 
 interface StatusComponentProps {
   status: Status | null

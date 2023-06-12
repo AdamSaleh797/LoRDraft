@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { Region, isOrigin, mainRegions, originRegions } from 'game/card'
-import { DraftStateInfo } from 'game/draft'
-import { GameMetadata } from 'game/metadata'
+import { Region, isOrigin, mainRegions, originRegions } from 'common/game/card'
+import { DraftStateInfo } from 'common/game/draft'
+import { GameMetadata } from 'common/game/metadata'
 
 export interface RegionIconListComponentProps {
   draftState: DraftStateInfo | null
@@ -36,16 +36,17 @@ export function RegionIconList(props: RegionIconListComponentProps) {
             })
             .slice(0, render_all_runeterran_icons ? undefined : 1)
         )
-        .map((region) => {
+        .map((region, index) => {
           if (props.gameMetadata !== null) {
             return (
               <img
+                key={`${region}${index}`}
                 src={props.gameMetadata.regions[region].imageUrl}
                 style={regionIconStyle}
               ></img>
             )
           } else {
-            return <span>{region}, </span>
+            return <span key={index}>{region}, </span>
           }
         })}
     </div>

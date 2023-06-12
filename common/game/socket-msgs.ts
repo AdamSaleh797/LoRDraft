@@ -1,16 +1,15 @@
 import { Buffer } from 'buffer'
 import { InstanceOf, Record, Static, String } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
-
 import { Socket as ClientSocket } from 'socket.io-client'
 
-import { Card } from 'game/card'
-import { DraftState, DraftStateInfo } from 'game/draft'
-import { DraftOptions } from 'game/draft_options'
-import { GameMetadata } from 'game/metadata'
-import { AsyncSocketContext } from 'util/async_socket'
-import { Empty } from 'util/lor_util'
-import { Status } from 'util/status'
+import { Card } from 'common/game/card'
+import { DraftStateInfo } from 'common/game/draft'
+import { DraftOptions } from 'common/game/draft_options'
+import { GameMetadata } from 'common/game/metadata'
+import { AsyncSocketContext } from 'common/util/async_socket'
+import { Empty } from 'common/util/lor_util'
+import { Status } from 'common/util/status'
 
 export const RegisterInfoT = Record({
   username: String,
@@ -40,11 +39,10 @@ export interface ServerToClientEvents {
   join_session_res: (session_cred: Status<SessionCred>) => void
   logout_res: (status: Status) => void
   game_metadata_res: (metadata: Status<GameMetadata>) => void
-  join_draft_res: (status: Status) => void
+  join_draft_res: (status: Status<DraftStateInfo>) => void
   close_draft_res: (status: Status) => void
   current_draft_res: (draft_state_info: Status<DraftStateInfo>) => void
-  next_pool_res: (result: Status<[Card[], DraftState]>) => void
-  choose_cards_res: (status: Status) => void
+  choose_cards_res: (draft_state_info: Status<DraftStateInfo>) => void
 }
 
 export interface ClientToServerEvents {
@@ -59,7 +57,6 @@ export interface ClientToServerEvents {
   ) => void
   close_draft_req: (session_cred?: SessionCred) => void
   current_draft_req: (session_cred?: SessionCred) => void
-  next_pool_req: (session_cred?: SessionCred) => void
   choose_cards_req: (session_cred?: SessionCred, cards?: Card[]) => void
 }
 

@@ -2,7 +2,7 @@ const path = require('path')
 
 module.exports = {
   entry: {
-    'index.ts': [path.resolve(__dirname, 'src/index.ts')],
+    index: [path.resolve(__dirname, 'src/index.ts')],
   },
   module: {
     rules: [
@@ -24,8 +24,9 @@ module.exports = {
     extensions: ['.tsx', '.mts', '.ts', '.jsx', '.mjs', '.js'],
     alias: {
       server: path.resolve(__dirname, 'src/'),
+      common: path.resolve(__dirname, '../common/'),
     },
-    modules: ['../node_modules', '../common'],
+    modules: ['../node_modules'],
   },
   target: 'node',
 }

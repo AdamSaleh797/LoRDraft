@@ -1,8 +1,9 @@
 const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   entry: {
-    'index.tsx': [path.resolve(__dirname, 'src/index.tsx')],
+    index: [path.resolve(__dirname, 'src/index.tsx')],
   },
   module: {
     rules: [
@@ -24,7 +25,14 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
     alias: {
       client: path.resolve(__dirname, 'src/'),
+      common: path.resolve(__dirname, '../common/'),
     },
-    modules: ['../node_modules', '../common'],
+    modules: ['../node_modules'],
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: path.resolve(__dirname, 'html/index_template.html'),
+    }),
+  ],
 }

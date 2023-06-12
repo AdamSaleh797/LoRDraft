@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Card } from 'game/card'
+import { Card } from 'common/game/card'
 
 export interface CardDisplayProps {
   card: Card | null

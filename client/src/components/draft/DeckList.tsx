@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'game/draft'
-import { GameMetadata } from 'game/metadata'
-import { isOk } from 'util/status'
+import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'common/game/draft'
+import { GameMetadata } from 'common/game/metadata'
+import { isOk } from 'common/util/status'
 
-import { RegionIconList } from 'client/RegionIconList'
+import { RegionIconList } from 'client/components/draft/RegionIconList'
 import { CardDisplay } from 'client/components/draft/card_display'
 
 export interface DeckListComponentProps {
@@ -62,12 +62,15 @@ export function DeckList(props: DeckListComponentProps) {
           const array_index = (i % 5) * 10 + Math.floor(i / 5)
           if (array_index < cardCounts.length) {
             return (
-              <div style={deckListContainer}>
+              <div
+                key={`${cardCounts[array_index].card.cardCode}${i}`}
+                style={deckListContainer}
+              >
                 <CardDisplay card={cardCounts[array_index].card} />
               </div>
             )
           } else {
-            return <div style={deckListContainer}></div>
+            return <div key={i} style={deckListContainer}></div>
           }
         })}
     </div>
