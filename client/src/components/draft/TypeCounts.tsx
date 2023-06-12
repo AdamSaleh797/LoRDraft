@@ -1,5 +1,7 @@
 import React from 'react'
 
+import style from './TypeCounts.module.css'
+
 import { CardCount, DraftStateInfo } from 'common/game/draft'
 
 import { EquipmentIcon } from 'client/card_types/equipment_icon'
@@ -47,32 +49,21 @@ export function TypeCounts(props: TypeCountsComponentProps) {
     }
   })
 
-  const typeCountContainer = {
-    marginBottom: '10px',
-  }
-
-  const typeCountText: React.CSSProperties = {
-    textAlign: 'center',
-    fontFamily: '"Gill Sans", sans-serif',
-    display: 'inline-block',
-    marginRight: '10px',
-  }
-
   return (
-    <div style={typeCountContainer}>
-      <div style={typeCountText}>
+    <div className={style.typeCountContainer}>
+      <div className={style.typeCountText}>
         <FollowerIcon />
         <div>{type_counts[UNITS]}</div>
       </div>
-      <div style={typeCountText}>
+      <div className={style.typeCountText}>
         <SpellIcon />
         <div>{type_counts[SPELLS]}</div>
       </div>
-      <div style={typeCountText}>
+      <div className={style.typeCountText}>
         <LandmarkIcon />
         <div>{type_counts[LANDMARKS]}</div>
       </div>
-      <div style={typeCountText}>
+      <div className={style.typeCountText}>
         <EquipmentIcon />
         <div>{type_counts[EQUIPMENTS]}</div>
       </div>

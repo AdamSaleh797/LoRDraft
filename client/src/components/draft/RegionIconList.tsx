@@ -1,5 +1,7 @@
 import React from 'react'
 
+import style from './RegionIconList.module.css'
+
 import { Region, isOrigin, mainRegions, originRegions } from 'common/game/card'
 import { DraftStateInfo } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
@@ -10,10 +12,6 @@ export interface RegionIconListComponentProps {
 }
 
 export function RegionIconList(props: RegionIconListComponentProps) {
-  const regionIconStyle = {
-    width: '30px',
-  }
-
   // If true, all Runeterran regions should be rendered as separate icons.
   // Otherwise, the presence of any number of Runeterran regions should generate
   // only one Runeterran icon. The former scheme is only used when the two
@@ -41,8 +39,8 @@ export function RegionIconList(props: RegionIconListComponentProps) {
             return (
               <img
                 key={`${region}${index}`}
+                className={style.regionIcon}
                 src={props.gameMetadata.regions[region].imageUrl}
-                style={regionIconStyle}
               ></img>
             )
           } else {

@@ -1,5 +1,7 @@
 import React from 'react'
 
+import style from './DeckList.module.css'
+
 import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 import { isOk } from 'common/util/status'
@@ -33,22 +35,15 @@ export function DeckList(props: DeckListComponentProps) {
     deckCode = null
   }
 
-  //ratio of height to width should be 18%
-  const deckListContainer = {
+  const deckListStyle = {
     width: `${100 / COLUMNS}%`,
-    //height: '35px',
-    aspectRatio: 1 / 0.18,
-    //width: '277px',
-    display: 'inline-block',
-  }
-
-  const deckCodeContainer: React.CSSProperties = {
-    overflowWrap: 'break-word',
   }
 
   return (
     <div>
-      <div style={deckCodeContainer}>{deckCode === null ? [] : deckCode}</div>
+      <div className={style.deckList} style={deckListStyle}>
+        {deckCode === null ? [] : deckCode}
+      </div>
       <RegionIconList
         draftState={props.draftState}
         gameMetadata={props.gameMetadata}
@@ -62,13 +57,19 @@ export function DeckList(props: DeckListComponentProps) {
             return (
               <div
                 key={`${cardCounts[array_index].card.cardCode}${i}`}
-                style={deckListContainer}
+                className={style.deckCode}
               >
                 <CardDisplay card={cardCounts[array_index].card} />
               </div>
             )
           } else {
-            return <div key={i} style={deckListContainer}></div>
+            return (
+              <div
+                key={i}
+                className={style.deckList}
+                style={deckListStyle}
+              ></div>
+            )
           }
         })}
     </div>

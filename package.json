@@ -53,6 +53,7 @@
     "prettier": "2.8.8",
     "socket.io-client": "^4.5.4",
     "subpackage": "^1.1.0",
+    "typed-css-modules": "^0.7.2",
     "typescript": "^4.9.4",
     "typescript-plugin-css-modules": "^5.0.1",
     "utf-8-validate": "^6.0.0",

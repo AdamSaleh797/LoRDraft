@@ -1,0 +1,29 @@
+.display {
+  display: inline-block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.fadeContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.fade {
+  background-image: linear-gradient(
+    90deg,
+    #4066ba 30%,
+    rgba(12, 161, 132, 0) 70%
+  );
+  height: 100%;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.image {
+  width: 68.6%;
+  position: relative;
+  transform: translate(31.4%, -66.3%);
+}
