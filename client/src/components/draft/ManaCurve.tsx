@@ -48,7 +48,7 @@ export function ManaCurve(props: ManaCurveComponentProps) {
           )
         })}
       </div>
-      <div>
+      <div className={style.manaValueCountContainer}>
         {histogram.map((manaValueCount, index) => {
           const textStyle = {
             width: `calc(${100 / histogram.length}%)`,

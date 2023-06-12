@@ -70,6 +70,17 @@ export interface DraftDeck {
   options: DraftOptions
 }
 
+export function findCardCount(
+  cardCounts: readonly CardCount[],
+  card: Card
+): CardCount | null {
+  return (
+    cardCounts.find((cardCount) => {
+      return card.cardCode === cardCount.card.cardCode
+    }) ?? null
+  )
+}
+
 export function addToCardCounts(
   cardCounts: readonly CardCount[],
   card: Card
