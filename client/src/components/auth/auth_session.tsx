@@ -9,7 +9,7 @@ import {
 } from 'common/game/socket-msgs'
 import { Empty } from 'common/util/lor_util'
 import { StateMachine } from 'common/util/state_machine'
-import { Status, StatusCode, isOk } from 'common/util/status'
+import { StatusCode, isOk } from 'common/util/status'
 
 import { Button } from 'client/components/common/button'
 import { APP_TITLE } from 'client/utils/constants'
@@ -118,10 +118,6 @@ interface SessionComponentProps {
   authInfo: SessionCred | null
   setAuthInfo: (auth_info: SessionCred) => void
   clearAuthInfo: () => void
-  refreshDraft: (
-    session_cred: SessionCred,
-    callback: (status: Status) => void
-  ) => void
 }
 
 const enum SessionState {
@@ -140,10 +136,6 @@ export function SessionComponent(props: SessionComponentProps) {
   const [sessionState, setSessionState] = React.useState<SessionState>(
     SessionState.LOGIN
   )
-  const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
-    props.refreshDraft
-  )
-  refreshDraftRef.current = props.refreshDraft
 
   const machine_def = {
     [SessionState.LOGIN]: {
@@ -155,10 +147,6 @@ export function SessionComponent(props: SessionComponentProps) {
         console.log('login -> signed in')
         console.log('saving token to session storage')
         props.setAuthInfo(session_cred)
-
-        // Attempt to load the current draft. Ignore failures, since this is
-        // likely due to a current draft not existing.
-        refreshDraftRef.current(session_cred, () => undefined)
 
         return {
           username: session_cred.username,

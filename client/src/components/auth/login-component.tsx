@@ -8,7 +8,6 @@ import {
   SessionCred,
 } from 'common/game/socket-msgs'
 import { AsyncSocketContext } from 'common/util/async_socket'
-import { OkStatus, Status, isOk } from 'common/util/status'
 
 import { SessionComponent } from 'client/components/auth/auth_session'
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
@@ -37,21 +36,6 @@ export function LoginComponent() {
 
   const socket = socket_ref.current
 
-  const refreshDraft = (
-    session_cred: SessionCred,
-    callback: (status: Status) => void
-  ) => {
-    socket.call('current_draft', session_cred, (status) => {
-      if (!isOk(status)) {
-        callback(status)
-        return
-      }
-
-      setDraftStateRef.current(status.value)
-      callback(OkStatus)
-    })
-  }
-
   const authInfo = cachedAuthInfo.getStorageAuthInfo()
   const setAuthInfo = (authInfo: SessionCred) => {
     setCachedAuthInfoRef.current(CachedAuthInfo.setStorageAuthInfo(authInfo))
@@ -66,7 +50,6 @@ export function LoginComponent() {
       authInfo={authInfo}
       setAuthInfo={setAuthInfo}
       clearAuthInfo={clearAuthInfo}
-      refreshDraft={refreshDraft}
     />
   )
 }
