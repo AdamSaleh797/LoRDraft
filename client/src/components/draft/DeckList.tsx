@@ -14,8 +14,8 @@ export interface DeckListComponentProps {
   gameMetadata: GameMetadata | null
 }
 
-export const ROWS = 10
-export const COLUMNS = 5
+export const ROWS = 15
+export const COLUMNS = 3
 
 export function DeckList(props: DeckListComponentProps) {
   let deckCode
@@ -52,24 +52,22 @@ export function DeckList(props: DeckListComponentProps) {
       {Array(ROWS * COLUMNS)
         .fill(0)
         .map((_, i) => {
-          const array_index = (i % 5) * 10 + Math.floor(i / 5)
-          if (array_index < cardCounts.length) {
+          const array_index = (i % COLUMNS) * ROWS + Math.floor(i / COLUMNS)
+          if (array_index < cardCounts.length && props.draftState !== null) {
             return (
               <div
                 key={`${cardCounts[array_index].card.cardCode}${i}`}
-                className={style.deckCode}
+                style={deckListStyle}
+                className={style.deckList}
               >
-                <CardDisplay card={cardCounts[array_index].card} />
+                <CardDisplay
+                  card={cardCounts[array_index].card}
+                  draftState={props.draftState}
+                />
               </div>
             )
           } else {
-            return (
-              <div
-                key={i}
-                className={style.deckList}
-                style={deckListStyle}
-              ></div>
-            )
+            return <div key={i} className={style.deckCode}></div>
           }
         })}
     </div>

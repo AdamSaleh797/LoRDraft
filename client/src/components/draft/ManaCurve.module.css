@@ -38,6 +38,10 @@
   width: 100%;
 }
 
+.manaValueCountContainer {
+  width: 360px;
+}
+
 .manaValueText {
   text-align: center;
   display: inline-block;
