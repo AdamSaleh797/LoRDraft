@@ -6,6 +6,10 @@ export const store = configureStore({
   reducer: {
     session: sessionStateReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 })
 
 export type AppDispatch = typeof store.dispatch

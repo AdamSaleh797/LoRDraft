@@ -95,22 +95,6 @@ export function LoginComponent(props: LoginComponentProps) {
   )
 }
 
-// interface UserComponentProps {
-//   username: string
-//   logout_fn: () => void
-// }
-
-// export function UserComponent(props: UserComponentProps) {
-//   return (
-//     <div>
-//       <div>
-//         You are logged in as <b>{props.username}</b>
-//       </div>
-//       <Button onClick={props.logout_fn}>Log out</Button>
-//     </div>
-//   )
-// }
-
 interface SessionComponentProps {
   socket: LoRDraftClientSocket
 }
@@ -126,62 +110,7 @@ export function SignInComponent(props: SessionComponentProps) {
   )
   const dispatch = useLoRDispatch()
 
-  // const machine_def = {
-  //   [SessionState.LOGIN]: {
-  //     [SessionState.REGISTER]: (_: LoginState) => {
-  //       console.log('login -> register')
-  //       return {}
-  //     },
-  //     [SessionState.SIGNED_IN]: (_: LoginState, session_cred: SessionCred) => {
-  //       console.log('login -> signed in')
-  //       console.log('saving token to session storage')
-  //       props.setAuthInfo(session_cred)
-
-  //       return {
-  //         username: session_cred.username,
-  //       }
-  //     },
-  //   },
-  //   [SessionState.REGISTER]: {
-  //     [SessionState.LOGIN]: (_: RegisterState) => {
-  //       console.log('register -> login')
-  //       return {}
-  //     },
-  //   },
-  //   [SessionState.SIGNED_IN]: {
-  //     [SessionState.LOGIN]: (_: SignedInState) => {
-  //       console.log('signed in -> login')
-  //       props.clearAuthInfo()
-  //       return {}
-  //     },
-  //   },
-  // } as const
-
   const socket = props.socket
-
-  // TODO replicate this logic higher up the app
-  // if (props.authInfo !== null && sessionState !== SessionState.SIGNED_IN) {
-  //   socket.call('join_session', props.authInfo, (status) => {
-  //     if (!isOk(status)) {
-  //       if (sessionState === SessionState.LOGIN) {
-  //         console.log('failed to join session')
-  //         console.log(status)
-  //         console.log('clearing token session storage')
-  //         props.clearAuthInfo()
-  //       }
-  //       return
-  //     }
-  //     const session_cred = status.value
-  //     session_cred.token = Buffer.from(session_cred.token)
-
-  //     console.log('joined session')
-  //     session_state_machine.transition(
-  //       SessionState.LOGIN,
-  //       SessionState.SIGNED_IN,
-  //       session_cred
-  //     )
-  //   })
-  // }
 
   switch (signInState) {
     case SignInState.REGISTER: {

@@ -1,11 +1,14 @@
 import React from 'react'
 
+import { UserComponent } from '../auth/UserInfoComponent'
 import style from './modal.module.css'
 
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { LoRDraftClientSocket } from 'common/game/socket-msgs'
 
 import { SignInComponent } from 'client/components/auth/SignInComponent'
 import { Button } from 'client/components/common/button'
+import { useLoRSelector } from 'client/store/hooks'
+import { isSignedIn, selectSessionState } from 'client/store/session'
 
 export interface ModalProps {
   setOpenModal: (b: boolean) => void
@@ -13,6 +16,8 @@ export interface ModalProps {
 }
 
 export function Modal(props: ModalProps) {
+  const session_state = useLoRSelector(selectSessionState)
+
   return (
     <div className={style.modalBackground}>
       <div className={style.modalContainer}>
@@ -28,8 +33,14 @@ export function Modal(props: ModalProps) {
           <h3>Login | Registration</h3>
         </div>
         <div className={style.body}>
-          {/* TODO make this only show up if not logged in, otherwise make it the "username" component */}
-          <SignInComponent socket={props.socket}></SignInComponent>
+          {isSignedIn(session_state) ? (
+            <UserComponent
+              socket={props.socket}
+              auth_info={session_state.authInfo}
+            />
+          ) : (
+            <SignInComponent socket={props.socket} />
+          )}
         </div>
         <div className={style.footer}>
           <Button

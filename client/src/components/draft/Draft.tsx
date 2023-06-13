@@ -13,11 +13,12 @@ import {
   makeErrStatus,
 } from 'common/util/status'
 
-import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
 import { DeckList } from 'client/components/draft/DeckList'
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { TypeCounts } from 'client/components/draft/TypeCounts'
+import { useLoRSelector } from 'client/store/hooks'
+import { isSignedIn, selectSessionState } from 'client/store/session'
 
 let g_inflight = false
 
@@ -40,7 +41,6 @@ function getGameMetadata(
 
 export interface DraftProps {
   socket: LoRDraftClientSocket
-  auth_info: CachedAuthInfo
 }
 
 export function Draft(props: DraftProps) {
@@ -50,6 +50,7 @@ export function Draft(props: DraftProps) {
   const [gameMetadata, setGameMetadata] = React.useState<GameMetadata | null>(
     null
   )
+  const session_state = useLoRSelector(selectSessionState)
 
   const draftStateRef = React.useRef<DraftStateInfo | null>(draftState)
   const setDraftStateRef = React.useRef<typeof setDraftState>(() => undefined)
@@ -75,10 +76,8 @@ export function Draft(props: DraftProps) {
     })
   }
 
-  const authInfo = props.auth_info.getStorageAuthInfo()
-
-  if (authInfo !== null && gameMetadata === null) {
-    getGameMetadata(props.socket, authInfo, (status) => {
+  if (isSignedIn(session_state) && gameMetadata === null) {
+    getGameMetadata(props.socket, session_state.authInfo, (status) => {
       if (isOk(status)) {
         setGameMetadataRef.current(status.value)
       }
@@ -88,12 +87,12 @@ export function Draft(props: DraftProps) {
   return (
     <div>
       <div>
-        {authInfo === null ? (
+        {!isSignedIn(session_state) ? (
           []
         ) : (
           <DraftFlowComponent
             socket={props.socket}
-            authInfo={authInfo}
+            authInfo={session_state.authInfo}
             refreshDraft={refreshDraft}
             draftState={draftState}
             setDraftState={setDraftState}
