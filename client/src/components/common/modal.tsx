@@ -4,15 +4,12 @@ import style from './modal.module.css'
 
 import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
 
-import { SessionComponent } from 'client/components/auth/auth_session'
+import { SignInComponent } from 'client/components/auth/SignInComponent'
 import { Button } from 'client/components/common/button'
 
 export interface ModalProps {
   setOpenModal: (b: boolean) => void
   socket: LoRDraftClientSocket
-  authInfo: SessionCred | null
-  setAuthInfo: (auth_info: SessionCred) => void
-  clearAuthInfo: () => void
 }
 
 export function Modal(props: ModalProps) {
@@ -31,12 +28,8 @@ export function Modal(props: ModalProps) {
           <h3>Login | Registration</h3>
         </div>
         <div className={style.body}>
-          <SessionComponent
-            socket={props.socket}
-            authInfo={props.authInfo}
-            setAuthInfo={props.setAuthInfo}
-            clearAuthInfo={props.clearAuthInfo}
-          ></SessionComponent>
+          {/* TODO make this only show up if not logged in, otherwise make it the "username" component */}
+          <SignInComponent socket={props.socket}></SignInComponent>
         </div>
         <div className={style.footer}>
           <Button
