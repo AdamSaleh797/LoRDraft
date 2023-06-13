@@ -24,6 +24,7 @@ export default function App() {
 
   // If the session state has not initialized, then trigger the initialization
   if (shouldInitialize(session_state)) {
+    console.log('tryna log in')
     dispatcher(
       doInitializeAsync({
         socket: socket_ref.current,

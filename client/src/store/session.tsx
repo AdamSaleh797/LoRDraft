@@ -280,7 +280,9 @@ const sessionStateSlice = createSlice({
         }
 
         return {
-          cached_auth_info: state.cached_auth_info,
+          cached_auth_info: CachedAuthInfo.setStorageAuthInfo(
+            action.payload.value
+          ),
           state: UserSessionState.SIGNED_IN,
           message_in_flight: null,
           authInfo: action.payload.value,
