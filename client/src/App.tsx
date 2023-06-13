@@ -19,19 +19,6 @@ export default function App() {
   )
 
   const socket_ref = React.useRef(createLoRSocket())
-  const cachedAuthInfoRef = React.useRef(cachedAuthInfo)
-  const setCachedAuthInfoRef =
-    React.useRef<typeof setCachedAuthInfo>(setCachedAuthInfo)
-
-  cachedAuthInfoRef.current = cachedAuthInfo
-  setCachedAuthInfoRef.current = setCachedAuthInfo
-
-  const setAuthInfo = (authInfo: SessionCred) => {
-    setCachedAuthInfoRef.current(CachedAuthInfo.setStorageAuthInfo(authInfo))
-  }
-  const clearAuthInfo = () => {
-    setCachedAuthInfoRef.current(CachedAuthInfo.clearStorageAuthInfo())
-  }
 
   return (
     <div className={style.App}>
@@ -44,13 +31,7 @@ export default function App() {
           Login
         </Button>
         {modalOpen && (
-          <Modal
-            setOpenModal={setModalOpen}
-            socket={socket_ref.current}
-            authInfo={cachedAuthInfo.getStorageAuthInfo()}
-            setAuthInfo={setAuthInfo}
-            clearAuthInfo={clearAuthInfo}
-          />
+          <Modal setOpenModal={setModalOpen} socket={socket_ref.current} />
         )}
       </Header>
       <Layout>
