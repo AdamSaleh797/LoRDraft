@@ -5,7 +5,6 @@ import {
   LoginCred,
   RegisterInfo,
 } from 'common/game/socket-msgs'
-import { StatusCode, isOk } from 'common/util/status'
 
 import { Button } from 'client/components/common/button'
 import { useLoRDispatch } from 'client/store/hooks'
@@ -128,30 +127,18 @@ export function SignInComponent(props: SessionComponentProps) {
         dispatch(doLoginAsync({ socket, login_info: login_cred }))
       }
 
-      const auto_login = () => {
+      const auto_login = async () => {
         const username = 'test'
         const password = 'test'
         const email = 'test@mail.com'
 
-        dispatch(
+        await dispatch(
           doRegisterAsync({
             socket,
             register_info: { username, password, email },
-            callback: (status) => {
-              if (
-                !isOk(status) &&
-                status.status !== StatusCode.USER_ALREADY_EXISTS
-              ) {
-                console.log(status)
-                return
-              }
-
-              dispatch(
-                doLoginAsync({ socket, login_info: { username, password } })
-              )
-            },
           })
         )
+        dispatch(doLoginAsync({ socket, login_info: { username, password } }))
       }
 
       return (

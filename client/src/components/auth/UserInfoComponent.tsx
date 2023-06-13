@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
 
 import { Button } from 'client/components/common/button'

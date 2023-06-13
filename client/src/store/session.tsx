@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { Buffer } from 'buffer'
 
 import {
   LoRDraftClientSocket,
@@ -12,6 +13,7 @@ import {
   StatusCode,
   isOk,
   makeErrStatus,
+  makeOkStatus,
 } from 'common/util/status'
 
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
@@ -22,17 +24,12 @@ interface ThunkAPI {
   rejectValue: ErrStatusT
 }
 
-type PromiseRejection = (reason: ErrStatusT) => void
-
-function makeThunkPromise<T>(
-  callback: (resolve: (value: T) => void, reject: PromiseRejection) => void
-) {
-  return new Promise<T>((inner_resolve, inner_reject) => {
-    callback(inner_resolve, (status) => {
-      console.log('Failed async thunk:', status)
-      inner_reject(status.message)
-    })
-  })
+/**
+ * Don't allow rejecting promises, all promises should be resolved with a
+ * `Status`.
+ */
+function makeThunkPromise<T>(callback: (resolve: (value: T) => void) => void) {
+  return new Promise<T>(callback)
 }
 
 export const enum UserSessionState {
@@ -84,16 +81,16 @@ export interface InitializeArgs {
 }
 
 export const doInitializeAsync = createAsyncThunk<
-  SessionCred,
+  Status<SessionCred>,
   InitializeArgs,
   ThunkAPI
 >(
   'session/initializeAsync',
   async (args) => {
-    return await makeThunkPromise((resolve, reject) => {
+    return await makeThunkPromise((resolve) => {
       const auth_info = args.cached_auth_info.getStorageAuthInfo()
       if (auth_info === null) {
-        reject(
+        resolve(
           makeErrStatus(
             StatusCode.NOT_LOGGED_IN,
             `No cached auth info found, not attempting to sign in`
@@ -104,9 +101,11 @@ export const doInitializeAsync = createAsyncThunk<
 
       args.socket.call('join_session', auth_info, (status) => {
         if (!isOk(status)) {
-          reject(status)
+          resolve(status)
         } else {
-          resolve(status.value)
+          const auth_info = status.value
+          auth_info.token = Buffer.from(auth_info.token)
+          resolve(makeOkStatus(auth_info))
         }
       })
     })
@@ -131,15 +130,21 @@ export interface LoginArgs {
   login_info: LoginCred
 }
 
-export const doLoginAsync = createAsyncThunk<SessionCred, LoginArgs, ThunkAPI>(
+export const doLoginAsync = createAsyncThunk<
+  Status<SessionCred>,
+  LoginArgs,
+  ThunkAPI
+>(
   'session/loginAsync',
   async (args: LoginArgs) => {
-    return await makeThunkPromise((resolve, reject) => {
+    return await makeThunkPromise((resolve) => {
       args.socket.call('login', args.login_info, (status) => {
         if (!isOk(status)) {
-          reject(status)
+          resolve(status)
         } else {
-          resolve(status.value)
+          const auth_info = status.value
+          auth_info.token = Buffer.from(auth_info.token)
+          resolve(makeOkStatus(auth_info))
         }
       })
     })
@@ -167,14 +172,8 @@ export interface LogoutArgs {
 export const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
   'session/logoutAsync',
   async (args) => {
-    return await makeThunkPromise((resolve, reject) => {
-      args.socket.call('logout', args.auth_info, (status) => {
-        if (!isOk(status)) {
-          reject(status)
-        } else {
-          resolve(status)
-        }
-      })
+    return await makeThunkPromise((resolve) => {
+      args.socket.call('logout', args.auth_info, resolve)
     })
   },
   {
@@ -195,20 +194,13 @@ export const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
 export interface RegisterArgs {
   socket: LoRDraftClientSocket
   register_info: RegisterInfo
-  callback?: (status: Status) => void
 }
 
 export const doRegisterAsync = createAsyncThunk<Status, RegisterArgs, ThunkAPI>(
   'session/registerAsync',
   async (args) => {
-    return await makeThunkPromise((resolve, reject) => {
-      args.socket.call('register', args.register_info, (status) => {
-        if (!isOk(status)) {
-          reject(status)
-        } else {
-          resolve(status)
-        }
-      })
+    return await makeThunkPromise((resolve) => {
+      args.socket.call('register', args.register_info, resolve)
     })
   },
   {
@@ -252,22 +244,7 @@ const sessionStateSlice = createSlice({
         }
       })
       .addCase(doInitializeAsync.fulfilled, (_state, action) => {
-        // If joining the session succeeded, then we can transition straight to
-        // SIGNED_IN and refresh the cached auth info (in case what the server
-        // sent back was different from before).
-        return {
-          cached_auth_info: CachedAuthInfo.setStorageAuthInfo(action.payload),
-          state: UserSessionState.SIGNED_IN,
-          message_in_flight: null,
-          authInfo: action.payload,
-        }
-      })
-      .addCase(doInitializeAsync.rejected, (state, reason) => {
-        // Only if this wasn't an invalid redux transition, then the socket
-        // call failed and we can clear the message_in_flight status. Otherwise
-        // this call did not set the message_in_flight status, so we can't
-        // clear it.
-        if (reason.payload?.status !== StatusCode.INVALID_REDUX_TRANSITION) {
+        if (!isOk(action.payload)) {
           // If logging in failed, we should clear the cached storage auth info
           // and transition to SIGNED_OUT.
           return {
@@ -276,72 +253,65 @@ const sessionStateSlice = createSlice({
             message_in_flight: null,
           }
         }
+
+        // If joining the session succeeded, then we can transition straight to
+        // SIGNED_IN and refresh the cached auth info (in case what the server
+        // sent back was different from before).
+        return {
+          cached_auth_info: CachedAuthInfo.setStorageAuthInfo(
+            action.payload.value
+          ),
+          state: UserSessionState.SIGNED_IN,
+          message_in_flight: null,
+          authInfo: action.payload.value,
+        }
       })
       .addCase(doLoginAsync.pending, (state) => {
         state.message_in_flight = SessionStateMessage.LOGIN_REQUEST
       })
       .addCase(doLoginAsync.fulfilled, (state, action) => {
+        if (!isOk(action.payload)) {
+          // Only if this wasn't an invalid redux transition, then the socket
+          // call failed and we can clear the message_in_flight status. Otherwise
+          // this call did not set the message_in_flight status, so we can't
+          // clear it.
+          state.message_in_flight = null
+          return
+        }
+
         return {
           cached_auth_info: state.cached_auth_info,
           state: UserSessionState.SIGNED_IN,
           message_in_flight: null,
-          authInfo: action.payload,
-        }
-      })
-      .addCase(doLoginAsync.rejected, (state, reason) => {
-        // Only if this wasn't an invalid redux transition, then the socket
-        // call failed and we can clear the message_in_flight status. Otherwise
-        // this call did not set the message_in_flight status, so we can't
-        // clear it.
-        if (reason.payload?.status !== StatusCode.INVALID_REDUX_TRANSITION) {
-          state.message_in_flight = null
+          authInfo: action.payload.value,
         }
       })
       .addCase(doLogoutAsync.pending, (state) => {
         state.message_in_flight = SessionStateMessage.LOGOUT_REQUEST
       })
-      .addCase(doLogoutAsync.fulfilled, (state) => {
+      .addCase(doLogoutAsync.fulfilled, (state, action) => {
+        if (!isOk(action.payload)) {
+          // The socket call failed and we can clear the message_in_flight
+          // status.
+          state.message_in_flight = null
+          return
+        }
+
         return {
           cached_auth_info: state.cached_auth_info,
           state: UserSessionState.SIGNED_OUT,
           message_in_flight: null,
         }
       })
-      .addCase(doLogoutAsync.rejected, (state, reason) => {
-        // Only if this wasn't an invalid redux transition, then the socket
-        // call failed and we can clear the message_in_flight status. Otherwise
-        // this call did not set the message_in_flight status, so we can't
-        // clear it.
-        if (reason.payload?.status !== StatusCode.INVALID_REDUX_TRANSITION) {
-          state.message_in_flight = null
-        }
-      })
       .addCase(doRegisterAsync.pending, (state) => {
         state.message_in_flight = SessionStateMessage.REGISTER_REQUEST
       })
       .addCase(doRegisterAsync.fulfilled, (state, action) => {
-        state.state = UserSessionState.SIGNED_OUT
-        if (action.meta.arg.callback !== undefined) {
-          action.meta.arg.callback(action.payload)
-        }
-      })
-      .addCase(doRegisterAsync.rejected, (state, reason) => {
-        // Only if this wasn't an invalid redux transition, then the socket
-        // call failed and we can clear the message_in_flight status. Otherwise
-        // this call did not set the message_in_flight status, so we can't
-        // clear it.
-        if (reason.payload?.status !== StatusCode.INVALID_REDUX_TRANSITION) {
-          state.message_in_flight = null
-        }
+        state.message_in_flight = null
 
-        if (reason.meta.arg.callback !== undefined) {
-          reason.meta.arg.callback(
-            reason.payload ??
-              makeErrStatus(
-                StatusCode.INTERNAL_SERVER_ERROR,
-                'No status associated with rejected promise payload'
-              )
-          )
+        // Only update the state if the call succeeded.
+        if (isOk(action.payload)) {
+          state.state = UserSessionState.SIGNED_OUT
         }
       })
   },
