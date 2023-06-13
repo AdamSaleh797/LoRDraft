@@ -15,7 +15,7 @@ interface RegisterComponentProps {
   register_fn: (register_info: RegisterInfo) => void
 }
 
-export function RegisterComponent(props: RegisterComponentProps) {
+function RegisterComponent(props: RegisterComponentProps) {
   const [username, setUsername] = React.useState<string>('')
   const [password, setPassword] = React.useState<string>('')
   const [email, setEmail] = React.useState<string>('')
@@ -63,7 +63,7 @@ interface LoginComponentProps {
   login_fn: (login_cred: LoginCred) => void
 }
 
-export function LoginComponent(props: LoginComponentProps) {
+function LoginComponent(props: LoginComponentProps) {
   const [username, setUsername] = React.useState<string>('')
   const [password, setPassword] = React.useState<string>('')
 
@@ -154,36 +154,5 @@ export function SignInComponent(props: SessionComponentProps) {
         </div>
       )
     }
-    // case SessionState.SIGNED_IN: {
-    //   const status = session_state_machine.state_prop_exact(
-    //     SessionState.SIGNED_IN
-    //   )
-    //   if (!isOk(status)) {
-    //     console.log(status)
-    //     return <div></div>
-    //   }
-    //   const signed_in_state = status.value
-
-    //   const logout = () => {
-    //     if (props.authInfo !== null) {
-    //       socket.call('logout', props.authInfo, (status) => {
-    //         if (!isOk(status)) {
-    //           console.log(status)
-    //           return
-    //         }
-
-    //         console.log('logged out!')
-    //         session_state_machine.transition(
-    //           SessionState.SIGNED_IN,
-    //           SessionState.LOGIN
-    //         )
-    //       })
-    //     }
-    //   }
-
-    //   return (
-    //     <UserComponent username={signed_in_state.username} logout_fn={logout} />
-    //   )
-    // }
   }
 }
