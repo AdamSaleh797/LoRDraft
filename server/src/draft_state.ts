@@ -596,6 +596,22 @@ export function enterDraft(
       return
     }
 
+    // Since choose_next_cards is async, we need to check again that we're not
+    // already in a draft. It's possible another request to join a draft
+    // finished processing between when we last checked and now.
+    if (inDraft(session_info)) {
+      callback(
+        makeErrStatus(
+          StatusCode.ALREADY_IN_DRAFT_SESSION,
+          'Already in draft session!'
+        )
+      )
+      return
+    }
+
+    console.log('enetered draft:')
+    console.log(draft_state)
+
     // If successful, join the draft by adding it to the session info.
     session_info.draft_state = draft_state
     callback(makeOkStatus(draft_state))

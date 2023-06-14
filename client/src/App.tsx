@@ -18,6 +18,7 @@ import { createLoRSocket } from 'client/utils/network'
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
   const session_state = useLoRSelector(selectSessionState)
+  console.log('ses info', session_state)
 
   const socket_ref = React.useRef(createLoRSocket())
   const dispatcher = useLoRDispatch()

@@ -84,6 +84,11 @@ export function Draft(props: DraftProps) {
     })
   }
 
+  if (!isSignedIn(session_state) && draftState !== null) {
+    // Clear the draft state if we're signed out.
+    setDraftState(null)
+  }
+
   return (
     <div>
       <div>

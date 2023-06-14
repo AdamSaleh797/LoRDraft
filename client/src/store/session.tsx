@@ -8,7 +8,6 @@ import {
   SessionCred,
 } from 'common/game/socket-msgs'
 import {
-  ErrStatusT,
   Status,
   StatusCode,
   isOk,
@@ -17,20 +16,7 @@ import {
 } from 'common/util/status'
 
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
-import { RootState } from 'client/store'
-
-interface ThunkAPI {
-  state: RootState
-  rejectValue: ErrStatusT
-}
-
-/**
- * Don't allow rejecting promises, all promises should be resolved with a
- * `Status`.
- */
-function makeThunkPromise<T>(callback: (resolve: (value: T) => void) => void) {
-  return new Promise<T>(callback)
-}
+import { RootState, ThunkAPI, makeThunkPromise } from 'client/store'
 
 export const enum UserSessionState {
   UNINITIALIZED = 'UNINITIALIZED',
@@ -323,4 +309,4 @@ export function selectSessionState(state: RootState) {
   return state.session
 }
 
-export default sessionStateSlice.reducer
+export const sessionStateReducer = sessionStateSlice.reducer

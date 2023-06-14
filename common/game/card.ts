@@ -135,7 +135,7 @@ export function originRegions(): readonly Origin[] {
   return Object.keys(g_origins) as Origin[]
 }
 
-export function allRegions(): readonly Region[] {
+export function allRegions(): Region[] {
   return g_all_regions
 }
 

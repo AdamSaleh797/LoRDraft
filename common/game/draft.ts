@@ -63,7 +63,7 @@ export const DraftDeckT = RecordT({
 })
 
 export interface DraftDeck {
-  regions: readonly Region[]
+  regions: Region[]
   cardCounts: CardCount[]
   numCards: number
   deckCode: string | null
@@ -135,8 +135,8 @@ export function makeDraftDeck(
  */
 function possibleRegionsForCards(
   cardCounts: CardCount[],
-  possible_regions: readonly Region[]
-): readonly Region[] | null {
+  possible_regions: Region[]
+): Region[] | null {
   if (possible_regions.length === 2) {
     return possible_regions
   }
