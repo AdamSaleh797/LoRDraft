@@ -29,4 +29,5 @@ module.exports = {
     modules: ['../node_modules'],
   },
   target: 'node',
+  externals: { bufferutil: 'bufferutil' },
 }
