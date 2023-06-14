@@ -10,7 +10,7 @@ import { CardDisplay } from 'client/components/draft/CardDisplay'
 import { RegionIconList } from 'client/components/draft/RegionIconList'
 
 export interface DeckListComponentProps {
-  draftState: DraftStateInfo | null
+  draftState: DraftStateInfo
   gameMetadata: GameMetadata | null
 }
 

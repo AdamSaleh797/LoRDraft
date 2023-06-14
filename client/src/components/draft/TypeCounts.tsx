@@ -24,13 +24,13 @@ export const enum CardTypes {
 }
 
 export interface TypeCountsComponentProps {
-  draftState: DraftStateInfo | null
+  draftState: DraftStateInfo
 }
 
 export function TypeCounts(props: TypeCountsComponentProps) {
   const type_counts: number[] = new Array(CARD_TYPE_COUNT).fill(0)
 
-  const deck_card_counts: CardCount[] = props.draftState?.deck.cardCounts ?? []
+  const deck_card_counts: CardCount[] = props.draftState.deck.cardCounts ?? []
 
   deck_card_counts.forEach((cardCount: CardCount) => {
     switch (cardCount.card.type) {

@@ -1,3 +1,3 @@
-import { Draft } from 'client/components/draft/Draft'
+import { DraftFlowComponent } from 'client/components/draft/DraftFlow'
 
-export default Draft
+export default DraftFlowComponent

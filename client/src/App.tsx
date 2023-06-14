@@ -6,12 +6,12 @@ import { Button } from 'client/components/common/button'
 import { Header } from 'client/components/common/header'
 import { Layout } from 'client/components/common/layout'
 import { Modal } from 'client/components/common/modal'
-import Draft from 'client/components/draft'
+import { DraftFlowComponent } from 'client/components/draft/DraftFlow'
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks'
 import {
-  doInitializeAsync,
   selectSessionState,
   shouldInitialize,
+  tryInitializeUserSession,
 } from 'client/store/session'
 import { createLoRSocket } from 'client/utils/network'
 
@@ -21,17 +21,16 @@ export default function App() {
   console.log('ses info', session_state)
 
   const socket_ref = React.useRef(createLoRSocket())
-  const dispatcher = useLoRDispatch()
+  const dispatch = useLoRDispatch()
 
   // If the session state has not initialized, then trigger the initialization
   if (shouldInitialize(session_state)) {
     console.log('tryna log in')
-    dispatcher(
-      doInitializeAsync({
-        socket: socket_ref.current,
-        cached_auth_info: session_state.cached_auth_info,
-      })
-    )
+
+    tryInitializeUserSession(dispatch, {
+      socket: socket_ref.current,
+      cached_auth_info: session_state.cached_auth_info,
+    })
   }
 
   return (
@@ -49,7 +48,7 @@ export default function App() {
         )}
       </Header>
       <Layout>
-        <Draft socket={socket_ref.current}></Draft>
+        <DraftFlowComponent socket={socket_ref.current}></DraftFlowComponent>
       </Layout>
     </div>
   )

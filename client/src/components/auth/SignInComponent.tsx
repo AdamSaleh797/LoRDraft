@@ -8,7 +8,7 @@ import {
 
 import { Button } from 'client/components/common/button'
 import { useLoRDispatch } from 'client/store/hooks'
-import { doLoginAsync, doRegisterAsync } from 'client/store/session'
+import { doRegisterAsync, loginUser } from 'client/store/session'
 import { APP_TITLE } from 'client/utils/constants'
 
 interface RegisterComponentProps {
@@ -124,7 +124,7 @@ export function SignInComponent(props: SessionComponentProps) {
     }
     case SignInState.LOGIN: {
       const login_fn = (login_cred: LoginCred) => {
-        dispatch(doLoginAsync({ socket, login_info: login_cred }))
+        loginUser(dispatch, { socket, login_info: login_cred })
       }
 
       const auto_login = async () => {
@@ -138,7 +138,7 @@ export function SignInComponent(props: SessionComponentProps) {
             register_info: { username, password, email },
           })
         )
-        dispatch(doLoginAsync({ socket, login_info: { username, password } }))
+        loginUser(dispatch, { socket, login_info: { username, password } })
       }
 
       return (

@@ -1,89 +1,103 @@
 import React from 'react'
 
-import { DraftStateInfo } from 'common/game/draft'
-import { DraftOptions } from 'common/game/draft_options'
 import { GameMetadata } from 'common/game/metadata'
 import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
-import { Status, StatusCode, isOk } from 'common/util/status'
+import { Status, StatusCode, isOk, makeErrStatus } from 'common/util/status'
 
+import { DraftComponent } from 'client/components/draft/Draft'
 import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
-import { PoolComponent } from 'client/components/draft/PoolComponent'
+import { inDraft, selectDraftState } from 'client/store/draft'
+import { useLoRSelector } from 'client/store/hooks'
+import { isSignedIn, selectSessionState } from 'client/store/session'
+
+let g_inflight = false
+
+function getGameMetadata(
+  socket: LoRDraftClientSocket,
+  session_cred: SessionCred,
+  callback: (game_metadata: Status<GameMetadata>) => void
+) {
+  if (g_inflight) {
+    callback(makeErrStatus(StatusCode.THROTTLE, 'Message already in-flight'))
+    return
+  }
+
+  g_inflight = true
+  socket.call('game_metadata', session_cred, (game_metadata) => {
+    g_inflight = false
+    callback(game_metadata)
+  })
+}
 
 interface DraftFlowComponentProps {
   socket: LoRDraftClientSocket
-  authInfo: SessionCred
-  refreshDraft: (
-    session_cred: SessionCred,
-    callback: (status: Status) => void
-  ) => void
-  draftState: DraftStateInfo | null
-  setDraftState: (draft_state: DraftStateInfo | null) => void
-  gameMetadata: GameMetadata | null
+  // TODO: Make this required and only render when logged in.
+  // authInfo: SessionCred
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
-  const authInfoRef = React.useRef<SessionCred>(props.authInfo)
-  authInfoRef.current = props.authInfo
-
-  const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
-    () => undefined
+  const session_state = useLoRSelector(selectSessionState)
+  const draft_state = useLoRSelector(selectDraftState)
+  // TODO add this to redux
+  const [gameMetadata, setGameMetadata] = React.useState<GameMetadata | null>(
+    null
   )
-  refreshDraftRef.current = props.refreshDraft
 
-  const setDraftStateRef = React.useRef<typeof props.setDraftState>(
-    () => undefined
-  )
-  setDraftStateRef.current = props.setDraftState
+  const setGameMetadataRef =
+    React.useRef<typeof setGameMetadata>(setGameMetadata)
+  setGameMetadataRef.current = setGameMetadata
 
-  function joinDraft(draft_options: DraftOptions) {
-    props.socket.call(
-      'join_draft',
-      authInfoRef.current,
-      draft_options,
-      (status) => {
-        if (!isOk(status)) {
-          if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
-            refreshDraftRef.current(authInfoRef.current, (status) => {
-              if (!isOk(status)) {
-                console.log(status)
-                return
-              }
-            })
-          } else {
-            console.log(status)
-          }
-        } else {
-          setDraftStateRef.current(status.value)
-        }
-      }
-    )
+  // function joinDraft(draft_options: DraftOptions) {
+  //   props.socket.call(
+  //     'join_draft',
+  //     authInfoRef.current,
+  //     draft_options,
+  //     (status) => {
+  //       if (!isOk(status)) {
+  //         if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
+  //           refreshDraftRef.current(authInfoRef.current, (status) => {
+  //             if (!isOk(status)) {
+  //               console.log(status)
+  //               return
+  //             }
+  //           })
+  //         } else {
+  //           console.log(status)
+  //         }
+  //       } else {
+  //         setDraftStateRef.current(status.value)
+  //       }
+  //     }
+  //   )
+  // }
+
+  if (!isSignedIn(session_state)) {
+    return <div>Must sign in to start draft.</div>
   }
 
-  function closeDraft() {
-    props.socket.call('close_draft', authInfoRef.current, (status) => {
-      if (!isOk(status)) {
-        console.log(status)
+  if (gameMetadata === null) {
+    getGameMetadata(props.socket, session_state.authInfo, (status) => {
+      if (isOk(status)) {
+        setGameMetadataRef.current(status.value)
       }
-      setDraftStateRef.current(null)
     })
   }
 
-  if (props.draftState === null) {
+  if (!inDraft(draft_state)) {
     return (
       <DraftOptionsComponent
-        join_draft_fn={joinDraft}
-        gameMetadata={props.gameMetadata}
+        socket={props.socket}
+        authInfo={session_state.authInfo}
+        gameMetadata={gameMetadata}
       />
     )
   } else {
     return (
-      <PoolComponent
+      <DraftComponent
         socket={props.socket}
-        authInfo={props.authInfo}
-        refreshDraft={props.refreshDraft}
-        closeDraft={closeDraft}
-        draftState={props.draftState}
-        setDraftState={props.setDraftState}
+        authInfo={session_state.authInfo}
+        draftState={draft_state.state}
+        gameMetadata={gameMetadata}
       />
     )
   }

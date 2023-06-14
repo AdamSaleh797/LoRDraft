@@ -609,9 +609,6 @@ export function enterDraft(
       return
     }
 
-    console.log('enetered draft:')
-    console.log(draft_state)
-
     // If successful, join the draft by adding it to the session info.
     session_info.draft_state = draft_state
     callback(makeOkStatus(draft_state))

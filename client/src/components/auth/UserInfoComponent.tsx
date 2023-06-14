@@ -4,7 +4,7 @@ import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
 
 import { Button } from 'client/components/common/button'
 import { useLoRDispatch } from 'client/store/hooks'
-import { doLogoutAsync } from 'client/store/session'
+import { logoutUser } from 'client/store/session'
 
 interface UserComponentProps {
   socket: LoRDraftClientSocket
@@ -21,9 +21,10 @@ export function UserComponent(props: UserComponentProps) {
       </div>
       <Button
         onClick={() => {
-          dispatch(
-            doLogoutAsync({ socket: props.socket, auth_info: props.auth_info })
-          )
+          logoutUser(dispatch, {
+            socket: props.socket,
+            auth_info: props.auth_info,
+          })
         }}
       >
         Log out

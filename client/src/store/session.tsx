@@ -8,6 +8,7 @@ import {
   SessionCred,
 } from 'common/game/socket-msgs'
 import {
+  OkStatus,
   Status,
   StatusCode,
   isOk,
@@ -16,7 +17,8 @@ import {
 } from 'common/util/status'
 
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
-import { RootState } from 'client/store'
+import { LoRDispatch, RootState } from 'client/store'
+import { clearDraftState, doUpdateDraftAsync } from 'client/store/draft'
 import { ThunkAPI, makeThunkPromise } from 'client/store/util'
 
 export const enum UserSessionState {
@@ -62,12 +64,72 @@ export function isSignedIn(
   return session_state.state === UserSessionState.SIGNED_IN
 }
 
+export async function tryInitializeUserSession(
+  dispatch: LoRDispatch,
+  args: InitializeArgs
+) {
+  const result = await dispatch(doInitializeAsync(args))
+  if (result.payload === undefined) {
+    return makeErrStatus(
+      StatusCode.REDUX_DISPATCH_FAILED,
+      'Failed to dispatch initialize action'
+    )
+  } else if (!isOk(result.payload)) {
+    return result.payload
+  }
+
+  // If we were able to login successfully, try joining a draft
+  dispatch(
+    doUpdateDraftAsync({
+      socket: args.socket,
+      auth_info: result.payload.value,
+    })
+  )
+  return OkStatus
+}
+
+export async function loginUser(dispatch: LoRDispatch, args: LoginArgs) {
+  const result = await dispatch(doLoginAsync(args))
+  if (result.payload === undefined) {
+    return makeErrStatus(
+      StatusCode.REDUX_DISPATCH_FAILED,
+      'Failed to dispatch login action'
+    )
+  } else if (!isOk(result.payload)) {
+    return result.payload
+  }
+
+  // If we were able to login successfully, try joining a draft
+  dispatch(
+    doUpdateDraftAsync({
+      socket: args.socket,
+      auth_info: result.payload.value,
+    })
+  )
+  return OkStatus
+}
+
+export async function logoutUser(dispatch: LoRDispatch, args: LogoutArgs) {
+  const result = await dispatch(doLogoutAsync(args))
+  if (result.payload === undefined) {
+    return makeErrStatus(
+      StatusCode.REDUX_DISPATCH_FAILED,
+      'Failed to dispatch logout action'
+    )
+  } else if (!isOk(result.payload)) {
+    return result.payload
+  }
+
+  dispatch(clearDraftState())
+  return OkStatus
+}
+
 export interface InitializeArgs {
   socket: LoRDraftClientSocket
   cached_auth_info: CachedAuthInfo
 }
 
-export const doInitializeAsync = createAsyncThunk<
+const doInitializeAsync = createAsyncThunk<
   Status<SessionCred>,
   InitializeArgs,
   ThunkAPI
@@ -117,11 +179,7 @@ export interface LoginArgs {
   login_info: LoginCred
 }
 
-export const doLoginAsync = createAsyncThunk<
-  Status<SessionCred>,
-  LoginArgs,
-  ThunkAPI
->(
+const doLoginAsync = createAsyncThunk<Status<SessionCred>, LoginArgs, ThunkAPI>(
   'session/loginAsync',
   async (args: LoginArgs) => {
     return await makeThunkPromise((resolve) => {
@@ -156,7 +214,7 @@ export interface LogoutArgs {
   auth_info: SessionCred
 }
 
-export const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
+const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
   'session/logoutAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
@@ -287,7 +345,7 @@ const sessionStateSlice = createSlice({
         }
 
         return {
-          cached_auth_info: state.cached_auth_info,
+          cached_auth_info: CachedAuthInfo.clearStorageAuthInfo(),
           state: UserSessionState.SIGNED_OUT,
           message_in_flight: null,
         }
