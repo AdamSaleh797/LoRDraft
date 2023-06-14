@@ -28,7 +28,7 @@ export interface TypeCountsComponentProps {
 }
 
 export function TypeCounts(props: TypeCountsComponentProps) {
-  const type_counts: number[] = new Array(CARD_TYPE_COUNT).fill(0)
+  const type_counts: number[] = new Array(CARD_TYPE_COUNT).fill(0) as number[]
 
   const deck_card_counts: CardCount[] = props.draftState.deck.cardCounts
 

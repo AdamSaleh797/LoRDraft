@@ -427,13 +427,13 @@ function randomChampCards(
     let region_and_set_indexes: [number, number][]
     let champs: Card[]
     do {
-      region_and_set_indexes =
-        (randSampleNumbersAvoidingRepeats(total_champ_count, num_champs).map(
-          (index) => {
-            const region_idx = binarySearch(cumulative_totals, index)
-            return [region_idx, index - cumulative_totals[region_idx]]
-          }
-        ) as [number, number][]) ?? null
+      region_and_set_indexes = randSampleNumbersAvoidingRepeats(
+        total_champ_count,
+        num_champs
+      ).map((index) => {
+        const region_idx = binarySearch(cumulative_totals, index)
+        return [region_idx, index - cumulative_totals[region_idx]]
+      }) as [number, number][]
 
       champs = region_and_set_indexes.map(([region_idx, idx]) => {
         return region_sets[region_pool[region_idx]].champs[idx]

@@ -167,7 +167,7 @@ export class AsyncSocketContext<
             timeout_ms / 1000
           } second${timeout_ms === 1000 ? '' : 's'}`
         ),
-        ...new Array(callback.length - 1).fill(null)
+        ...(new Array(callback.length - 1).fill(null) as null[])
       )
     }, timeout_ms)
   }

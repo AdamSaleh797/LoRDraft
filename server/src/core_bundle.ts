@@ -164,7 +164,7 @@ export function gameMetadata(
   }
 
   readBundle(g_core_bundle, (data: Status<string>) => {
-    if (!isOk(data) || data === null) {
+    if (!isOk(data)) {
       callback(data)
       return
     }

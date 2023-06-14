@@ -151,7 +151,7 @@ export function randSampleNumbersAvoidingRepeats(
 
   const broadcast: number[] = Array.from({ length: size }, (_1, i) =>
     Array(n_repeats).fill(i)
-  ).flat(1)
+  ).flat(1) as number[]
 
   const sample_idx = new Array<number>(samples).fill(-1)
 

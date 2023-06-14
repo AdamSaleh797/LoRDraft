@@ -2,7 +2,7 @@ import React, { MouseEventHandler, ReactNode } from 'react'
 
 import style from './button.module.css'
 
-type ButtonProps = {
+interface ButtonProps {
   children: ReactNode
   onClick?: MouseEventHandler<HTMLButtonElement>
   className?: string

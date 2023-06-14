@@ -123,9 +123,7 @@ function loadSetPack(
             callback(
               makeErrStatus(
                 StatusCode.INVALID_SET_PACK_FORMAT,
-                `Found card with invalid structure in set pack (cardCode/name: ${
-                  card.cardCode ?? card.name
-                })`
+                `Found card with invalid structure in set pack (cardCode/name: ${card.cardCode})`
               )
             )
             return true

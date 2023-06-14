@@ -13,8 +13,95 @@
   "rules": {
     "local-rules/disallow-relative-imports": "error",
     "eqeqeq": "error",
+    "@typescript-eslint/await-thenable": "error",
+    "@typescript-eslint/ban-ts-comment": "error",
+    "@typescript-eslint/ban-types": "error",
+    "@typescript-eslint/consistent-generic-constructors": "warn",
+    "@typescript-eslint/consistent-type-assertions": [
+      "error",
+      { "assertionStyle": "as", "objectLiteralTypeAssertions": "never" }
+    ],
+    "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+    "@typescript-eslint/consistent-type-exports": "error",
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      { "prefer": "no-type-imports" }
+    ],
+    "@typescript-eslint/method-signature-style": ["error", "property"],
+    "@typescript-eslint/naming-convention": [
+      "warn",
+      {
+        "format": ["UPPER_CASE"],
+        "trailingUnderscore": "forbid",
+        "selector": ["enumMember"]
+      },
+      {
+        "format": ["PascalCase"],
+        "trailingUnderscore": "forbid",
+        "selector": ["typeLike", "typeMethod"]
+      },
+      {
+        "format": ["camelCase"],
+        "trailingUnderscore": "forbid",
+        "selector": ["function", "method", "classMethod", "objectLiteralMethod"]
+      },
+      {
+        "format": ["snake_case"],
+        "trailingUnderscore": "forbid",
+        "selector": [
+          "accessor",
+          "parameter",
+          "variable",
+          "parameterProperty",
+          "objectLiteralProperty",
+          "typeProperty"
+        ]
+      },
+      {
+        "format": ["PascalCase"],
+        "trailingUnderscore": "forbid",
+        "selector": "variable",
+        "modifiers": ["global", "const"]
+      },
+      {
+        "format": ["snake_case"],
+        "trailingUnderscore": "require",
+        "selector": "classProperty",
+        "modifiers": ["private", "protected"]
+      },
+      {
+        "format": ["snake_case"],
+        "trailingUnderscore": "forbid",
+        "selector": "classProperty",
+        "modifiers": ["public"]
+      }
+    ],
+    "@typescript-eslint/no-confusing-void-expression": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/no-duplicate-type-constituents": "error",
     "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-for-in-array": "error",
+    "@typescript-eslint/no-import-type-side-effects": "error",
+    "@typescript-eslint/no-inferrable-types": "warn",
+    "@typescript-eslint/no-invalid-void-type": "error",
+    "@typescript-eslint/no-mixed-enums": "error",
+    "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-require-imports": "error",
+    "@typescript-eslint/no-unnecessary-boolean-literal-compare": "error",
     "@typescript-eslint/no-unnecessary-condition": "error",
+    "@typescript-eslint/no-unsafe-argument": "error",
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-enum-comparison": "error",
+    "@typescript-eslint/prefer-enum-initializers": "error",
+    "@typescript-eslint/prefer-for-of": "warn",
+    "@typescript-eslint/prefer-includes": "warn",
+    "@typescript-eslint/prefer-nullish-coalescing": "warn",
+    "@typescript-eslint/prefer-optional-chain": "warn",
+    "@typescript-eslint/prefer-readonly-parameter-types": "warn",
+    "@typescript-eslint/restrict-plus-operands": "warn",
+    "@typescript-eslint/sort-type-constituents": "warn",
     "@typescript-eslint/strict-boolean-expressions": [
       "error",
       {
@@ -27,6 +114,7 @@
         "allowAny": false
       }
     ],
+    "@typescript-eslint/switch-exhaustiveness-check": "error",
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
@@ -34,7 +122,8 @@
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "@typescript-eslint/dot-notation": "warn"
   },
   "ignorePatterns": ["**/*.js", "**/*.d.ts"]
 }

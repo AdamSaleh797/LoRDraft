@@ -11,7 +11,9 @@ export interface ManaCurveComponentProps {
 }
 
 export function ManaCurve(props: ManaCurveComponentProps) {
-  const histogram: number[] = new Array(MAX_DISPLAY_COST + 1).fill(0)
+  const histogram: number[] = new Array(MAX_DISPLAY_COST + 1).fill(
+    0
+  ) as number[]
 
   const deck_card_counts: CardCount[] = props.draftState.deck.cardCounts
 
