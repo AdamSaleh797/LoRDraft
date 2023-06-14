@@ -309,4 +309,4 @@ export function selectSessionState(state: RootState) {
   return state.session
 }
 
-export const sessionStateReducer = sessionStateSlice.reducer
+export default sessionStateSlice.reducer

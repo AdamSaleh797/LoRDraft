@@ -2,8 +2,8 @@ import { configureStore } from '@reduxjs/toolkit'
 
 import { ErrStatusT } from 'common/util/status'
 
-import { draftStateReducer } from 'client/store/draft'
-import { sessionStateReducer } from 'client/store/session'
+import draftStateReducer from 'client/store/draft'
+import sessionStateReducer from 'client/store/session'
 
 export const store = configureStore({
   reducer: {

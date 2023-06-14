@@ -79,4 +79,4 @@ export function selectDraftState(state: RootState) {
   return state.draft
 }
 
-export const draftStateReducer = draftStateSlice.reducer
+export default draftStateSlice.reducer
