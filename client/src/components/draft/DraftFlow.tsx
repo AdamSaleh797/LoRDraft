@@ -47,30 +47,6 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     React.useRef<typeof setGameMetadata>(setGameMetadata)
   setGameMetadataRef.current = setGameMetadata
 
-  // function joinDraft(draft_options: DraftOptions) {
-  //   props.socket.call(
-  //     'join_draft',
-  //     authInfoRef.current,
-  //     draft_options,
-  //     (status) => {
-  //       if (!isOk(status)) {
-  //         if (status.status === StatusCode.ALREADY_IN_DRAFT_SESSION) {
-  //           refreshDraftRef.current(authInfoRef.current, (status) => {
-  //             if (!isOk(status)) {
-  //               console.log(status)
-  //               return
-  //             }
-  //           })
-  //         } else {
-  //           console.log(status)
-  //         }
-  //       } else {
-  //         setDraftStateRef.current(status.value)
-  //       }
-  //     }
-  //   )
-  // }
-
   if (!isSignedIn(session_state)) {
     return <div>Must sign in to start draft.</div>
   }

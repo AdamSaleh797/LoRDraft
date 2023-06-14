@@ -18,15 +18,12 @@ import { createLoRSocket } from 'client/utils/network'
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
   const session_state = useLoRSelector(selectSessionState)
-  console.log('ses info', session_state)
 
   const socket_ref = React.useRef(createLoRSocket())
   const dispatch = useLoRDispatch()
 
   // If the session state has not initialized, then trigger the initialization
   if (shouldInitialize(session_state)) {
-    console.log('tryna log in')
-
     tryInitializeUserSession(dispatch, {
       socket: socket_ref.current,
       cached_auth_info: session_state.cached_auth_info,

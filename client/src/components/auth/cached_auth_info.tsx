@@ -41,8 +41,6 @@ export class CachedAuthInfo {
     )
 
     if (!SessionCredT.guard(auth_info_prim)) {
-      console.log("session cred doesn't match expected format:")
-      console.log(auth_info_prim)
       window.sessionStorage.removeItem(STORAGE_AUTH_INFO_KEY)
       return null
     }
