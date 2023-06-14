@@ -1,11 +1,11 @@
 import React from 'react'
 
-import { UserComponent } from '../auth/UserInfoComponent'
 import style from './modal.module.css'
 
 import { LoRDraftClientSocket } from 'common/game/socket-msgs'
 
 import { SignInComponent } from 'client/components/auth/SignInComponent'
+import { UserComponent } from 'client/components/auth/UserInfoComponent'
 import { Button } from 'client/components/common/button'
 import { useLoRSelector } from 'client/store/hooks'
 import { isSignedIn, selectSessionState } from 'client/store/session'

@@ -16,7 +16,8 @@ import {
 } from 'common/util/status'
 
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
-import { RootState, ThunkAPI, makeThunkPromise } from 'client/store'
+import { RootState } from 'client/store'
+import { ThunkAPI, makeThunkPromise } from 'client/store/util'
 
 export const enum UserSessionState {
   UNINITIALIZED = 'UNINITIALIZED',

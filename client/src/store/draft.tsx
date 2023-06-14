@@ -1,10 +1,11 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-import { RootState, ThunkAPI, makeThunkPromise } from '.'
-
 import { DraftStateInfo } from 'common/game/draft'
 import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
 import { Status, isOk } from 'common/util/status'
+
+import { RootState } from 'client/store'
+import { ThunkAPI, makeThunkPromise } from 'client/store/util'
 
 const enum DraftStateMessage {
   UPDATE_DRAFT = 'UPDATE_DRAFT',

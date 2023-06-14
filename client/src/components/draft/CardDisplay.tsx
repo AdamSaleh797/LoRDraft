@@ -1,10 +1,11 @@
 import React from 'react'
 
 import style from './CardDisplay.module.css'
-import { CardInfo } from './CardInfo'
 
 import { Card } from 'common/game/card'
 import { DraftStateInfo } from 'common/game/draft'
+
+import { CardInfo } from 'client/components/draft/CardInfo'
 
 export interface CardDisplayProps {
   card: Card | null
