@@ -19,12 +19,8 @@ export const COLUMNS = 3
 
 export function DeckList(props: DeckListComponentProps) {
   let deckCode
-  const cardCounts =
-    props.draftState === null ? [] : props.draftState.deck.cardCounts
-  if (
-    props.draftState !== null &&
-    props.draftState.deck.numCards >= CARDS_PER_DECK
-  ) {
+  const cardCounts = props.draftState.deck.cardCounts
+  if (props.draftState.deck.numCards >= CARDS_PER_DECK) {
     const code = getDeckCode(props.draftState.deck)
     if (!isOk(code)) {
       deckCode = null
@@ -53,7 +49,7 @@ export function DeckList(props: DeckListComponentProps) {
         .fill(0)
         .map((_, i) => {
           const array_index = (i % COLUMNS) * ROWS + Math.floor(i / COLUMNS)
-          if (array_index < cardCounts.length && props.draftState !== null) {
+          if (array_index < cardCounts.length) {
             return (
               <div
                 key={`${cardCounts[array_index].card.cardCode}${i}`}
