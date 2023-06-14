@@ -48,7 +48,7 @@ let g_region_sets: RegionSetMap | undefined
 
 function loadSetPack(
   bundle: string,
-  callback: (cards: Status<Card[]>) => void = () => undefined
+  callback: (cards: Status<readonly Card[]>) => void = () => undefined
 ): void {
   readBundle(bundle, (data: Status<string>) => {
     if (!isOk(data)) {
@@ -166,7 +166,7 @@ export function regionSets(
 
   Promise.allSettled(
     g_set_packs.map((set) => {
-      return new Promise<Card[]>((resolve, reject) => {
+      return new Promise<readonly Card[]>((resolve, reject) => {
         loadSetPack(set, (status) => {
           if (!isOk(status)) {
             reject(status)

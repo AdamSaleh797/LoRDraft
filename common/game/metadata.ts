@@ -19,11 +19,13 @@ export const DraftFormatRefT = Union(
 )
 export type DraftFormatRef = keyof typeof g_draft_format_refs
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export const SetPackDraftFormatMetadataT = RecordT({
   iconAbsolutePath: String,
   name: String,
   nameRef: DraftFormatRefT,
 })
+/* eslint-enable @typescript-eslint/naming-convention */
 
 const g_draft_format_literals = Object.values(g_draft_format_refs).map(
   (format) => Literal(format)

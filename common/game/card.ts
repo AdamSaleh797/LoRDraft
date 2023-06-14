@@ -147,13 +147,13 @@ export function isOrigin(region: string): region is Origin {
   return Object.keys(g_origins).includes(region as Origin)
 }
 
-export function isRuneterran(regions: string[]): boolean {
+export function isRuneterran(regions: readonly string[]): boolean {
   return regions.includes(RUNETERRA)
 }
 
 export function runeterranOrigin(
   card_name: Origin,
-  regions: string[]
+  regions: readonly string[]
 ): Region[] {
   const origins = regions.filter((region) => region !== RUNETERRA)
   if (!origins.includes(card_name)) {
@@ -173,6 +173,7 @@ export function regionContains(region: Region, card: Card) {
 export const CardCodeT = String
 export type CardCode = Static<typeof CardCodeT>
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export const SetPackCardT = Record({
   associatedCards: Array(String),
   associatedCardRefs: Array(String),
@@ -215,6 +216,7 @@ export const SetPackCardT = Record({
   formats: Array(String),
   formatRefs: Array(String),
 })
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export type SetPackCard = Static<typeof SetPackCardT>
 

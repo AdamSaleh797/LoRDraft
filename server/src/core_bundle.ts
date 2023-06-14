@@ -92,8 +92,7 @@ function parseRegionsMetadata(
   // For some reason, the icon URLs for non-main regions point to nothing,
   // so set them all to the runeterran region.
   originRegions().forEach((region_name) => {
-    region_metadata[region_name].imageUrl =
-      region_metadata['Runeterra'].imageUrl
+    region_metadata[region_name].imageUrl = region_metadata.Runeterra.imageUrl
   })
 
   return makeOkStatus(region_metadata)

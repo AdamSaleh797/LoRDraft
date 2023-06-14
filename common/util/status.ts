@@ -54,16 +54,16 @@ export enum StatusCode {
 }
 
 export interface OkStatusT<T = null> {
-  status: StatusCode.OK
-  value: T
+  readonly status: StatusCode.OK
+  readonly value: T
 }
 
 export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>
 
 export interface ErrStatusT {
-  status: ErrStatusCode
-  message: string
-  from_statuses?: ErrStatusT[]
+  readonly status: ErrStatusCode
+  readonly message: string
+  readonly from_statuses?: readonly ErrStatusT[]
 }
 
 export type Status<T = null> = OkStatusT<T> | ErrStatusT
@@ -71,7 +71,7 @@ export type Status<T = null> = OkStatusT<T> | ErrStatusT
 export function makeErrStatus(
   status: ErrStatusCode,
   message: string,
-  from_statuses?: ErrStatusT[]
+  from_statuses?: readonly ErrStatusT[]
 ): ErrStatusT {
   return {
     status: status,
@@ -82,7 +82,7 @@ export function makeErrStatus(
 
 export function withSubStatuses(
   status: ErrStatusT,
-  from_statuses: ErrStatusT[]
+  from_statuses: readonly ErrStatusT[]
 ): ErrStatusT {
   return makeErrStatus(
     status.status,
