@@ -15,6 +15,11 @@ function stripExt(filename) {
   return filename.substr(0, idx === -1 ? filename.length : idx)
 }
 
+/**
+ * This linter rule checks that no relative imports are used (except for
+ * associated css module files for React components), and also implements a
+ * fixit suggestion to modify relative imports to aliased absolute imports.
+ */
 module.exports = {
   meta: {
     type: 'suggestion',

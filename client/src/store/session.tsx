@@ -49,6 +49,10 @@ export interface SignedInSession extends SessionState {
   authInfo: AuthInfo
 }
 
+/**
+ * Returns true if the session state is ready to be initialized. If this returns
+ * true, the caller should call `tryInitializeUserSession`.
+ */
 export function shouldInitialize(session_state: SessionState) {
   // Only initialize if uninitialized and there isn't already a join_session
   // request out.
@@ -58,12 +62,21 @@ export function shouldInitialize(session_state: SessionState) {
   )
 }
 
+/**
+ * Returns true if the session state is signed in. If true,
+ * `session_state.authInfo` will become available on the state.
+ */
 export function isSignedIn(
   session_state: SessionState
 ): session_state is SignedInSession {
   return session_state.state === UserSessionState.SIGNED_IN
 }
 
+/**
+ * Will attempt to initialize a logged in session with cached auth info. If this
+ * doesn't exist, or if the login request fails, the session goes to the logged
+ * out state.
+ */
 export async function tryInitializeUserSession(
   dispatch: LoRDispatch,
   args: InitializeArgs
@@ -88,6 +101,10 @@ export async function tryInitializeUserSession(
   return OkStatus
 }
 
+/**
+ * Logs in with given username/password. If the login succeeds, the session
+ * state is moved to the `SIGNED_IN` state.
+ */
 export async function loginUser(dispatch: LoRDispatch, args: LoginArgs) {
   const result = await dispatch(doLoginAsync(args))
   if (result.payload === undefined) {
@@ -109,6 +126,10 @@ export async function loginUser(dispatch: LoRDispatch, args: LoginArgs) {
   return OkStatus
 }
 
+/**
+ * Logs out the session state. If the call succeeds, the session state moves to
+ * `SIGNED_OUT`.
+ */
 export async function logoutUser(dispatch: LoRDispatch, args: LogoutArgs) {
   const result = await dispatch(doLogoutAsync(args))
   if (result.payload === undefined) {
@@ -271,6 +292,10 @@ function getInitialSessionState(): SessionState {
   }
 }
 
+/**
+ * Global manager for the current user session. All requests to log in, attach
+ * to an existing session, and log out should be done through here.
+ */
 const sessionStateSlice = createSlice({
   name: 'session',
   initialState: getInitialSessionState(),

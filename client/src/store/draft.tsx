@@ -25,6 +25,10 @@ interface RunningDraftState extends GlobalDraftState {
   state: DraftStateInfo
 }
 
+/**
+ * Returns true if the draft state is in a draft currently. If true, this makes
+ * the field `state` available for the draft state.
+ */
 export function inDraft(state: GlobalDraftState): state is RunningDraftState {
   return state.state !== null
 }
@@ -35,6 +39,11 @@ export interface JoinDraftArgs {
   draftOptions: DraftOptions
 }
 
+/**
+ * Makes a `'join_draft'` request to start a new draft session. If the request
+ * succeeds, the draft state is added to the global state, and `inDraft` will
+ * return true.
+ */
 export const doJoinDraftAsync = createAsyncThunk<
   Status<DraftStateInfo>,
   JoinDraftArgs,
@@ -63,6 +72,10 @@ export interface UpdateDraftArgs {
   authInfo: AuthInfo
 }
 
+/**
+ * Queries the server for the current draft state of this user. If the user is
+ * in a draft state, the global state is updated and `inDraft` will return true.
+ */
 export const doUpdateDraftAsync = createAsyncThunk<
   Status<DraftStateInfo>,
   UpdateDraftArgs,
@@ -91,6 +104,10 @@ export interface ExitDraftArgs {
   authInfo: AuthInfo
 }
 
+/**
+ * Exits the draft that this user is currently in. If the request succeeds, the
+ * global draft state is mutated and `inDraft` will return false.
+ */
 export const doExitDraftAsync = createAsyncThunk<
   Status,
   ExitDraftArgs,
@@ -120,6 +137,11 @@ export interface ChooseDraftCardsArgs {
   cards: Card[]
 }
 
+/**
+ * Chooses cards from the current set of pending cards. If the request succeeds,
+ * the global state mutates, the chosen card(s) are added to the list of cards,
+ * and new pending cards are made available.
+ */
 export const doChooseDraftCardsAsync = createAsyncThunk<
   Status<DraftStateInfo>,
   ChooseDraftCardsArgs,
@@ -148,6 +170,11 @@ const initialState: GlobalDraftState = {
   messageInFlight: null,
 }
 
+/**
+ * Global manager for the current draft state of the logged in user. All
+ * requests to retrieve the current draft, modify the draft in any way, join a
+ * new draft, or leave the current draft should be done through this interface.
+ */
 const draftStateSlice = createSlice({
   name: 'draft',
   initialState,
