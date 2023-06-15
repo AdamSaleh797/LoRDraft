@@ -179,9 +179,6 @@ const draftStateSlice = createSlice({
   name: 'draft',
   initialState,
   reducers: {
-    // setState: (state, action: PayloadAction<DraftStateInfo>) => {
-    //   state.state = action.payload
-    // },
     clearDraftState: (state) => {
       if (state.messageInFlight === null) {
         state.state = null
