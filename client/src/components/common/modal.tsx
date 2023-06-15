@@ -36,7 +36,7 @@ export function Modal(props: ModalProps) {
           {isSignedIn(session_state) ? (
             <UserComponent
               socket={props.socket}
-              auth_info={session_state.authInfo}
+              authInfo={session_state.authInfo}
             />
           ) : (
             <SignInComponent socket={props.socket} />

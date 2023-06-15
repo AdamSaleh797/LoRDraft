@@ -38,24 +38,37 @@
       {
         "format": ["PascalCase"],
         "trailingUnderscore": "forbid",
-        "selector": ["typeLike", "typeMethod"]
+        "selector": ["typeLike"]
       },
       {
         "format": ["camelCase"],
         "trailingUnderscore": "forbid",
-        "selector": ["function", "method", "classMethod", "objectLiteralMethod"]
+        "selector": [
+          "function",
+          "method",
+          "classMethod",
+          "typeProperty",
+          "typeMethod"
+        ]
       },
       {
-        "format": ["snake_case"],
+        "format": ["camelCase", "PascalCase"],
         "trailingUnderscore": "forbid",
-        "selector": [
-          "accessor",
-          "parameter",
-          "variable",
-          "parameterProperty",
-          "objectLiteralProperty",
-          "typeProperty"
-        ]
+        "selector": "function",
+        "modifiers": ["global"]
+      },
+      {
+        "format": ["snake_case", "camelCase"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "forbid",
+        "selector": ["accessor", "parameter", "variable", "parameterProperty"]
+      },
+      {
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "forbid",
+        "selector": ["accessor", "parameter", "variable", "parameterProperty"],
+        "types": ["function"]
       },
       {
         "format": ["snake_case"],
@@ -65,42 +78,17 @@
         "modifiers": ["global"]
       },
       {
-        "format": ["PascalCase", "snake_case"],
+        "format": ["UPPER_CASE", "PascalCase", "camelCase"],
         "trailingUnderscore": "forbid",
         "selector": "variable",
         "modifiers": ["global", "const"]
       },
       {
-        "format": ["PascalCase"],
-        "trailingUnderscore": "forbid",
-        "selector": "variable",
-        "modifiers": ["global", "const", "exported"]
-      },
-      {
-        "format": ["UPPER_CASE"],
-        "trailingUnderscore": "forbid",
-        "selector": "variable",
-        "modifiers": ["global", "const"],
-        "types": ["number", "string", "boolean"]
-      },
-      {
         "format": ["camelCase"],
         "trailingUnderscore": "forbid",
         "selector": "variable",
-        "modifiers": ["const"],
+        "modifiers": ["global", "const"],
         "types": ["function"]
-      },
-      {
-        "format": ["snake_case"],
-        "trailingUnderscore": "require",
-        "selector": "classProperty",
-        "modifiers": ["private", "protected"]
-      },
-      {
-        "format": ["snake_case"],
-        "trailingUnderscore": "forbid",
-        "selector": "classProperty",
-        "modifiers": ["public"]
       }
     ],
     "@typescript-eslint/no-confusing-void-expression": "error",

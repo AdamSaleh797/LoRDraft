@@ -1,12 +1,12 @@
 import React from 'react'
 
 export function FollowerIcon() {
-  const FollowerIconStyle = {
+  const followerIconStyle = {
     marginRight: '2px',
   }
 
   return (
-    <div style={FollowerIconStyle}>
+    <div style={followerIconStyle}>
       <svg
         _ngcontent-ng-cli-universal-c74=''
         xmlns='http://www.w3.org/2000/svg'

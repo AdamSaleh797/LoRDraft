@@ -1,12 +1,12 @@
 import React from 'react'
 
 export function EquipmentIcon() {
-  const EquipmentIconStyle = {
+  const equipmentIconStyle = {
     marginRight: '2px',
   }
 
   return (
-    <div style={EquipmentIconStyle}>
+    <div style={equipmentIconStyle}>
       <svg
         _ngcontent-ng-cli-universal-c74=''
         xmlns='http://www.w3.org/2000/svg'

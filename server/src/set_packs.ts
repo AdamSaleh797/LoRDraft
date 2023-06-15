@@ -2,8 +2,8 @@ import {
   Card,
   CardT,
   Region,
+  STANDARD_FORMAT_REF,
   SetPackCardT,
-  StandardFormatRef,
   allRegions,
   isChampion,
   isOrigin,
@@ -33,7 +33,7 @@ interface RegionSet {
 }
 type RegionSetMap = Record<Region, RegionSet>
 
-const g_set_packs = [
+const SET_PACKS = [
   'set1-en_us.json',
   'set2-en_us.json',
   'set3-en_us.json',
@@ -83,10 +83,10 @@ function loadSetPack(
         }
 
         if (parsed_card.collectible) {
-          const regionRefs = parsed_card.regionRefs
+          const region_refs = parsed_card.regionRefs
           let regions: Region[]
 
-          if (isRuneterran(regionRefs)) {
+          if (isRuneterran(region_refs)) {
             if (!isOrigin(parsed_card.name)) {
               callback(
                 makeErrStatus(
@@ -97,9 +97,9 @@ function loadSetPack(
               return true
             }
 
-            regions = runeterranOrigin(parsed_card.name, regionRefs)
+            regions = runeterranOrigin(parsed_card.name, region_refs)
           } else {
-            regions = regionRefs as Region[]
+            regions = region_refs as Region[]
           }
 
           const card = {
@@ -116,7 +116,7 @@ function loadSetPack(
             ),
             keywords: parsed_card.keywordRefs,
             type: parsed_card.type.toLowerCase(),
-            isStandard: parsed_card.formatRefs.includes(StandardFormatRef),
+            isStandard: parsed_card.formatRefs.includes(STANDARD_FORMAT_REF),
           }
 
           if (!CardT.guard(card as unknown)) {
@@ -165,7 +165,7 @@ export function regionSets(
   ) as RegionSetMap
 
   Promise.allSettled(
-    g_set_packs.map((set) => {
+    SET_PACKS.map((set) => {
       return new Promise<readonly Card[]>((resolve, reject) => {
         loadSetPack(set, (status) => {
           if (!isOk(status)) {

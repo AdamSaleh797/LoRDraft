@@ -12,7 +12,7 @@ import { doRegisterAsync, loginUser } from 'client/store/session'
 import { APP_TITLE } from 'client/utils/constants'
 
 interface RegisterComponentProps {
-  register_fn: (register_info: RegisterInfo) => void
+  registerFn: (register_info: RegisterInfo) => void
 }
 
 function RegisterComponent(props: RegisterComponentProps) {
@@ -44,7 +44,7 @@ function RegisterComponent(props: RegisterComponentProps) {
       <Button
         onClick={() => {
           if (username.length > 0 && password.length > 0) {
-            props.register_fn({
+            props.registerFn({
               username: username,
               password: password,
               email: email,
@@ -59,8 +59,8 @@ function RegisterComponent(props: RegisterComponentProps) {
 }
 
 interface LoginComponentProps {
-  to_register_fn: () => void
-  login_fn: (login_cred: LoginCred) => void
+  toRegisterFn: () => void
+  loginFn: (login_cred: LoginCred) => void
 }
 
 function LoginComponent(props: LoginComponentProps) {
@@ -84,12 +84,12 @@ function LoginComponent(props: LoginComponentProps) {
       />
       <Button
         onClick={() => {
-          props.login_fn({ username: username, password: password })
+          props.loginFn({ username: username, password: password })
         }}
       >
         Log in
       </Button>
-      <Button onClick={props.to_register_fn}>Register</Button>
+      <Button onClick={props.toRegisterFn}>Register</Button>
     </div>
   )
 }
@@ -115,19 +115,19 @@ export function SignInComponent(props: SessionComponentProps) {
     case SignInState.REGISTER: {
       return (
         <RegisterComponent
-          register_fn={(register_info) => {
-            dispatch(doRegisterAsync({ socket, register_info }))
+          registerFn={(register_info) => {
+            dispatch(doRegisterAsync({ socket, registerInfo: register_info }))
             setSignInState(SignInState.LOGIN)
           }}
         />
       )
     }
     case SignInState.LOGIN: {
-      const login_fn = (login_cred: LoginCred) => {
-        loginUser(dispatch, { socket, login_info: login_cred })
+      const loginFn = (login_cred: LoginCred) => {
+        loginUser(dispatch, { socket, loginInfo: login_cred })
       }
 
-      const auto_login = async () => {
+      const autoLogin = async () => {
         const username = 'test'
         const password = 'test'
         const email = 'test@mail.com'
@@ -135,21 +135,21 @@ export function SignInComponent(props: SessionComponentProps) {
         await dispatch(
           doRegisterAsync({
             socket,
-            register_info: { username, password, email },
+            registerInfo: { username, password, email },
           })
         )
-        loginUser(dispatch, { socket, login_info: { username, password } })
+        loginUser(dispatch, { socket, loginInfo: { username, password } })
       }
 
       return (
         <div>
           <p>You need an Account to use {APP_TITLE}</p>
-          <Button onClick={auto_login}>Auto login</Button>
+          <Button onClick={autoLogin}>Auto login</Button>
           <LoginComponent
-            to_register_fn={() => {
+            toRegisterFn={() => {
               setSignInState(SignInState.REGISTER)
             }}
-            login_fn={login_fn}
+            loginFn={loginFn}
           />
         </div>
       )

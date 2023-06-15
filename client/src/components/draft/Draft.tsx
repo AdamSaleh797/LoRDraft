@@ -4,7 +4,7 @@ import style from './Draft.module.css'
 
 import { DraftStateInfo } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
 import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
@@ -13,7 +13,7 @@ import { TypeCounts } from 'client/components/draft/TypeCounts'
 
 export interface DraftProps {
   socket: LoRDraftClientSocket
-  authInfo: SessionCred
+  authInfo: AuthInfo
   draftState: DraftStateInfo
   gameMetadata: GameMetadata | null
 }

@@ -26,7 +26,7 @@ export default function App() {
   if (shouldInitialize(session_state)) {
     tryInitializeUserSession(dispatch, {
       socket: socket_ref.current,
-      cached_auth_info: session_state.cached_auth_info,
+      cachedAuthInfo: session_state.cachedAuthInfo,
     })
   }
 

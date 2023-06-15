@@ -2,10 +2,10 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Buffer } from 'buffer'
 
 import {
+  AuthInfo,
   LoRDraftClientSocket,
   LoginCred,
   RegisterInfo,
-  SessionCred,
 } from 'common/game/socket-msgs'
 import {
   OkStatus,
@@ -35,9 +35,9 @@ const enum SessionStateMessage {
 }
 
 export interface SessionState {
-  cached_auth_info: CachedAuthInfo
+  cachedAuthInfo: CachedAuthInfo
   state: UserSessionState
-  message_in_flight: SessionStateMessage | null
+  messageInFlight: SessionStateMessage | null
 }
 
 export interface SignedOutSession extends SessionState {
@@ -46,7 +46,7 @@ export interface SignedOutSession extends SessionState {
 
 export interface SignedInSession extends SessionState {
   state: UserSessionState.SIGNED_IN
-  authInfo: SessionCred
+  authInfo: AuthInfo
 }
 
 export function shouldInitialize(session_state: SessionState) {
@@ -54,7 +54,7 @@ export function shouldInitialize(session_state: SessionState) {
   // request out.
   return (
     session_state.state === UserSessionState.UNINITIALIZED &&
-    session_state.message_in_flight !== SessionStateMessage.JOIN_SESSION
+    session_state.messageInFlight !== SessionStateMessage.JOIN_SESSION
   )
 }
 
@@ -82,7 +82,7 @@ export async function tryInitializeUserSession(
   dispatch(
     doUpdateDraftAsync({
       socket: args.socket,
-      auth_info: result.payload.value,
+      authInfo: result.payload.value,
     })
   )
   return OkStatus
@@ -103,7 +103,7 @@ export async function loginUser(dispatch: LoRDispatch, args: LoginArgs) {
   dispatch(
     doUpdateDraftAsync({
       socket: args.socket,
-      auth_info: result.payload.value,
+      authInfo: result.payload.value,
     })
   )
   return OkStatus
@@ -126,18 +126,18 @@ export async function logoutUser(dispatch: LoRDispatch, args: LogoutArgs) {
 
 export interface InitializeArgs {
   socket: LoRDraftClientSocket
-  cached_auth_info: CachedAuthInfo
+  cachedAuthInfo: CachedAuthInfo
 }
 
 const doInitializeAsync = createAsyncThunk<
-  Status<SessionCred>,
+  Status<AuthInfo>,
   InitializeArgs,
   ThunkAPI
 >(
   'session/initializeAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      const auth_info = args.cached_auth_info.getStorageAuthInfo()
+      const auth_info = args.cachedAuthInfo.getStorageAuthInfo()
       if (auth_info === null) {
         resolve(
           makeErrStatus(
@@ -164,7 +164,7 @@ const doInitializeAsync = createAsyncThunk<
       const { session } = getState()
       if (
         session.state !== UserSessionState.UNINITIALIZED ||
-        session.message_in_flight !== null
+        session.messageInFlight !== null
       ) {
         // If we aren't currently in the uninitialized state, or there's a
         // message in flight, don't execute.
@@ -176,14 +176,14 @@ const doInitializeAsync = createAsyncThunk<
 
 export interface LoginArgs {
   socket: LoRDraftClientSocket
-  login_info: LoginCred
+  loginInfo: LoginCred
 }
 
-const doLoginAsync = createAsyncThunk<Status<SessionCred>, LoginArgs, ThunkAPI>(
+const doLoginAsync = createAsyncThunk<Status<AuthInfo>, LoginArgs, ThunkAPI>(
   'session/loginAsync',
   async (args: LoginArgs) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('login', args.login_info, (status) => {
+      args.socket.call('login', args.loginInfo, (status) => {
         if (!isOk(status)) {
           resolve(status)
         } else {
@@ -199,7 +199,7 @@ const doLoginAsync = createAsyncThunk<Status<SessionCred>, LoginArgs, ThunkAPI>(
       const { session } = getState()
       if (
         session.state !== UserSessionState.SIGNED_OUT ||
-        session.message_in_flight !== null
+        session.messageInFlight !== null
       ) {
         // If we aren't currently signed out, or there's a message in flight,
         // don't execute.
@@ -211,14 +211,14 @@ const doLoginAsync = createAsyncThunk<Status<SessionCred>, LoginArgs, ThunkAPI>(
 
 export interface LogoutArgs {
   socket: LoRDraftClientSocket
-  auth_info: SessionCred
+  authInfo: AuthInfo
 }
 
 const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
   'session/logoutAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('logout', args.auth_info, resolve)
+      args.socket.call('logout', args.authInfo, resolve)
     })
   },
   {
@@ -226,7 +226,7 @@ const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
       const { session } = getState()
       if (
         session.state !== UserSessionState.SIGNED_IN ||
-        session.message_in_flight !== null
+        session.messageInFlight !== null
       ) {
         // If we aren't currently signed in, or there's a message in flight,
         // don't execute.
@@ -238,14 +238,14 @@ const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
 
 export interface RegisterArgs {
   socket: LoRDraftClientSocket
-  register_info: RegisterInfo
+  registerInfo: RegisterInfo
 }
 
 export const doRegisterAsync = createAsyncThunk<Status, RegisterArgs, ThunkAPI>(
   'session/registerAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('register', args.register_info, resolve)
+      args.socket.call('register', args.registerInfo, resolve)
     })
   },
   {
@@ -253,7 +253,7 @@ export const doRegisterAsync = createAsyncThunk<Status, RegisterArgs, ThunkAPI>(
       const { session } = getState()
       if (
         session.state !== UserSessionState.SIGNED_OUT ||
-        session.message_in_flight !== null
+        session.messageInFlight !== null
       ) {
         // If we aren't currently signed out, or there's a message in flight,
         // don't execute.
@@ -265,9 +265,9 @@ export const doRegisterAsync = createAsyncThunk<Status, RegisterArgs, ThunkAPI>(
 
 function getInitialSessionState(): SessionState {
   return {
-    cached_auth_info: CachedAuthInfo.initialStorageAuthInfo(),
+    cachedAuthInfo: CachedAuthInfo.initialStorageAuthInfo(),
     state: UserSessionState.UNINITIALIZED,
-    message_in_flight: null,
+    messageInFlight: null,
   }
 }
 
@@ -280,12 +280,12 @@ const sessionStateSlice = createSlice({
       .addCase(doInitializeAsync.pending, (state) => {
         if (
           state.state === UserSessionState.UNINITIALIZED &&
-          state.message_in_flight === null
+          state.messageInFlight === null
         ) {
           // While in state 'JOIN_SESSION', the only methods that can change
           // the login state are the fullfilled/rejected callbacks for this
           // request.
-          state.message_in_flight = SessionStateMessage.JOIN_SESSION
+          state.messageInFlight = SessionStateMessage.JOIN_SESSION
         }
       })
       .addCase(doInitializeAsync.fulfilled, (_state, action) => {
@@ -293,9 +293,9 @@ const sessionStateSlice = createSlice({
           // If logging in failed, we should clear the cached storage auth info
           // and transition to SIGNED_OUT.
           return {
-            cached_auth_info: CachedAuthInfo.clearStorageAuthInfo(),
+            cachedAuthInfo: CachedAuthInfo.clearStorageAuthInfo(),
             state: UserSessionState.SIGNED_OUT,
-            message_in_flight: null,
+            messageInFlight: null,
           }
         }
 
@@ -303,16 +303,16 @@ const sessionStateSlice = createSlice({
         // SIGNED_IN and refresh the cached auth info (in case what the server
         // sent back was different from before).
         return {
-          cached_auth_info: CachedAuthInfo.setStorageAuthInfo(
+          cachedAuthInfo: CachedAuthInfo.setStorageAuthInfo(
             action.payload.value
           ),
           state: UserSessionState.SIGNED_IN,
-          message_in_flight: null,
+          messageInFlight: null,
           authInfo: action.payload.value,
         }
       })
       .addCase(doLoginAsync.pending, (state) => {
-        state.message_in_flight = SessionStateMessage.LOGIN_REQUEST
+        state.messageInFlight = SessionStateMessage.LOGIN_REQUEST
       })
       .addCase(doLoginAsync.fulfilled, (state, action) => {
         if (!isOk(action.payload)) {
@@ -320,41 +320,41 @@ const sessionStateSlice = createSlice({
           // call failed and we can clear the message_in_flight status. Otherwise
           // this call did not set the message_in_flight status, so we can't
           // clear it.
-          state.message_in_flight = null
+          state.messageInFlight = null
           return
         }
 
         return {
-          cached_auth_info: CachedAuthInfo.setStorageAuthInfo(
+          cachedAuthInfo: CachedAuthInfo.setStorageAuthInfo(
             action.payload.value
           ),
           state: UserSessionState.SIGNED_IN,
-          message_in_flight: null,
+          messageInFlight: null,
           authInfo: action.payload.value,
         }
       })
       .addCase(doLogoutAsync.pending, (state) => {
-        state.message_in_flight = SessionStateMessage.LOGOUT_REQUEST
+        state.messageInFlight = SessionStateMessage.LOGOUT_REQUEST
       })
       .addCase(doLogoutAsync.fulfilled, (state, action) => {
         if (!isOk(action.payload)) {
           // The socket call failed and we can clear the message_in_flight
           // status.
-          state.message_in_flight = null
+          state.messageInFlight = null
           return
         }
 
         return {
-          cached_auth_info: CachedAuthInfo.clearStorageAuthInfo(),
+          cachedAuthInfo: CachedAuthInfo.clearStorageAuthInfo(),
           state: UserSessionState.SIGNED_OUT,
-          message_in_flight: null,
+          messageInFlight: null,
         }
       })
       .addCase(doRegisterAsync.pending, (state) => {
-        state.message_in_flight = SessionStateMessage.REGISTER_REQUEST
+        state.messageInFlight = SessionStateMessage.REGISTER_REQUEST
       })
       .addCase(doRegisterAsync.fulfilled, (state, action) => {
-        state.message_in_flight = null
+        state.messageInFlight = null
 
         // Only update the state if the call succeeded.
         if (isOk(action.payload)) {

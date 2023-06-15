@@ -1,12 +1,12 @@
 import React from 'react'
 
 export function ChampIcon() {
-  const ChampIconStyle = {
+  const champIconStyle = {
     marginRight: '2px',
   }
 
   return (
-    <div style={ChampIconStyle}>
+    <div style={champIconStyle}>
       <svg
         _ngcontent-ng-cli-universal-c74=''
         xmlns='http://www.w3.org/2000/svg'

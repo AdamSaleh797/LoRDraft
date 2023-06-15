@@ -32,8 +32,8 @@ export function TypeCounts(props: TypeCountsComponentProps) {
 
   const deck_card_counts: CardCount[] = props.draftState.deck.cardCounts
 
-  deck_card_counts.forEach((cardCount: CardCount) => {
-    switch (cardCount.card.type) {
+  deck_card_counts.forEach((card_count: CardCount) => {
+    switch (card_count.card.type) {
       case CardTypes.UNIT:
         type_counts[UNITS] += 1
         break

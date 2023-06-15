@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { GameMetadata } from 'common/game/metadata'
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { Status, StatusCode, isOk, makeErrStatus } from 'common/util/status'
 
 import { DraftComponent } from 'client/components/draft/Draft'
@@ -14,7 +14,7 @@ let g_inflight = false
 
 function getGameMetadata(
   socket: LoRDraftClientSocket,
-  session_cred: SessionCred,
+  session_cred: AuthInfo,
   callback: (game_metadata: Status<GameMetadata>) => void
 ) {
   if (g_inflight) {

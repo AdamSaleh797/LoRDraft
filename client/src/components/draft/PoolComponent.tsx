@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Card } from 'common/game/card'
 import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { isOk } from 'common/util/status'
 
 import { Button } from 'client/components/common/button'
@@ -12,7 +12,7 @@ import { useLoRDispatch } from 'client/store/hooks'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
-  authInfo: SessionCred
+  authInfo: AuthInfo
   draftState: DraftStateInfo
 }
 
@@ -21,7 +21,7 @@ export function PoolComponent(props: PoolComponentProps) {
   const setSelectedRef = React.useRef<typeof setSelected>(setSelected)
   const dispatch = useLoRDispatch()
 
-  const cards: (Card | null)[] = props.draftState.pending_cards
+  const cards: (Card | null)[] = props.draftState.pendingCards
 
   setSelectedRef.current = setSelected
 
@@ -51,7 +51,7 @@ export function PoolComponent(props: PoolComponentProps) {
     const choose_cards_action = await dispatch(
       doChooseDraftCardsAsync({
         socket: props.socket,
-        auth_info: props.authInfo,
+        authInfo: props.authInfo,
         cards: revertedCards,
       })
     )
@@ -69,7 +69,7 @@ export function PoolComponent(props: PoolComponentProps) {
     dispatch(
       doExitDraftAsync({
         socket: props.socket,
-        auth_info: props.authInfo,
+        authInfo: props.authInfo,
       })
     )
   }

@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Card } from 'common/game/card'
 import { DraftStateInfo } from 'common/game/draft'
 import { DraftOptions } from 'common/game/draft_options'
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { Status, isOk } from 'common/util/status'
 
 import { RootState } from 'client/store'
@@ -18,7 +18,7 @@ const enum DraftStateMessage {
 
 export interface GlobalDraftState {
   state: DraftStateInfo | null
-  message_in_flight: DraftStateMessage | null
+  messageInFlight: DraftStateMessage | null
 }
 
 interface RunningDraftState extends GlobalDraftState {
@@ -31,8 +31,8 @@ export function inDraft(state: GlobalDraftState): state is RunningDraftState {
 
 export interface JoinDraftArgs {
   socket: LoRDraftClientSocket
-  auth_info: SessionCred
-  draft_options: DraftOptions
+  authInfo: AuthInfo
+  draftOptions: DraftOptions
 }
 
 export const doJoinDraftAsync = createAsyncThunk<
@@ -43,18 +43,13 @@ export const doJoinDraftAsync = createAsyncThunk<
   'draft/joinDraftAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call(
-        'join_draft',
-        args.auth_info,
-        args.draft_options,
-        resolve
-      )
+      args.socket.call('join_draft', args.authInfo, args.draftOptions, resolve)
     })
   },
   {
     condition: (_, { getState }) => {
       const { draft } = getState()
-      if (draft.state !== null || draft.message_in_flight !== null) {
+      if (draft.state !== null || draft.messageInFlight !== null) {
         // If there is already a draft state, some other message is in flight,
         // don't try to join a new draft.
         return false
@@ -65,7 +60,7 @@ export const doJoinDraftAsync = createAsyncThunk<
 
 export interface UpdateDraftArgs {
   socket: LoRDraftClientSocket
-  auth_info: SessionCred
+  authInfo: AuthInfo
 }
 
 export const doUpdateDraftAsync = createAsyncThunk<
@@ -76,13 +71,13 @@ export const doUpdateDraftAsync = createAsyncThunk<
   'draft/updateDraftAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('current_draft', args.auth_info, resolve)
+      args.socket.call('current_draft', args.authInfo, resolve)
     })
   },
   {
     condition: (_, { getState }) => {
       const { draft } = getState()
-      if (draft.state !== null || draft.message_in_flight !== null) {
+      if (draft.state !== null || draft.messageInFlight !== null) {
         // If there is already a draft state, some other message is in flight,
         // don't try to update it.
         return false
@@ -93,7 +88,7 @@ export const doUpdateDraftAsync = createAsyncThunk<
 
 export interface ExitDraftArgs {
   socket: LoRDraftClientSocket
-  auth_info: SessionCred
+  authInfo: AuthInfo
 }
 
 export const doExitDraftAsync = createAsyncThunk<
@@ -104,13 +99,13 @@ export const doExitDraftAsync = createAsyncThunk<
   'draft/exitDraftAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('close_draft', args.auth_info, resolve)
+      args.socket.call('close_draft', args.authInfo, resolve)
     })
   },
   {
     condition: (_, { getState }) => {
       const { draft } = getState()
-      if (draft.state === null || draft.message_in_flight !== null) {
+      if (draft.state === null || draft.messageInFlight !== null) {
         // If there is no draft state, or some other message is in flight,
         // don't follow through with this action.
         return false
@@ -121,7 +116,7 @@ export const doExitDraftAsync = createAsyncThunk<
 
 export interface ChooseDraftCardsArgs {
   socket: LoRDraftClientSocket
-  auth_info: SessionCred
+  authInfo: AuthInfo
   cards: Card[]
 }
 
@@ -133,13 +128,13 @@ export const doChooseDraftCardsAsync = createAsyncThunk<
   'draft/chooseDraftCardsAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('choose_cards', args.auth_info, args.cards, resolve)
+      args.socket.call('choose_cards', args.authInfo, args.cards, resolve)
     })
   },
   {
     condition: (_, { getState }) => {
       const { draft } = getState()
-      if (draft.state === null || draft.message_in_flight !== null) {
+      if (draft.state === null || draft.messageInFlight !== null) {
         // If there is no draft state, or some other message is in flight,
         // don't follow through with this action.
         return false
@@ -150,7 +145,7 @@ export const doChooseDraftCardsAsync = createAsyncThunk<
 
 const initialState: GlobalDraftState = {
   state: null,
-  message_in_flight: null,
+  messageInFlight: null,
 }
 
 const draftStateSlice = createSlice({
@@ -161,7 +156,7 @@ const draftStateSlice = createSlice({
     //   state.state = action.payload
     // },
     clearDraftState: (state) => {
-      if (state.message_in_flight === null) {
+      if (state.messageInFlight === null) {
         state.state = null
       }
     },
@@ -169,10 +164,10 @@ const draftStateSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(doJoinDraftAsync.pending, (state) => {
-        state.message_in_flight = DraftStateMessage.JOIN_DRAFT
+        state.messageInFlight = DraftStateMessage.JOIN_DRAFT
       })
       .addCase(doJoinDraftAsync.fulfilled, (state, action) => {
-        state.message_in_flight = null
+        state.messageInFlight = null
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
@@ -180,10 +175,10 @@ const draftStateSlice = createSlice({
         }
       })
       .addCase(doUpdateDraftAsync.pending, (state) => {
-        state.message_in_flight = DraftStateMessage.UPDATE_DRAFT
+        state.messageInFlight = DraftStateMessage.UPDATE_DRAFT
       })
       .addCase(doUpdateDraftAsync.fulfilled, (state, action) => {
-        state.message_in_flight = null
+        state.messageInFlight = null
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
@@ -191,10 +186,10 @@ const draftStateSlice = createSlice({
         }
       })
       .addCase(doExitDraftAsync.pending, (state) => {
-        state.message_in_flight = DraftStateMessage.EXIT_DRAFT
+        state.messageInFlight = DraftStateMessage.EXIT_DRAFT
       })
       .addCase(doExitDraftAsync.fulfilled, (state, action) => {
-        state.message_in_flight = null
+        state.messageInFlight = null
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
@@ -202,10 +197,10 @@ const draftStateSlice = createSlice({
         }
       })
       .addCase(doChooseDraftCardsAsync.pending, (state) => {
-        state.message_in_flight = DraftStateMessage.CHOOSE_CARDS
+        state.messageInFlight = DraftStateMessage.CHOOSE_CARDS
       })
       .addCase(doChooseDraftCardsAsync.fulfilled, (state, action) => {
-        state.message_in_flight = null
+        state.messageInFlight = null
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {

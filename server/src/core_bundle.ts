@@ -22,7 +22,7 @@ import {
 
 import { readBundle } from 'server/bundle'
 
-const g_core_bundle = 'globals-en_us.json'
+const CORE_BUNDLE_FILENAME = 'globals-en_us.json'
 
 let g_metadata: GameMetadata | undefined
 
@@ -162,7 +162,7 @@ export function gameMetadata(
     return
   }
 
-  readBundle(g_core_bundle, (data: Status<string>) => {
+  readBundle(CORE_BUNDLE_FILENAME, (data: Status<string>) => {
     if (!isOk(data)) {
       callback(data)
       return

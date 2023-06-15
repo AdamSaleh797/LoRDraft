@@ -9,7 +9,7 @@ import {
 import { Button } from 'client/components/common/button'
 
 interface DraftFormatComponentProps {
-  select_format_fn: (draft_format: DraftFormat) => void
+  selectFormatFn: (draft_format: DraftFormat) => void
   gameMetadata: GameMetadata | null
 }
 
@@ -20,7 +20,7 @@ export function DraftFormatComponent(props: DraftFormatComponentProps) {
         <Button
           key={format}
           onClick={() => {
-            props.select_format_fn(format)
+            props.selectFormatFn(format)
           }}
         >
           {props.gameMetadata !== null ? (

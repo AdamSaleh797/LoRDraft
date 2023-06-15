@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
 import { Button } from 'client/components/common/button'
 import { useLoRDispatch } from 'client/store/hooks'
@@ -8,7 +8,7 @@ import { logoutUser } from 'client/store/session'
 
 interface UserComponentProps {
   socket: LoRDraftClientSocket
-  auth_info: SessionCred
+  authInfo: AuthInfo
 }
 
 export function UserComponent(props: UserComponentProps) {
@@ -17,13 +17,13 @@ export function UserComponent(props: UserComponentProps) {
   return (
     <div>
       <div>
-        You are logged in as <b>{props.auth_info.username}</b>
+        You are logged in as <b>{props.authInfo.username}</b>
       </div>
       <Button
         onClick={() => {
           logoutUser(dispatch, {
             socket: props.socket,
-            auth_info: props.auth_info,
+            authInfo: props.authInfo,
           })
         }}
       >

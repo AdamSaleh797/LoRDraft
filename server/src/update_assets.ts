@@ -27,7 +27,7 @@ export function updateAssets(
     return
   }
 
-  const promiseList = bundles.map((bundle) => {
+  const promise_list = bundles.map((bundle) => {
     return new Promise(
       (
         resolve: (value: OkStatusT) => void,
@@ -66,7 +66,7 @@ export function updateAssets(
     )
   })
 
-  Promise.allSettled(promiseList).then((results) => {
+  Promise.allSettled(promise_list).then((results) => {
     if (!allFullfilled(results)) {
       callback(
         makeErrStatus(
@@ -86,7 +86,7 @@ export function updateAssets(
 function updateAssetsSequential(
   callback: (status: Status) => void = () => undefined
 ) {
-  const download_next_bundle = (
+  const downloadNextBundle = (
     bundles_iterator: Iterator<{
       setName: string
       url: string
@@ -123,7 +123,7 @@ function updateAssetsSequential(
             if (!isOk(status)) {
               callback(status)
             } else {
-              download_next_bundle(bundles_iterator)
+              downloadNextBundle(bundles_iterator)
             }
           })
         }
@@ -131,5 +131,5 @@ function updateAssetsSequential(
     })
   }
 
-  download_next_bundle(bundles.values())
+  downloadNextBundle(bundles.values())
 }

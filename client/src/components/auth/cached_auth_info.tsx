@@ -1,21 +1,21 @@
 import { Buffer } from 'buffer'
 
-import { SessionCred, SessionCredT } from 'common/game/socket-msgs'
+import { AuthInfo, AuthInfoT } from 'common/game/socket-msgs'
 
 const STORAGE_AUTH_INFO_KEY = 'auth_info'
 
 export class CachedAuthInfo {
-  private readonly authInfo: SessionCred | null
+  private readonly authInfo: AuthInfo | null
 
-  constructor(authInfo: SessionCred | null) {
+  constructor(authInfo: AuthInfo | null) {
     this.authInfo = authInfo
   }
 
-  getStorageAuthInfo(): SessionCred | null {
+  getStorageAuthInfo(): AuthInfo | null {
     return this.authInfo
   }
 
-  private static readCachedAuthInfo(): SessionCred | null {
+  private static readCachedAuthInfo(): AuthInfo | null {
     const auth_info_str = window.sessionStorage.getItem(STORAGE_AUTH_INFO_KEY)
     if (auth_info_str === null) {
       return null
@@ -40,7 +40,7 @@ export class CachedAuthInfo {
       }
     )
 
-    if (!SessionCredT.guard(auth_info_prim)) {
+    if (!AuthInfoT.guard(auth_info_prim)) {
       window.sessionStorage.removeItem(STORAGE_AUTH_INFO_KEY)
       return null
     }
@@ -57,7 +57,7 @@ export class CachedAuthInfo {
     return new CachedAuthInfo(CachedAuthInfo.readCachedAuthInfo())
   }
 
-  static setStorageAuthInfo(session_cred: SessionCred): CachedAuthInfo {
+  static setStorageAuthInfo(session_cred: AuthInfo): CachedAuthInfo {
     window.sessionStorage.setItem(
       STORAGE_AUTH_INFO_KEY,
       JSON.stringify(session_cred)

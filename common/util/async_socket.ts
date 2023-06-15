@@ -2,7 +2,7 @@
 import { Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
-import { Empty, gen_uuid } from 'common/util/lor_util'
+import { Empty, genUUID } from 'common/util/lor_util'
 import { Status, StatusCode, makeErrStatus } from 'common/util/status'
 
 interface EventsMap {
@@ -59,7 +59,7 @@ interface AsyncMessage<
   EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>,
   Args extends ResParams<EventName, ListenEvents>
 > {
-  timeout_id: NodeJS.Timeout
+  timeoutId: NodeJS.Timeout
   callback: (...args: Args) => void
 }
 
@@ -107,7 +107,7 @@ export class AsyncSocketContext<
     this.timeout = 1000
   }
 
-  private _raw_socket():
+  private rawSocket():
     | ServerSocket<ListenEvents, EmitEvents, Empty, Empty>
     | ClientSocket<ListenEvents, EmitEvents> {
     return this.socket as unknown as
@@ -115,7 +115,7 @@ export class AsyncSocketContext<
       | ClientSocket<ListenEvents, EmitEvents>
   }
 
-  private _init_callback<
+  private initCallback<
     EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
   >(event: EventName): void {
     type CallbackT = InternalCallbackT<ResParams<EventName, ListenEvents>>
@@ -134,7 +134,7 @@ export class AsyncSocketContext<
           EventName,
           ResParams<EventName, ListenEvents>
         >
-        clearTimeout(message_info.timeout_id)
+        clearTimeout(message_info.timeoutId)
         message_info.callback(...call_args)
       }
 
@@ -148,7 +148,7 @@ export class AsyncSocketContext<
     }
   }
 
-  private _add_timeout<
+  private addTimeout<
     EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
   >(
     event_name: string,
@@ -176,16 +176,16 @@ export class AsyncSocketContext<
     event_name: EventName,
     ...args: Parameters<EmitEvents[EventName]>
   ) {
-    this._raw_socket().emit(event_name, ...args)
+    this.rawSocket().emit(event_name, ...args)
   }
 
   on<EventName extends EventNames<ListenEvents>>(
     event_name: EventName,
     callback: ListenEvents[EventName]
   ) {
-    const on_call: (ev: EventName, cb: ListenEvents[EventName]) => void =
-      this._raw_socket().on
-    on_call(event_name, callback)
+    const onCall: (ev: EventName, cb: ListenEvents[EventName]) => void =
+      this.rawSocket().on
+    onCall(event_name, callback)
   }
 
   call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
@@ -202,19 +202,14 @@ export class AsyncSocketContext<
     >
     const call_args = args.slice(0, -1) as ReqParams<EventName, EmitEvents>
 
-    this._init_callback(event_name)
+    this.initCallback(event_name)
 
-    const uuid = gen_uuid()
+    const uuid = genUUID()
 
-    const timeout_id = this._add_timeout(
-      event_name,
-      uuid,
-      this.timeout,
-      callback
-    )
+    const timeout_id = this.addTimeout(event_name, uuid, this.timeout, callback)
 
     this.outstanding_calls.set(uuid, {
-      timeout_id: timeout_id,
+      timeoutId: timeout_id,
       callback: callback,
     })
 

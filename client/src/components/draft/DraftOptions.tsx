@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { DraftFormat, GameMetadata } from 'common/game/metadata'
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
 import { DraftFormatComponent } from 'client/components/draft/DraftFormat'
 import { DraftRarityRestrictionComponent } from 'client/components/draft/DraftRarityRestriction'
@@ -10,7 +10,7 @@ import { useLoRDispatch } from 'client/store/hooks'
 
 interface DraftOptionsComponentProps {
   socket: LoRDraftClientSocket
-  authInfo: SessionCred
+  authInfo: AuthInfo
   gameMetadata: GameMetadata | null
 }
 
@@ -21,7 +21,7 @@ export function DraftOptionsComponent(props: DraftOptionsComponentProps) {
   if (format === null) {
     return (
       <DraftFormatComponent
-        select_format_fn={(draft_format) => {
+        selectFormatFn={(draft_format) => {
           setFormat(draft_format)
         }}
         gameMetadata={props.gameMetadata}
@@ -30,7 +30,7 @@ export function DraftOptionsComponent(props: DraftOptionsComponentProps) {
   } else {
     return (
       <DraftRarityRestrictionComponent
-        select_rarity_restriction_fn={(rarity_restriction) => {
+        selectRarityRestrictionFn={(rarity_restriction) => {
           const draft_options = {
             draftFormat: format,
             rarityRestriction: rarity_restriction,
@@ -39,8 +39,8 @@ export function DraftOptionsComponent(props: DraftOptionsComponentProps) {
           dispatch(
             doJoinDraftAsync({
               socket: props.socket,
-              auth_info: props.authInfo,
-              draft_options,
+              authInfo: props.authInfo,
+              draftOptions: draft_options,
             })
           )
         }}

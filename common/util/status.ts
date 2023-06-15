@@ -63,7 +63,7 @@ export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>
 export interface ErrStatusT {
   readonly status: ErrStatusCode
   readonly message: string
-  readonly from_statuses?: readonly ErrStatusT[]
+  readonly fromStatuses?: readonly ErrStatusT[]
 }
 
 export type Status<T = null> = OkStatusT<T> | ErrStatusT
@@ -76,7 +76,7 @@ export function makeErrStatus(
   return {
     status: status,
     message: message,
-    from_statuses: from_statuses,
+    fromStatuses: from_statuses,
   }
 }
 
@@ -87,7 +87,7 @@ export function withSubStatuses(
   return makeErrStatus(
     status.status,
     status.message,
-    status.from_statuses?.concat(from_statuses) ?? from_statuses
+    status.fromStatuses?.concat(from_statuses) ?? from_statuses
   )
 }
 
