@@ -31,12 +31,10 @@ function getGameMetadata(
 
 interface DraftFlowComponentProps {
   socket: LoRDraftClientSocket
-  // TODO: Make this required and only render when logged in.
-  // authInfo: SessionCred
+  authInfo: AuthInfo
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
-  const session_state = useLoRSelector(selectSessionState)
   const draft_state = useLoRSelector(selectDraftState)
   // TODO add this to redux
   const [gameMetadata, setGameMetadata] = React.useState<GameMetadata | null>(
@@ -47,12 +45,8 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     React.useRef<typeof setGameMetadata>(setGameMetadata)
   setGameMetadataRef.current = setGameMetadata
 
-  if (!isSignedIn(session_state)) {
-    return <div>Must sign in to start draft.</div>
-  }
-
   if (gameMetadata === null) {
-    getGameMetadata(props.socket, session_state.authInfo, (status) => {
+    getGameMetadata(props.socket, props.authInfo, (status) => {
       if (isOk(status)) {
         setGameMetadataRef.current(status.value)
       }
@@ -63,7 +57,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     return (
       <DraftOptionsComponent
         socket={props.socket}
-        authInfo={session_state.authInfo}
+        authInfo={props.authInfo}
         gameMetadata={gameMetadata}
       />
     )
@@ -71,7 +65,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     return (
       <DraftComponent
         socket={props.socket}
-        authInfo={session_state.authInfo}
+        authInfo={props.authInfo}
         draftState={draft_state.state}
         gameMetadata={gameMetadata}
       />

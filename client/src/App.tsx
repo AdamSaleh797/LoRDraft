@@ -9,6 +9,7 @@ import { Modal } from 'client/components/common/modal'
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow'
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks'
 import {
+  isSignedIn,
   selectSessionState,
   shouldInitialize,
   tryInitializeUserSession,
@@ -45,7 +46,14 @@ export default function App() {
         )}
       </Header>
       <Layout>
-        <DraftFlowComponent socket={socket_ref.current}></DraftFlowComponent>
+        {isSignedIn(session_state) ? (
+          <DraftFlowComponent
+            socket={socket_ref.current}
+            authInfo={session_state.authInfo}
+          ></DraftFlowComponent>
+        ) : (
+          <div>Must sign in to start a draft!</div>
+        )}
       </Layout>
     </div>
   )
