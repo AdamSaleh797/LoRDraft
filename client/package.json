@@ -10,7 +10,7 @@
     "build-public": "npx copyfiles --flat public/* ../dist/dev/static/",
     "build-public-prod": "npx copyfiles --flat public/* ../dist/prod/static/",
     "build": "npm run check-types && npm run build-react && npm run build-public",
-    "build-prod": "npm run build-react-prod && npm run build-public-prod"
+    "build-prod": "npm run generate-css-types && npm run build-react-prod && npm run build-public-prod"
   },
   "browserslist": {
     "production": [
