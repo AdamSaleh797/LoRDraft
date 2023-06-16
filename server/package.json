@@ -4,7 +4,6 @@
   "description": "",
   "scripts": {
     "check-types": "npx tsc --noemit",
-    "lint": "cd .. && npx eslint ./server",
     "start": "node ../dist/dev/index.js",
     "start-prod": "node ../dist/prod/index.js",
     "start-prod-ec2": "ON_EC2=1 node ../dist/prod/index.js",

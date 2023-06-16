@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "check-types": "npx tsc --noemit",
-    "lint": "cd .. && npx eslint ./common"
+    "check-types": "npx tsc --noemit"
   },
   "author": "",
   "license": "ISC"

@@ -5,7 +5,6 @@
   "scripts": {
     "generate-css-types": "npx tcm -s -o ../dist/@types ./src",
     "check-types": "npm run generate-css-types && npx tsc --noemit",
-    "lint": "cd .. && npx eslint ./client",
     "build-react": "npx webpack --progress --config webpack.dev.js",
     "build-react-prod": "npx webpack --progress --config webpack.prod.js",
     "build-public": "npx copyfiles --flat public/* ../dist/dev/static/",
