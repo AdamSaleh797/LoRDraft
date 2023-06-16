@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+jobs:
+  check-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out LoRDraft
+        uses: actions/checkout@v2
+        with:
+          path: LoRDraft
+          submodules: recursive
+      - name: Install dependencies
+        working-directory: LoRDraft
+        run: |
+          npm install
+      - name: Build
+        working-directory: LoRDraft
+        run: |
+          npm run build
