@@ -26,6 +26,7 @@ export function CardComponent(props: CardComponentProps) {
           className={props.isSelected ? style.selected : ''}
           src={props.card.imageUrl}
           alt={props.card.name}
+          draggable={false}
         ></img>
       )}
     </div>
