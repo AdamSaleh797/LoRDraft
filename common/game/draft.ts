@@ -124,6 +124,78 @@ export function makeDraftDeck(
 }
 
 /**
+ * Calculates all possible pairs of regions that the list of cards can be
+ * compatible with.
+ *
+ * This will return an empty list if `card_counts` is empty.
+ *
+ * @param cards The list of cards in the deck.
+ * @param possible_regions The list of possible regions that the deck can be in.
+ * @returns A list of possible region pairs for the cards given.
+ */
+function possibleRegionPairs(
+  card_counts: CardCount[],
+  possible_regions: Region[]
+): [Region, Region][] {
+  if (possible_regions.length === 2) {
+    return [possible_regions as [Region, Region]]
+  }
+
+  const initial_regions_in_deck = possible_regions.reduce<
+    Partial<Record<Region, number>>
+  >((map, region) => {
+    return { ...map, [region]: 0 }
+  }, {})
+  const regions_in_deck = card_counts.reduce<Partial<Record<Region, number>>>(
+    (map, card_count) => {
+      possible_regions.forEach((region) => {
+        if (regionContains(region, card_count.card)) {
+          map[region] = (map[region] ?? (0 as never)) + 1
+        }
+      })
+      return map
+    },
+    initial_regions_in_deck
+  )
+
+  // Sort regions in non-increasing order of size
+  const region_search_order = Array.from(
+    Object.entries(regions_in_deck) as [Region, number][]
+  )
+    .sort((a, b) => b[1] - a[1])
+    .map((region_count) => region_count[0])
+
+  const region_pairs: [Region, Region][] = []
+
+  for (let i = 1; i < region_search_order.length; i++) {
+    const region1 = region_search_order[i]
+
+    for (let j = 0; j < i; j++) {
+      const region2 = region_search_order[j]
+
+      // If both regions are size 0, we don't need to check them, as they are
+      // trivially not a possible pairing of regions.
+      if ((regions_in_deck[region2] ?? (0 as never)) === 0) {
+        break
+      }
+
+      if (
+        !card_counts.some(
+          (card_count) =>
+            !regionContains(region1, card_count.card) &&
+            !regionContains(region2, card_count.card)
+        )
+      ) {
+        // region1 and region2 are valid regions to choose for this deck.
+        region_pairs.push([region1, region2])
+      }
+    }
+  }
+
+  return region_pairs
+}
+
+/**
  * Calculates all possible regions that the list of cards can be compatible with
  * by taking the union of all sets of pairs of regions from `regions` that are
  * valid with `cards`.
@@ -141,53 +213,13 @@ function possibleRegionsForCards(
     return possible_regions
   }
 
-  const initial_regions_in_deck = possible_regions.reduce<Map<Region, number>>(
-    (map, region) => map.set(region, 0),
-    new Map()
-  )
-  const regions_in_deck = card_counts.reduce<Map<Region, number>>(
-    (map, card_count) => {
-      possible_regions.forEach((region) => {
-        if (regionContains(region, card_count.card)) {
-          map.set(region, (map.get(region) ?? (0 as never)) + 1)
-        }
-      })
-      return map
-    },
-    initial_regions_in_deck
-  )
-
-  // Sort regions in non-increasing order of size
-  const region_search_order = Array.from(regions_in_deck.entries())
-    .sort((a, b) => b[1] - a[1])
-    .map((region_count) => region_count[0])
-
   const region_set = new Set<Region>()
-
-  for (let i = 1; i < region_search_order.length; i++) {
-    const region1 = region_search_order[i]
-    for (let j = 0; j < i; j++) {
-      const region2 = region_search_order[j]
-
-      // If both regions are size 0, we don't need to check them, as they are
-      // trivially not a possible pairing of regions.
-      if ((regions_in_deck.get(region2) ?? 0) === 0) {
-        break
-      }
-
-      if (
-        !card_counts.some(
-          (card_count) =>
-            !regionContains(region1, card_count.card) &&
-            !regionContains(region2, card_count.card)
-        )
-      ) {
-        // region1 and region2 are valid regions to choose for this deck.
-        region_set.add(region1)
-        region_set.add(region2)
-      }
+  possibleRegionPairs(card_counts, possible_regions).forEach(
+    ([region1, region2]) => {
+      region_set.add(region1)
+      region_set.add(region2)
     }
-  }
+  )
 
   if (region_set.size === 0) {
     // This deck would be invalid if the card were added to it.
@@ -195,6 +227,41 @@ function possibleRegionsForCards(
   }
 
   return Array.from(region_set.values())
+}
+
+/**
+ * Given the draft deck, returns the list of regions that are certainly in the
+ * draft. The remaining regions in `deck.regions` may possibly be included, but
+ * there exist combinations of regions that don't include them.
+ */
+export function certainRegionsForDeck(deck: DraftDeck): Region[] {
+  // If there are only two possible regions, they are certainly the only two
+  // regions for the deck.
+  if (deck.regions.length === 2) {
+    return deck.regions
+  }
+  // If no cards have been chosen, all regions are uncertain.
+  if (deck.cardCounts.length === 0) {
+    return []
+  }
+
+  let regions_in_all_pairs = deck.regions
+  for (const region_pair of possibleRegionPairs(
+    deck.cardCounts,
+    deck.regions
+  )) {
+    regions_in_all_pairs = regions_in_all_pairs.filter((region) =>
+      region_pair.includes(region)
+    )
+
+    // If we've already eliminated all regions from the list of regions in all
+    // pairs, we can return early.
+    if (regions_in_all_pairs.length === 0) {
+      break
+    }
+  }
+
+  return regions_in_all_pairs
 }
 
 /**
