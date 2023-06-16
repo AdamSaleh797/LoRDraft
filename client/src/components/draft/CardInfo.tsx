@@ -11,7 +11,11 @@ export interface CardDisplayProps {
 }
 
 export function CardInfo(props: CardDisplayProps) {
-  const region = props.card.regions[0]
+  const regions = props.card.regions.filter((region) =>
+    props.draftState.deck.regions.includes(region)
+  )
+  const region = regions[0]
+
   let regionColorStyle
   if (isMainRegion(region)) {
     regionColorStyle = style[region]
@@ -29,6 +33,3 @@ export function CardInfo(props: CardDisplayProps) {
     </div>
   )
 }
-
-// background-image: linear-gradient(137deg,rgb(160,223,246) 16%,rgba(41,150,164,0) 25%,rgba(41,150,164,0) 104%,rgb(160,223,246) 82%),radial-gradient(circle at 50% 50%,rgb(47,79,143),rgb(41,70,129) 44%,rgb(9,127,149) 73%,rgb(45,165,183) 76%);
-//border-radius: 100%;
