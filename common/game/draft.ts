@@ -67,7 +67,7 @@ export interface DraftDeck {
   cardCounts: CardCount[]
   numCards: number
   deckCode: string | null
-  options: DraftOptions
+  readonly options: DraftOptions
 }
 
 export function findCardCount(
@@ -121,6 +121,20 @@ export function makeDraftDeck(
   })
 
   return deck
+}
+
+export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
+  return {
+    regions: draft_deck.regions.slice(),
+    cardCounts: draft_deck.cardCounts.map((card_count) => {
+      return {
+        ...card_count,
+      }
+    }),
+    numCards: draft_deck.numCards,
+    deckCode: draft_deck.deckCode,
+    options: draft_deck.options,
+  }
 }
 
 /**
