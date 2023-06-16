@@ -63,7 +63,7 @@ export const DraftDeckT = RecordT({
 })
 
 export interface DraftDeck {
-  regions: readonly Region[]
+  regions: Region[]
   cardCounts: CardCount[]
   numCards: number
   deckCode: string | null
@@ -71,31 +71,31 @@ export interface DraftDeck {
 }
 
 export function findCardCount(
-  cardCounts: readonly CardCount[],
+  card_case: readonly CardCount[],
   card: Card
 ): CardCount | null {
   return (
-    cardCounts.find((cardCount) => {
-      return card.cardCode === cardCount.card.cardCode
+    card_case.find((card_count) => {
+      return card.cardCode === card_count.card.cardCode
     }) ?? null
   )
 }
 
 export function addToCardCounts(
-  cardCounts: readonly CardCount[],
+  card_counts: readonly CardCount[],
   card: Card
 ): CardCount[] {
-  const idx = cardCounts.findIndex((cardCount) => {
-    return card.cardCode === cardCount.card.cardCode
+  const idx = card_counts.findIndex((card_count) => {
+    return card.cardCode === card_count.card.cardCode
   })
 
   if (idx === -1) {
-    return cardCounts.concat({
+    return card_counts.concat({
       card: card,
       count: 1,
     })
   } else {
-    const copy = cardCounts.slice()
+    const copy = card_counts.slice()
     copy[idx] = {
       card: copy[idx].card,
       count: copy[idx].count + 1,
@@ -134,9 +134,9 @@ export function makeDraftDeck(
  * cards do not make a valid deck.
  */
 function possibleRegionsForCards(
-  cardCounts: CardCount[],
-  possible_regions: readonly Region[]
-): readonly Region[] | null {
+  card_counts: CardCount[],
+  possible_regions: Region[]
+): Region[] | null {
   if (possible_regions.length === 2) {
     return possible_regions
   }
@@ -145,10 +145,10 @@ function possibleRegionsForCards(
     (map, region) => map.set(region, 0),
     new Map()
   )
-  const regions_in_deck = cardCounts.reduce<Map<Region, number>>(
-    (map, cardCount) => {
+  const regions_in_deck = card_counts.reduce<Map<Region, number>>(
+    (map, card_count) => {
       possible_regions.forEach((region) => {
-        if (regionContains(region, cardCount.card)) {
+        if (regionContains(region, card_count.card)) {
           map.set(region, (map.get(region) ?? (0 as never)) + 1)
         }
       })
@@ -176,10 +176,10 @@ function possibleRegionsForCards(
       }
 
       if (
-        !cardCounts.some(
-          (cardCount) =>
-            !regionContains(region1, cardCount.card) &&
-            !regionContains(region2, cardCount.card)
+        !card_counts.some(
+          (card_count) =>
+            !regionContains(region1, card_count.card) &&
+            !regionContains(region2, card_count.card)
         )
       ) {
         // region1 and region2 are valid regions to choose for this deck.
@@ -209,13 +209,13 @@ function possibleRegionsForCards(
 export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
   if (
     (deck.cardCounts.find(
-      (cardCount) => cardCount.card.cardCode === card.cardCode
+      (card_count) => card_count.card.cardCode === card.cardCode
     )?.count ?? 0) === MAX_CARD_COPIES
   ) {
     return false
   }
-  const cardCounts = addToCardCounts(deck.cardCounts, card)
-  return possibleRegionsForCards(cardCounts, deck.regions) !== null
+  const card_counts = addToCardCounts(deck.cardCounts, card)
+  return possibleRegionsForCards(card_counts, deck.regions) !== null
 }
 
 /**
@@ -226,14 +226,14 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
  * could not be added because adding it would violate a rule of deck building.
  */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
-  const cardCounts = addToCardCounts(deck.cardCounts, card)
-  const new_regions = possibleRegionsForCards(cardCounts, deck.regions)
+  const card_counts = addToCardCounts(deck.cardCounts, card)
+  const new_regions = possibleRegionsForCards(card_counts, deck.regions)
 
   if (new_regions === null) {
     return false
   }
 
-  deck.cardCounts = cardCounts
+  deck.cardCounts = card_counts
   deck.regions = new_regions
   deck.numCards++
 
@@ -260,19 +260,19 @@ export function addCardsToDeck(deck: DraftDeck, cards: Card[]): boolean {
 
 export const DraftStateInfoT = RecordT({
   deck: DraftDeckT,
-  pending_cards: ArrayT(CardT),
+  pendingCards: ArrayT(CardT),
 })
 
 export interface DraftStateInfo {
   state: DraftState
   deck: DraftDeck
-  pending_cards: Card[]
+  pendingCards: Card[]
 }
 
 export function draftStateCardLimits(
-  draftState: DraftState
+  draft_state: DraftState
 ): [number, number] | null {
-  switch (draftState) {
+  switch (draft_state) {
     case DraftState.INIT: {
       return null
     }
@@ -311,12 +311,12 @@ export function getDeckCode(deck: DraftDeck): Status<string> {
     return makeOkStatus(deck.deckCode)
   }
 
-  const deckcodesDeck = deck.cardCounts.map((cardCount) => ({
-    cardCode: cardCount.card.cardCode,
-    count: cardCount.count,
+  const deckcodes_deck = deck.cardCounts.map((card_count) => ({
+    cardCode: card_count.card.cardCode,
+    count: card_count.count,
   }))
 
-  const code = getCodeFromDeck(deckcodesDeck)
+  const code = getCodeFromDeck(deckcodes_deck)
   deck.deckCode = code
   return makeOkStatus(code)
 }

@@ -62,7 +62,7 @@ export function allFullfilled<T>(
   )
 }
 
-export function gen_uuid(): string {
+export function genUUID(): string {
   return uuidv4()
 }
 
@@ -151,7 +151,7 @@ export function randSampleNumbersAvoidingRepeats(
 
   const broadcast: number[] = Array.from({ length: size }, (_1, i) =>
     Array(n_repeats).fill(i)
-  ).flat(1)
+  ).flat(1) as number[]
 
   const sample_idx = new Array<number>(samples).fill(-1)
 
@@ -225,16 +225,16 @@ export function binarySearch<T>(arr: readonly T[], el: T): number {
  * Checks for duplicate values in an array.
  *
  * @param arr The array to search for duplicate elements in.
- * @param key_fn An optional mapping from element values to key values, which
+ * @param keyFn An optional mapping from element values to key values, which
  *   are compared for uniqueness.
  * @returns True if any of the elements in the array have the same key (or value
  *   if no `key_fn` is supplied).
  */
 export function containsDuplicates<T>(
   arr: readonly T[],
-  key_fn: (val: T) => unknown = (val) => val
+  keyFn: (val: T) => unknown = (val) => val
 ): boolean {
-  const sorted_keys = arr.map(key_fn).sort()
+  const sorted_keys = arr.map(keyFn).sort()
 
   for (let i = 0; i < sorted_keys.length - 1; i++) {
     if (sorted_keys[i] === sorted_keys[i + 1]) {

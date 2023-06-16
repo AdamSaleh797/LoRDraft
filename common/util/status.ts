@@ -8,6 +8,9 @@ export enum StatusCode {
   INCORRECT_MESSAGE_ARGUMENTS = 'INCORRECT_MESSAGE_ARGUMENTS',
   THROTTLE = 'THROTTLE',
   INVALID_ARGUMENTS = 'INVALID_ARGUMENTS',
+  INVALID_REDUX_TRANSITION = 'INVALID_REDUX_TRANSITION',
+  REDUX_DISPATCH_FAILED = 'REDUX_DISPATCH_FAILED',
+  INVALID_CLIENT_STATE = 'INVALID_CLIENT_STATE',
 
   // Authentication errors.
   UNKNOWN_USER = 'UNKNOWN_USER',
@@ -51,16 +54,16 @@ export enum StatusCode {
 }
 
 export interface OkStatusT<T = null> {
-  status: StatusCode.OK
-  value: T
+  readonly status: StatusCode.OK
+  readonly value: T
 }
 
 export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>
 
 export interface ErrStatusT {
-  status: ErrStatusCode
-  message: string
-  from_statuses?: ErrStatusT[]
+  readonly status: ErrStatusCode
+  readonly message: string
+  readonly fromStatuses?: readonly ErrStatusT[]
 }
 
 export type Status<T = null> = OkStatusT<T> | ErrStatusT
@@ -68,23 +71,23 @@ export type Status<T = null> = OkStatusT<T> | ErrStatusT
 export function makeErrStatus(
   status: ErrStatusCode,
   message: string,
-  from_statuses?: ErrStatusT[]
+  from_statuses?: readonly ErrStatusT[]
 ): ErrStatusT {
   return {
     status: status,
     message: message,
-    from_statuses: from_statuses,
+    fromStatuses: from_statuses,
   }
 }
 
 export function withSubStatuses(
   status: ErrStatusT,
-  from_statuses: ErrStatusT[]
+  from_statuses: readonly ErrStatusT[]
 ): ErrStatusT {
   return makeErrStatus(
     status.status,
     status.message,
-    status.from_statuses?.concat(from_statuses) ?? from_statuses
+    status.fromStatuses?.concat(from_statuses) ?? from_statuses
   )
 }
 

@@ -1,12 +1,12 @@
 import React from 'react'
 
 export function SpellIcon() {
-  const SpellIconStyle = {
+  const spellIconStyle = {
     marginRight: '2px',
   }
 
   return (
-    <div style={SpellIconStyle}>
+    <div style={spellIconStyle}>
       <svg
         _ngcontent-ng-cli-universal-c74=''
         xmlns='http://www.w3.org/2000/svg'

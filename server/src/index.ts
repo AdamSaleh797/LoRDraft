@@ -6,7 +6,7 @@ import path from 'path'
 import { isOk } from 'common/util/status'
 
 import { config } from 'server/args'
-import { InitSocket } from 'server/socket_init'
+import { initSocket } from 'server/socket_init'
 import { updateAssets } from 'server/update_assets'
 
 if (config.download) {
@@ -26,12 +26,12 @@ const app = http.createServer(function (req, resp) {
     return
   }
 
-  let reqFile = req.url
-  if (reqFile === '/') {
-    reqFile = '/index.html'
+  let req_file = req.url
+  if (req_file === '/') {
+    req_file = '/index.html'
   }
 
-  const filename = path.join(config.root_dir, 'static/', reqFile)
+  const filename = path.join(config.root_dir, 'static/', req_file)
   fs.access(filename, fs.constants.R_OK, (err) => {
     if (err !== null) {
       // The file does not exist.
@@ -66,7 +66,7 @@ const app = http.createServer(function (req, resp) {
   })
 })
 
-InitSocket(app)
+initSocket(app)
 
 app.listen(config.port)
 

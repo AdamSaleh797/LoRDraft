@@ -1,8 +1,10 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Helmet } from 'react-helmet'
+import { Provider } from 'react-redux'
 
 import App from 'client/App'
+import { store } from 'client/store'
 import 'client/styles/global_styles.css'
 
 const APP_TITLE = 'Lor Draft'
@@ -21,6 +23,8 @@ root.render(
       />
       <meta name='viewport' content='initial-scale=1, width=device-width' />
     </Helmet>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>
 )

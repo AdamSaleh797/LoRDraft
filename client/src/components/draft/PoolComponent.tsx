@@ -2,42 +2,28 @@ import React from 'react'
 
 import { Card } from 'common/game/card'
 import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
-import { LoRDraftClientSocket, SessionCred } from 'common/game/socket-msgs'
-import { Status, isOk } from 'common/util/status'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
+import { isOk } from 'common/util/status'
 
 import { Button } from 'client/components/common/button'
 import { CardComponent } from 'client/components/draft/Card'
+import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
+import { useLoRDispatch } from 'client/store/hooks'
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
-  authInfo: SessionCred
-  refreshDraft: (
-    session_cred: SessionCred,
-    callback: (status: Status) => void
-  ) => void
-  closeDraft: () => void
+  authInfo: AuthInfo
   draftState: DraftStateInfo
-  setDraftState: (draft_state: DraftStateInfo | null) => void
 }
 
 export function PoolComponent(props: PoolComponentProps) {
   const [selected, setSelected] = React.useState<string[]>([])
   const setSelectedRef = React.useRef<typeof setSelected>(setSelected)
-  const authInfoRef = React.useRef<SessionCred>(props.authInfo)
+  const dispatch = useLoRDispatch()
 
-  const cards: (Card | null)[] = props.draftState.pending_cards
+  const cards: (Card | null)[] = props.draftState.pendingCards
 
-  const refreshDraftRef = React.useRef<typeof props.refreshDraft>(
-    () => undefined
-  )
-  const setDraftStateRef = React.useRef<typeof props.setDraftState>(
-    () => undefined
-  )
-
-  refreshDraftRef.current = props.refreshDraft
-  setDraftStateRef.current = props.setDraftState
   setSelectedRef.current = setSelected
-  authInfoRef.current = props.authInfo
 
   function confirm() {
     const revertedCards = selected.map(
@@ -49,7 +35,7 @@ export function PoolComponent(props: PoolComponentProps) {
     chooseCards(revertedCards)
   }
 
-  function chooseCards(revertedCards: Card[]) {
+  async function chooseCards(revertedCards: Card[]) {
     const min_max = draftStateCardLimits(props.draftState.state)
     if (min_max === null) {
       return
@@ -62,19 +48,29 @@ export function PoolComponent(props: PoolComponentProps) {
       return
     }
 
-    props.socket.call(
-      'choose_cards',
-      authInfoRef.current,
-      revertedCards,
-      (status) => {
-        if (!isOk(status)) {
-          console.log(status)
-          return
-        }
+    const choose_cards_action = await dispatch(
+      doChooseDraftCardsAsync({
+        socket: props.socket,
+        authInfo: props.authInfo,
+        cards: revertedCards,
+      })
+    )
 
-        setSelectedRef.current([])
-        setDraftStateRef.current(status.value)
-      }
+    // If the cards were successfully chosen, then reset the selected cards.
+    if (
+      choose_cards_action.payload !== undefined &&
+      isOk(choose_cards_action.payload)
+    ) {
+      setSelectedRef.current([])
+    }
+  }
+
+  function exitDraft() {
+    dispatch(
+      doExitDraftAsync({
+        socket: props.socket,
+        authInfo: props.authInfo,
+      })
     )
   }
 
@@ -105,7 +101,7 @@ export function PoolComponent(props: PoolComponentProps) {
         )
       })}
       <Button onClick={confirm}>CONFIRM!</Button>
-      <Button onClick={props.closeDraft}>EXIT!</Button>
+      <Button onClick={exitDraft}>EXIT!</Button>
     </div>
   )
 }

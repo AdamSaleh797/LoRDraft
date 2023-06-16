@@ -5,35 +5,39 @@ import { MapTypeValues } from 'common/util/lor_util'
 
 // A mapping from the draft format name ref found in the core config file to
 // the colliquial name, which we also use internally as the name ref.
-const g_draft_format_refs = {
+const DRAFT_FORMAT_REFS = {
+  /* eslint-disable @typescript-eslint/naming-convention */
   client_Formats_Standard_name: 'Standard',
   client_Formats_Eternal_name: 'Eternal',
+  /* eslint-enable @typescript-eslint/naming-convention */
 } as const
 
-const g_draft_format_ref_literals = Object.keys(g_draft_format_refs).map(
-  (format) => Literal(format)
+const DRAFT_FORMAT_REF_LITERALS = Object.keys(DRAFT_FORMAT_REFS).map((format) =>
+  Literal(format)
 )
 export const DraftFormatRefT = Union(
-  g_draft_format_ref_literals[0],
-  ...g_draft_format_ref_literals.slice(1)
+  DRAFT_FORMAT_REF_LITERALS[0],
+  ...DRAFT_FORMAT_REF_LITERALS.slice(1)
 )
-export type DraftFormatRef = keyof typeof g_draft_format_refs
+export type DraftFormatRef = keyof typeof DRAFT_FORMAT_REFS
 
 export const SetPackDraftFormatMetadataT = RecordT({
+  /* eslint-disable @typescript-eslint/naming-convention */
   iconAbsolutePath: String,
   name: String,
   nameRef: DraftFormatRefT,
+  /* eslint-enable @typescript-eslint/naming-convention */
 })
 
-const g_draft_format_literals = Object.values(g_draft_format_refs).map(
-  (format) => Literal(format)
+const DRAFT_FORMAT_LITERALS = Object.values(DRAFT_FORMAT_REFS).map((format) =>
+  Literal(format)
 )
 export const DraftFormatT = Union(
-  g_draft_format_literals[0],
-  ...g_draft_format_literals.slice(1)
+  DRAFT_FORMAT_LITERALS[0],
+  ...DRAFT_FORMAT_LITERALS.slice(1)
 )
 
-export type DraftFormat = MapTypeValues<typeof g_draft_format_refs>
+export type DraftFormat = MapTypeValues<typeof DRAFT_FORMAT_REFS>
 
 export interface DraftFormatMetadata {
   name: DraftFormat
@@ -41,14 +45,14 @@ export interface DraftFormatMetadata {
 }
 
 export function allDraftFormats(): readonly DraftFormat[] {
-  return Object.values(g_draft_format_refs) as DraftFormat[]
+  return Object.values(DRAFT_FORMAT_REFS) as DraftFormat[]
 }
 
 export function draftFormatRefToName(format_ref: DraftFormatRef): DraftFormat {
-  return g_draft_format_refs[format_ref]
+  return DRAFT_FORMAT_REFS[format_ref]
 }
 
-const g_region_abbreviations = [
+const REGION_ABBREVIATIONS = [
   'NX',
   'RYZE',
   'Jhin',
@@ -71,18 +75,18 @@ const g_region_abbreviations = [
 ] as const
 
 export function allRegionAbbreviations(): readonly RegionAbbreviation[] {
-  return g_region_abbreviations
+  return REGION_ABBREVIATIONS
 }
 
-const g_region_abbreviation_literals = g_region_abbreviations.map((region) =>
+const REGION_ABBREVIATION_LITERALS = REGION_ABBREVIATIONS.map((region) =>
   Literal(region)
 )
 export const RegionAbbreviationT = Union(
-  g_region_abbreviation_literals[0],
-  ...g_region_abbreviation_literals.slice(1)
+  REGION_ABBREVIATION_LITERALS[0],
+  ...REGION_ABBREVIATION_LITERALS.slice(1)
 )
 
-export type RegionAbbreviation = (typeof g_region_abbreviations)[number]
+export type RegionAbbreviation = (typeof REGION_ABBREVIATIONS)[number]
 
 export const SetPackRegionMetadataT = RecordT({
   abbreviation: RegionAbbreviationT,

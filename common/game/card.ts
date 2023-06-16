@@ -15,7 +15,7 @@ export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None'
 
 export const RUNETERRA = 'Runeterra' as const
 
-const g_main_regions = [
+const MAIN_REGIONS = [
   'Demacia',
   'Noxus',
   'Shurima',
@@ -30,7 +30,7 @@ const g_main_regions = [
 
 // burst/focus speed spell cards that do not say
 // prettier-ignore
-const ryzeOrigin = [
+const RYZE_ORIGIN = [
   '01DE019', '01DE017', '01DE027', '02DE007', '04DE012', '06DE042',
   '06DE030', '06DE026', '06DE040', '01NX039', '04NX002', '06NX037',
   '04SH035', '04SH120', '04SH099', '04SH037', '04SH083', '04SH092',
@@ -50,16 +50,18 @@ const ryzeOrigin = [
   '01IO029', '01IO054', '02IO009', '05IO006', '06IO036'
 ]
 
-export type MainRegion = (typeof g_main_regions)[number]
-const main_region_literals = g_main_regions.map((region) => Literal(region))
+export type MainRegion = (typeof MAIN_REGIONS)[number]
+const MAIN_REGION_LITERALS = MAIN_REGIONS.map((region) => Literal(region))
 export const MainRegionT = Union(
-  main_region_literals[0],
-  ...main_region_literals.slice(1)
+  MAIN_REGION_LITERALS[0],
+  ...MAIN_REGION_LITERALS.slice(1)
 )
 
-export const StandardFormatRef = 'client_Formats_Standard_name'
+export const STANDARD_FORMAT_REF = 'client_Formats_Standard_name'
+export const ETERNAL_FORMAT_REF = 'client_Formats_Standard_name'
 
-const g_origins = {
+const ORIGINS = {
+  /* eslint-disable @typescript-eslint/naming-convention */
   Evelynn: (card: Card): boolean => {
     return (
       (card.description.includes('husk') && !isChampion(card)) ||
@@ -87,7 +89,7 @@ const g_origins = {
     )
   },
   Ryze: (card: Card): boolean => {
-    return ryzeOrigin.includes(card.cardCode) || card.cardCode === '06RU006'
+    return RYZE_ORIGIN.includes(card.cardCode) || card.cardCode === '06RU006'
   },
   Kayn: (card: Card): boolean => {
     return (
@@ -107,53 +109,54 @@ const g_origins = {
       card.cardCode === '06RU009'
     )
   },
+  /* eslint-enable @typescript-eslint/naming-convention */
 } as const
 
 export type OriginsDef = {
-  [champion in keyof typeof g_origins]: (card: Card) => boolean
+  [champion in keyof typeof ORIGINS]: (card: Card) => boolean
 }
 // Assertion that g_origins satisfies its type
-g_origins satisfies OriginsDef
+ORIGINS satisfies OriginsDef
 
-export type Origin = keyof typeof g_origins
-const origin_literals = Object.keys(g_origins).map((region) => Literal(region))
-export const OriginT = Union(origin_literals[0], ...origin_literals.slice(1))
+export type Origin = keyof typeof ORIGINS
+const ORIGIN_LITERALS = Object.keys(ORIGINS).map((region) => Literal(region))
+export const OriginT = Union(ORIGIN_LITERALS[0], ...ORIGIN_LITERALS.slice(1))
 
 export const RegionT = Union(MainRegionT, OriginT)
 export type Region = MainRegion | Origin
 
-const g_all_regions: Region[] = [
-  ...(g_main_regions as ReadonlyArray<Region>),
-  ...(Object.keys(g_origins) as Region[]),
+const ALL_REGIONS: Region[] = [
+  ...(MAIN_REGIONS as ReadonlyArray<Region>),
+  ...(Object.keys(ORIGINS) as Region[]),
 ]
 
 export function mainRegions(): readonly MainRegion[] {
-  return g_main_regions
+  return MAIN_REGIONS
 }
 
 export function originRegions(): readonly Origin[] {
-  return Object.keys(g_origins) as Origin[]
+  return Object.keys(ORIGINS) as Origin[]
 }
 
-export function allRegions(): readonly Region[] {
-  return g_all_regions
+export function allRegions(): Region[] {
+  return ALL_REGIONS
 }
 
 export function isMainRegion(region: string): region is MainRegion {
-  return g_main_regions.includes(region as MainRegion)
+  return MAIN_REGIONS.includes(region as MainRegion)
 }
 
 export function isOrigin(region: string): region is Origin {
-  return Object.keys(g_origins).includes(region as Origin)
+  return Object.keys(ORIGINS).includes(region as Origin)
 }
 
-export function isRuneterran(regions: string[]): boolean {
+export function isRuneterran(regions: readonly string[]): boolean {
   return regions.includes(RUNETERRA)
 }
 
 export function runeterranOrigin(
   card_name: Origin,
-  regions: string[]
+  regions: readonly string[]
 ): Region[] {
   const origins = regions.filter((region) => region !== RUNETERRA)
   if (!origins.includes(card_name)) {
@@ -166,7 +169,7 @@ export function regionContains(region: Region, card: Card) {
   if (isMainRegion(region)) {
     return card.regions.includes(region)
   } else {
-    return g_origins[region](card)
+    return ORIGINS[region](card)
   }
 }
 
@@ -174,6 +177,7 @@ export const CardCodeT = String
 export type CardCode = Static<typeof CardCodeT>
 
 export const SetPackCardT = Record({
+  /* eslint-disable @typescript-eslint/naming-convention */
   associatedCards: Array(String),
   associatedCardRefs: Array(String),
   assets: Array(
@@ -214,6 +218,7 @@ export const SetPackCardT = Record({
   set: String,
   formats: Array(String),
   formatRefs: Array(String),
+  /* eslint-enable @typescript-eslint/naming-convention */
 })
 
 export type SetPackCard = Static<typeof SetPackCardT>

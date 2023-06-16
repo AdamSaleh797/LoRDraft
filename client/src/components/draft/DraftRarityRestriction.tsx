@@ -5,7 +5,7 @@ import { DraftRarityRestriction } from 'common/game/draft_options'
 import { Button } from 'client/components/common/button'
 
 interface DraftRarityRestrictionComponentProps {
-  select_rarity_restriction_fn: (
+  selectRarityRestrictionFn: (
     draft_rarity_restriction: DraftRarityRestriction
   ) => void
 }
@@ -17,14 +17,14 @@ export function DraftRarityRestrictionComponent(
     <div>
       <Button
         onClick={() => {
-          props.select_rarity_restriction_fn(DraftRarityRestriction.COMMONS)
+          props.selectRarityRestrictionFn(DraftRarityRestriction.COMMONS)
         }}
       >
         PAUPER(COMMONS ONLY)
       </Button>
       <Button
         onClick={() => {
-          props.select_rarity_restriction_fn(DraftRarityRestriction.ANY_RARITY)
+          props.selectRarityRestrictionFn(DraftRarityRestriction.ANY_RARITY)
         }}
       >
         ANY RARITY

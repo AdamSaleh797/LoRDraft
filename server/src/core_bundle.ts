@@ -22,7 +22,7 @@ import {
 
 import { readBundle } from 'server/bundle'
 
-const g_core_bundle = 'globals-en_us.json'
+const CORE_BUNDLE_FILENAME = 'globals-en_us.json'
 
 let g_metadata: GameMetadata | undefined
 
@@ -92,8 +92,7 @@ function parseRegionsMetadata(
   // For some reason, the icon URLs for non-main regions point to nothing,
   // so set them all to the runeterran region.
   originRegions().forEach((region_name) => {
-    region_metadata[region_name].imageUrl =
-      region_metadata['Runeterra'].imageUrl
+    region_metadata[region_name].imageUrl = region_metadata.Runeterra.imageUrl
   })
 
   return makeOkStatus(region_metadata)
@@ -163,8 +162,8 @@ export function gameMetadata(
     return
   }
 
-  readBundle(g_core_bundle, (data: Status<string>) => {
-    if (!isOk(data) || data === null) {
+  readBundle(CORE_BUNDLE_FILENAME, (data: Status<string>) => {
+    if (!isOk(data)) {
       callback(data)
       return
     }

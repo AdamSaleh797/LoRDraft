@@ -16,6 +16,10 @@ jobs:
         working-directory: LoRDraft
         run: |
           npm install eslint
+      - name: Generate CSS types
+        working-directory: LoRDraft/client
+        run: |
+          npm run generate-css-types
       - name: Run eslint
         working-directory: LoRDraft
         run: |

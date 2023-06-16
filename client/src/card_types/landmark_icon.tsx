@@ -1,12 +1,12 @@
 import React from 'react'
 
 export function LandmarkIcon() {
-  const LandmarkIconStyle = {
+  const landmarkIconStyle = {
     marginRight: '2px',
   }
 
   return (
-    <div style={LandmarkIconStyle}>
+    <div style={landmarkIconStyle}>
       <svg
         _ngcontent-ng-cli-universal-c74=''
         xmlns='http://www.w3.org/2000/svg'

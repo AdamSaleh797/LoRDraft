@@ -1,13 +1,13 @@
 import crypto from 'crypto'
 
 import {
+  AuthInfo,
+  AuthInfoT,
   LoRDraftSocket,
   LoginCred,
   LoginCredT,
   RegisterInfo,
   RegisterInfoT,
-  SessionCred,
-  SessionCredT,
 } from 'common/game/socket-msgs'
 import {
   OkStatus,
@@ -27,20 +27,20 @@ export interface SessionAuthInfo {
   token: Buffer
   // The last time the user provided their login credentials, in milliseconds
   // from the epoch.
-  login_time: number
+  loginTime: number
 }
 
 export interface AuthUser {
   username: string
-  password_hash: Buffer
+  passwordHash: Buffer
   email: string
-  logged_in: boolean
+  loggedIn: boolean
   // Defined only when logged in.
-  session_info?: SessionInfo
+  sessionInfo?: SessionInfo
 }
 
 export interface LoggedInAuthUser extends AuthUser {
-  session_info: SessionInfo
+  sessionInfo: SessionInfo
 }
 
 type AuthUserDict = Map<string, AuthUser>
@@ -50,11 +50,11 @@ const TOKEN_LENGTH = 256
 
 const users: AuthUserDict = new Map()
 
-function logged_in(auth_user: AuthUser): auth_user is LoggedInAuthUser {
-  return auth_user.logged_in
+function loggedIn(auth_user: AuthUser): auth_user is LoggedInAuthUser {
+  return auth_user.loggedIn
 }
 
-export function init_auth(socket: LoRDraftSocket): void {
+export function initAuth(socket: LoRDraftSocket): void {
   socket.respond('register', (resolve, register_info) => {
     if (!RegisterInfoT.guard(register_info)) {
       // Invalid input, we can ignore
@@ -86,14 +86,14 @@ export function init_auth(socket: LoRDraftSocket): void {
       resolve(
         makeOkStatus({
           username: login_cred.username,
-          token: auth_user.session_info.auth_info.token,
+          token: auth_user.sessionInfo.authInfo.token,
         })
       )
     })
   })
 
   socket.respond('join_session', (resolve, session_cred) => {
-    join_session(session_cred, (status) => {
+    joinSession(session_cred, (status) => {
       if (!isOk(status)) {
         resolve(status)
         return
@@ -103,14 +103,14 @@ export function init_auth(socket: LoRDraftSocket): void {
       resolve(
         makeOkStatus({
           username: auth_user.username,
-          token: auth_user.session_info.auth_info.token,
+          token: auth_user.sessionInfo.authInfo.token,
         })
       )
     })
   })
 
   socket.respond('logout', (resolve, session_cred) => {
-    join_session(session_cred, (status) => {
+    joinSession(session_cred, (status) => {
       if (!isOk(status)) {
         resolve(status)
       } else {
@@ -141,9 +141,9 @@ function register(
   const password_hash = hash.update(register_info.password).digest()
   const new_user = {
     username: register_info.username,
-    password_hash: password_hash,
+    passwordHash: password_hash,
     email: register_info.email,
-    logged_in: false,
+    loggedIn: false,
   }
 
   users.set(register_info.username, new_user)
@@ -167,7 +167,7 @@ export function login(
 
   const hash = crypto.createHash(PASSWORD_HASH_METHOD)
   const password_hash = hash.update(login_cred.password).digest()
-  if (!crypto.timingSafeEqual(password_hash, auth_user.password_hash)) {
+  if (!crypto.timingSafeEqual(password_hash, auth_user.passwordHash)) {
     callback(
       makeErrStatus(
         StatusCode.INCORRECT_PASSWORD,
@@ -179,7 +179,7 @@ export function login(
 
   // If the user is already logged in, log them out to erase the ephemeral
   // information associated with the old login session.
-  if (logged_in(auth_user)) {
+  if (loggedIn(auth_user)) {
     const status = logout(auth_user)
     if (!isOk(status)) {
       callback(status)
@@ -193,27 +193,27 @@ export function login(
 
   const now = new Date().getTime()
 
-  auth_user.logged_in = true
-  auth_user.session_info = {
-    auth_info: {
+  auth_user.loggedIn = true
+  auth_user.sessionInfo = {
+    authInfo: {
       token: token,
-      login_time: now,
+      loginTime: now,
     },
   }
   callback(makeOkStatus(auth_user as LoggedInAuthUser))
 }
 
 export function logout(auth_user: LoggedInAuthUser): Status {
-  auth_user.logged_in = false
-  ;(auth_user as AuthUser).session_info = undefined
+  auth_user.loggedIn = false
+  ;(auth_user as AuthUser).sessionInfo = undefined
   return OkStatus
 }
 
-export function join_session(
-  session_cred: SessionCred | undefined,
+export function joinSession(
+  session_cred: AuthInfo | undefined,
   callback: (auth_user: Status<LoggedInAuthUser>) => void
 ): void {
-  if (!SessionCredT.guard(session_cred)) {
+  if (!AuthInfoT.guard(session_cred)) {
     // Invalid input, we can ignore
     callback(
       makeErrStatus(
@@ -233,7 +233,7 @@ export function join_session(
     return
   }
 
-  if (!logged_in(auth_user)) {
+  if (!loggedIn(auth_user)) {
     callback(
       makeErrStatus(
         StatusCode.NOT_LOGGED_IN,
@@ -244,8 +244,8 @@ export function join_session(
   }
 
   if (
-    token.length !== auth_user.session_info.auth_info.token.length ||
-    !crypto.timingSafeEqual(token, auth_user.session_info.auth_info.token)
+    token.length !== auth_user.sessionInfo.authInfo.token.length ||
+    !crypto.timingSafeEqual(token, auth_user.sessionInfo.authInfo.token)
   ) {
     callback(
       makeErrStatus(
@@ -258,7 +258,7 @@ export function join_session(
 
   const now = new Date().getTime()
   if (
-    now - auth_user.session_info.auth_info.login_time >
+    now - auth_user.sessionInfo.authInfo.loginTime >
     SESSION_EXPIRATION_TIME
   ) {
     // This session is expired.
