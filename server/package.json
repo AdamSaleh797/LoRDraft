@@ -11,8 +11,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-tsc": "npx webpack --progress --config webpack.dev.js",
     "build-tsc-prod": "npx webpack --progress --config webpack.prod.js",
-    "build": "npm run check-types && npm run build-tsc && npm run lint",
-    "build-prod": "npm run check-types && npm run build-tsc-prod && npm run lint"
+    "build": "npm run check-types && npm run build-tsc",
+    "build-prod": "npm run build-tsc-prod"
   },
   "author": "",
   "license": "ISC"

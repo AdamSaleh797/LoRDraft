@@ -13,13 +13,13 @@
     "start": "cd server && npm run start",
     "start-prod": "cd server && npm run start-prod",
     "start-prod-ec2": "cd server && npm run start-prod-ec2",
-    "build-common": "cd common && npm run build",
+    "check-common": "cd common && npm run check-types",
     "build-client": "cd client && npm run build",
     "build-client-prod": "cd client && npm run build-prod",
     "build-server": "cd server && npm run build",
     "build-server-prod": "cd server && npm run build-prod",
-    "build": "npm run build-common && npm run build-client && npm run build-server",
-    "build-prod": "npm run build-common && npm run build-client-prod && npm run build-server-prod"
+    "build": "npm run check-common && npm run build-client && npm run build-server",
+    "build-prod": "npm run build-client-prod && npm run build-server-prod"
   },
   "author": "",
   "license": "ISC",

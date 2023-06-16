@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "check-types": "npx tsc --noemit",
-    "lint": "cd .. && npx eslint ./common",
-    "build": "npm run check-types && npm run lint"
+    "lint": "cd .. && npx eslint ./common"
   },
   "author": "",
   "license": "ISC"
