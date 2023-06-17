@@ -81,7 +81,8 @@ export function DeckList(props: DeckListComponentProps) {
         gameMetadata={props.gameMetadata}
       />
       <br></br>
-      {Object.entries(typeCategories).map(([category, cardCounts]) => (
+      {Object.entries(typeCategories).map(([_category, cardCounts]) => (
+        //TODO: Use category
         <div className={style.deckListContainer}>
           {cardCounts.map((cardCount) => (
             <div className={style.cardDisplayContainer}>
