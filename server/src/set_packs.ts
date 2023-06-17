@@ -115,7 +115,7 @@ function loadSetPack(
               subtype.toLowerCase()
             ),
             keywords: parsed_card.keywordRefs,
-            type: parsed_card.type.toLowerCase(),
+            type: parsed_card.type,
             isStandard: parsed_card.formatRefs.includes(STANDARD_FORMAT_REF),
           }
 

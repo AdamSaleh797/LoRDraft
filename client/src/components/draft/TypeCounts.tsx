@@ -16,13 +16,6 @@ export const SPELLS = 1
 export const LANDMARKS = 2
 export const EQUIPMENTS = 3
 
-export const enum CardTypes {
-  UNIT = 'unit',
-  SPELL = 'spell',
-  LANDMARK = 'landmark',
-  EQUIPMENT = 'equipment',
-}
-
 export interface TypeCountsComponentProps {
   draftState: DraftStateInfo
 }
@@ -34,17 +27,21 @@ export function TypeCounts(props: TypeCountsComponentProps) {
 
   deck_card_counts.forEach((card_count: CardCount) => {
     switch (card_count.card.type) {
-      case CardTypes.UNIT:
+      case 'Unit':
         type_counts[UNITS] += 1
         break
-      case CardTypes.SPELL:
+      case 'Spell':
         type_counts[SPELLS] += 1
         break
-      case CardTypes.LANDMARK:
+      case 'Landmark':
         type_counts[LANDMARKS] += 1
         break
-      case CardTypes.EQUIPMENT:
+      case 'Equipment':
         type_counts[EQUIPMENTS] += 1
+        break
+      case 'Trap':
+      case 'Ability':
+        //uncollectable types
         break
     }
   })

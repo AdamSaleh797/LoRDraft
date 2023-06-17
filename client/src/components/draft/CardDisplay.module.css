@@ -3,6 +3,8 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
+  border-radius: 15px;
+  border: 1px solid black;
 }
 
 .fadeContainer {
@@ -10,8 +12,14 @@
   height: 100%;
 }
 
-.image {
+.rectangleImage {
   width: 68.6%;
   position: relative;
   transform: translate(45.8%, -66.3%);
+}
+
+.circleImage {
+  width: 88.9%;
+  position: relative;
+  transform: translate(27.1%, -45.8%);
 }
