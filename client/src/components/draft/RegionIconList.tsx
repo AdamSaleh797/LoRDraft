@@ -1,10 +1,10 @@
 import React from 'react'
 
-import style from './RegionIconList.module.css'
-
 import { Region, isOrigin, mainRegions, originRegions } from 'common/game/card'
-import { DraftStateInfo } from 'common/game/draft'
+import { DraftStateInfo, certainRegionsForDeck } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
+
+import { RegionIcon } from 'client/components/draft/RegionIcon'
 
 export interface RegionIconListComponentProps {
   draftState: DraftStateInfo
@@ -20,32 +20,56 @@ export function RegionIconList(props: RegionIconListComponentProps) {
     props.draftState.deck.regions.every((region) => isOrigin(region)) &&
     props.draftState.deck.regions.length === 2
 
-  return (
-    <div>
-      {(mainRegions() as Region[])
+  const certain_regions = certainRegionsForDeck(props.draftState.deck)
+
+  const regions_to_render = (mainRegions() as Region[])
+    .filter((region) => {
+      return props.draftState.deck.regions.includes(region)
+    })
+    .concat(
+      originRegions()
         .filter((region) => {
           return props.draftState.deck.regions.includes(region)
         })
-        .concat(
-          originRegions()
-            .filter((region) => {
-              return props.draftState.deck.regions.includes(region)
-            })
-            .slice(0, render_all_runeterran_icons ? undefined : 1)
-        )
-        .map((region, index) => {
-          if (props.gameMetadata !== null) {
-            return (
-              <img
-                key={`${region}${index}`}
-                className={style.regionIcon}
-                src={props.gameMetadata.regions[region].imageUrl}
-              ></img>
-            )
-          } else {
-            return <span key={index}>{region}, </span>
-          }
-        })}
+        // If `render_all_runeterran_icons`, leave the list unchanged,
+        // otherwise only take the first element from the list of origin
+        // regions.
+        .slice(0, render_all_runeterran_icons ? undefined : 1)
+    )
+    // Place certain regions first, followed by uncertain regions.
+    .sort(
+      (a, b) =>
+        (certain_regions.includes(b) ? 1 : 0) -
+        (certain_regions.includes(a) ? 1 : 0)
+    )
+    .map((region) => {
+      return {
+        region,
+        count: props.draftState.deck.cardCounts.reduce(
+          (count, { card }) => count + (card.regions[0] === region ? 1 : 0),
+          0
+        ),
+      }
+    })
+
+  return (
+    <div>
+      {regions_to_render.map(({ region, count }, index) => {
+        if (props.gameMetadata !== null) {
+          return (
+            <RegionIcon
+              key={`${region}${index}`}
+              region={region}
+              cardCount={count}
+              certainRegions={certain_regions}
+              gameMetadata={props.gameMetadata}
+            />
+          )
+        } else {
+          // TODO make this alt less ugly.
+          return <span key={index}>{region}, </span>
+        }
+      })}
     </div>
   )
 }

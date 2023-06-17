@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 import draftStateReducer from 'client/store/draft'
+import draftSketchReducer from 'client/store/draft_sketch'
 import gameMetadataReducer from 'client/store/game_metadata'
 import sessionStateReducer from 'client/store/session'
 
@@ -9,6 +10,7 @@ export const store = configureStore({
     draft: draftStateReducer,
     gameMetadata: gameMetadataReducer,
     session: sessionStateReducer,
+    draftSketches: draftSketchReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

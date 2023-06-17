@@ -5,6 +5,6 @@ set -e
 
 cd $script_dir && /usr/bin/npm install
 
-cd $script_dir && /usr/bin/npm run build
+cd $script_dir && /usr/bin/npm run build-prod
 
-cd $script_dir && /usr/bin/npm run start-prod
+cd $script_dir && /usr/bin/npm run start-prod-ec2

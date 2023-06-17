@@ -4,10 +4,10 @@ import style from './TypeCounts.module.css'
 
 import { CardCount, DraftStateInfo } from 'common/game/draft'
 
-import { EquipmentIcon } from 'client/card_types/equipment_icon'
-import { FollowerIcon } from 'client/card_types/follower_icon'
-import { LandmarkIcon } from 'client/card_types/landmark_icon'
-import { SpellIcon } from 'client/card_types/spell_icon'
+import { EquipmentIcon } from 'client/components/draft/card_types/equipment_icon'
+import { FollowerIcon } from 'client/components/draft/card_types/follower_icon'
+import { LandmarkIcon } from 'client/components/draft/card_types/landmark_icon'
+import { SpellIcon } from 'client/components/draft/card_types/spell_icon'
 
 export const CARD_TYPE_COUNT = 4
 
