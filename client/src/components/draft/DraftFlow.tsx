@@ -6,7 +6,7 @@ import { DraftComponent } from 'client/components/draft/Draft'
 import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
 import { inDraft, selectDraftState } from 'client/store/draft'
 import {
-  fetchGameMetadataAsync,
+  doFetchGameMetadataAsync,
   selectGameMetadataState,
 } from 'client/store/game_metadata'
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks'
@@ -22,10 +22,12 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   const dispatch = useLoRDispatch()
 
   if (game_metadata === null) {
-    fetchGameMetadataAsync(dispatch, {
-      socket: props.socket,
-      authInfo: props.authInfo,
-    })
+    dispatch(
+      doFetchGameMetadataAsync({
+        socket: props.socket,
+        authInfo: props.authInfo,
+      })
+    )
   }
 
   if (!inDraft(draft_state)) {

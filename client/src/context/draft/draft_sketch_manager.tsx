@@ -4,7 +4,7 @@ import { DraftSketch } from 'client/context/draft/draft_sketch'
 
 export class DraftSketchManager {
   private sketch_: DraftSketch
-  private update_callback_: (sketch: DraftSketch) => void
+  private readonly update_callback_: (sketch: DraftSketch) => void
 
   constructor(
     sketch: DraftSketch,
@@ -19,12 +19,12 @@ export class DraftSketchManager {
   }
 
   addCard(card: Card) {
-    this.sketch_.addCardToSketch(card)
+    this.sketch_ = this.sketch_.addCardToSketch(card)
     this.update_callback_(this.sketch_)
   }
 
   removeCard(card: Card) {
-    this.sketch_.removeCardFromSketch(card)
+    this.sketch_ = this.sketch_.removeCardFromSketch(card)
     this.update_callback_(this.sketch_)
   }
 }

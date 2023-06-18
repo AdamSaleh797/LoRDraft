@@ -149,10 +149,6 @@ function possibleRegionPairs(
   card_counts: CardCount[],
   possible_regions: Region[]
 ): [Region, Region][] {
-  if (possible_regions.length === 2) {
-    return [possible_regions as [Region, Region]]
-  }
-
   const initial_regions_in_deck = possible_regions.reduce<
     Partial<Record<Region, number>>
   >((map, region) => ({ ...map, [region]: 0 }), {})
@@ -219,10 +215,6 @@ function possibleRegionsForCards(
   card_counts: CardCount[],
   possible_regions: Region[]
 ): Region[] | null {
-  if (possible_regions.length === 2) {
-    return possible_regions
-  }
-
   const region_set = new Set<Region>()
   possibleRegionPairs(card_counts, possible_regions).forEach(
     ([region1, region2]) => {
@@ -291,6 +283,14 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
   ) {
     return false
   }
+
+  // If the deck only has two possible regions, these must be the two regions
+  // for the deck. We can simply check if this card is in either of those two
+  // regions.
+  if (deck.regions.length === 2) {
+    return deck.regions.some((region) => regionContains(region, card))
+  }
+
   const card_counts = addToCardCounts(deck.cardCounts, card)
   return possibleRegionsForCards(card_counts, deck.regions) !== null
 }
@@ -304,10 +304,25 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
  */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   const card_counts = addToCardCounts(deck.cardCounts, card)
-  const new_regions = possibleRegionsForCards(card_counts, deck.regions)
+  let new_regions
+  if (deck.regions.length === 2) {
+    // If the deck only has two possible regions, these must be the two regions
+    // for the deck. We can simply check if this card is in either of those two
+    // regions.
+    if (deck.regions.some((region) => regionContains(region, card))) {
+      new_regions = deck.regions
+    } else {
+      // If neither of the two regions of the deck contain the card, this card
+      // can't be added.
+      return false
+    }
+  } else {
+    // Otherwise, we have to narrow the possible remaining regions.
+    new_regions = possibleRegionsForCards(card_counts, deck.regions)
 
-  if (new_regions === null) {
-    return false
+    if (new_regions === null) {
+      return false
+    }
   }
 
   deck.cardCounts = card_counts

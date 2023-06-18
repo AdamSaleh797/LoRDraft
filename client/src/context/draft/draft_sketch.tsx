@@ -7,7 +7,7 @@ export class DraftSketch {
    * The sketch deck, which reflects the current deck with `addedCards`
    * inserted.
    */
-  deck: DraftDeck
+  readonly deck: DraftDeck
 
   /**
    * A reference to the original `DraftDeck` that this sketch is based off of.
@@ -17,30 +17,42 @@ export class DraftSketch {
   /**
    * A list of cards that have been added to this draft deck.
    */
-  addedCards: Card[]
+  readonly addedCards: readonly Card[]
 
-  constructor(deck: DraftDeck) {
+  constructor(
+    deck: DraftDeck,
+    originalDeck: DraftDeck = deck,
+    addedCards: readonly Card[] = []
+  ) {
     this.deck = deck
-    this.originalDeck = deck
-    this.addedCards = []
+    this.originalDeck = originalDeck
+    this.addedCards = addedCards
   }
 
-  addCardToSketch(card: Card) {
-    if (addCardToDeck(this.deck, card)) {
-      this.addedCards.push(card)
+  addCardToSketch(card: Card): DraftSketch {
+    const deck = copyDraftDeck(this.deck)
+    if (addCardToDeck(deck, card)) {
+      return new DraftSketch(
+        deck,
+        this.originalDeck,
+        this.addedCards.concat([card])
+      )
+    } else {
+      return this
     }
   }
 
   /**
-   * Removes a card from the draft sketch, returning true if the card was able to
-   * be removed.
+   * Removes a card from the draft sketch, returning the new DraftSketch object
+   * that was constructed with the card removed. Will return `this` if the card
+   * did not exist in the sketch.
    */
-  removeCardFromSketch(card: Card): boolean {
+  removeCardFromSketch(card: Card): DraftSketch {
     const idx = this.addedCards.findIndex((added_card) =>
       cardComparator(card, added_card)
     )
     if (idx === -1) {
-      return false
+      return this
     }
 
     const added_cards = this.addedCards.slice()
@@ -58,13 +70,9 @@ export class DraftSketch {
       // Reset the draft sketch. This should never happen, since addedCards
       // have already been verified to fit in the deck, so any subset of them
       // should also fit. But keep this as a failsafe.
-      this.addedCards = []
-      this.deck = this.originalDeck
-      return true
+      return new DraftSketch(this.originalDeck)
     }
 
-    this.addedCards = added_cards
-    this.deck = deck
-    return true
+    return new DraftSketch(deck, this.originalDeck, added_cards)
   }
 }

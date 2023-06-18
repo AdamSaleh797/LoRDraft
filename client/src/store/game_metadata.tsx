@@ -23,21 +23,7 @@ export interface FetchGameMetadataArgs {
   authInfo: AuthInfo
 }
 
-export async function fetchGameMetadataAsync(
-  dispatch: LoRDispatch,
-  args: FetchGameMetadataArgs
-) {
-  await new Promise((resolve) => {
-    const callback = async () => {
-      setTimeout(async () => {
-        resolve(await dispatch(doFetchGameMetadataAsync(args)))
-      }, 10)
-    }
-    callback()
-  })
-}
-
-const doFetchGameMetadataAsync = createAsyncThunk<
+export const doFetchGameMetadataAsync = createAsyncThunk<
   Status<GameMetadata>,
   FetchGameMetadataArgs,
   ThunkAPI

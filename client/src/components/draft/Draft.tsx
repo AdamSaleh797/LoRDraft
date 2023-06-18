@@ -50,7 +50,7 @@ export function DraftComponent(props: DraftProps) {
       <div>
         <DeckList
           draftState={props.draftState}
-          draftSketchManager={sketchManager}
+          draftSketch={sketchManager.sketch()}
           gameMetadata={props.gameMetadata}
         />
       </div>
