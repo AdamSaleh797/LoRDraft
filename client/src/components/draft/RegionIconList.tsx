@@ -5,10 +5,19 @@ import { DraftStateInfo, certainRegionsForDeck } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 
 import { RegionIcon } from 'client/components/draft/RegionIcon'
+import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 
 export interface RegionIconListComponentProps {
   draftState: DraftStateInfo
+  draftSketchManager: DraftSketchManager
   gameMetadata: GameMetadata | null
+}
+
+function filterUnusedRegions(
+  card_regions: readonly Region[],
+  deck_regions: readonly Region[]
+): Region[] {
+  return card_regions.filter((region) => deck_regions.includes(region))
 }
 
 export function RegionIconList(props: RegionIconListComponentProps) {
@@ -42,15 +51,20 @@ export function RegionIconList(props: RegionIconListComponentProps) {
         (certain_regions.includes(b) ? 1 : 0) -
         (certain_regions.includes(a) ? 1 : 0)
     )
-    .map((region) => {
-      return {
-        region,
-        count: props.draftState.deck.cardCounts.reduce(
-          (count, { card }) => count + (card.regions[0] === region ? 1 : 0),
-          0
-        ),
-      }
-    })
+    .map((region) => ({
+      region,
+      count: props.draftState.deck.cardCounts.reduce(
+        (count, { card }) =>
+          count +
+          (filterUnusedRegions(
+            card.regions,
+            props.draftState.deck.regions
+          )[0] === region
+            ? 1
+            : 0),
+        0
+      ),
+    }))
 
   return (
     <div>

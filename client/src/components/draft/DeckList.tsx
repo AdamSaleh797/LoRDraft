@@ -8,9 +8,11 @@ import { isOk } from 'common/util/status'
 
 import { CardDisplay } from 'client/components/draft/CardDisplay'
 import { RegionIconList } from 'client/components/draft/RegionIconList'
+import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo
+  draftSketchManager: DraftSketchManager
   gameMetadata: GameMetadata | null
 }
 
@@ -42,6 +44,7 @@ export function DeckList(props: DeckListComponentProps) {
       </div>
       <RegionIconList
         draftState={props.draftState}
+        draftSketchManager={props.draftSketchManager}
         gameMetadata={props.gameMetadata}
       />
       <br></br>

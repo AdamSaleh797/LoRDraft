@@ -10,6 +10,8 @@ import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { PoolComponent } from 'client/components/draft/PoolComponent'
 import { TypeCounts } from 'client/components/draft/TypeCounts'
+import { DraftSketch } from 'client/context/draft/draft_sketch'
+import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 
 export interface DraftProps {
   socket: LoRDraftClientSocket
@@ -19,12 +21,25 @@ export interface DraftProps {
 }
 
 export function DraftComponent(props: DraftProps) {
+  const [sketch, setSketch] = React.useState<DraftSketch>(
+    new DraftSketch(props.draftState.deck)
+  )
+
+  const sketchManager = new DraftSketchManager(sketch, (sketch) => {
+    setSketch(sketch)
+  })
+
+  React.useEffect(() => {
+    setSketch(new DraftSketch(props.draftState.deck))
+  }, [props.draftState.deck.numCards])
+
   return (
     <div>
       <PoolComponent
         socket={props.socket}
         authInfo={props.authInfo}
         draftState={props.draftState}
+        draftSketchManager={sketchManager}
       />
       <div className={style.deckInfoDisplay}>
         <ManaCurve draftState={props.draftState} />
@@ -35,6 +50,7 @@ export function DraftComponent(props: DraftProps) {
       <div>
         <DeckList
           draftState={props.draftState}
+          draftSketchManager={sketchManager}
           gameMetadata={props.gameMetadata}
         />
       </div>

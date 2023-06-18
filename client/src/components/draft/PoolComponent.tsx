@@ -1,12 +1,13 @@
 import React from 'react'
 
-import { Card } from 'common/game/card'
+import { Card, cardComparator as cardsEq } from 'common/game/card'
 import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { isOk } from 'common/util/status'
 
 import { Button } from 'client/components/common/button'
 import { CardComponent } from 'client/components/draft/Card'
+import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
 import { useLoRDispatch } from 'client/store/hooks'
 
@@ -14,23 +15,19 @@ export interface PoolComponentProps {
   socket: LoRDraftClientSocket
   authInfo: AuthInfo
   draftState: DraftStateInfo
+  draftSketchManager: DraftSketchManager
 }
 
 export function PoolComponent(props: PoolComponentProps) {
-  const [selected, setSelected] = React.useState<string[]>([])
-  const setSelectedRef = React.useRef<typeof setSelected>(setSelected)
   const dispatch = useLoRDispatch()
 
-  const cards: (Card | null)[] = props.draftState.pendingCards
-
-  setSelectedRef.current = setSelected
+  const cards = props.draftState.pendingCards
+  const selected_cards = props.draftSketchManager.sketch().addedCards
 
   function confirm() {
-    const revertedCards = selected.map(
-      (cardCode) =>
-        cards.find(
-          (card) => card !== null && card.cardCode === cardCode
-        ) as Card
+    const revertedCards = selected_cards.map(
+      (chosen_card) =>
+        cards.find((card) => cardsEq(card, chosen_card)) ?? (undefined as never)
     )
     chooseCards(revertedCards)
   }
@@ -61,7 +58,7 @@ export function PoolComponent(props: PoolComponentProps) {
       choose_cards_action.payload !== undefined &&
       isOk(choose_cards_action.payload)
     ) {
-      setSelectedRef.current([])
+      // setSelectedRef.current([])
     }
   }
 
@@ -77,25 +74,24 @@ export function PoolComponent(props: PoolComponentProps) {
   return (
     <div>
       {cards.map((card, index) => {
+        const is_selected = selected_cards.some((selected_card) =>
+          cardsEq(selected_card, card)
+        )
+
         function select() {
-          if (card === null) {
-            return
+          if (is_selected) {
+            props.draftSketchManager.removeCard(card)
+          } else {
+            props.draftSketchManager.addCard(card)
           }
-          selected.includes(card.cardCode)
-            ? setSelected(
-                selected.filter((cardCode) => cardCode !== card.cardCode)
-              )
-            : setSelected(selected.concat(card.cardCode))
         }
 
         return (
           <CardComponent
-            key={`${index}${card?.cardCode ?? ''}`}
+            key={`${index}${card.cardCode}`}
             card={card}
             numCards={cards.length}
-            isSelected={
-              card !== null && selected.includes(card.cardCode) ? true : false
-            }
+            isSelected={is_selected}
             select={select}
           />
         )

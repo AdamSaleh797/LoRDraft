@@ -126,11 +126,9 @@ export function makeDraftDeck(
 export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
   return {
     regions: draft_deck.regions.slice(),
-    cardCounts: draft_deck.cardCounts.map((card_count) => {
-      return {
-        ...card_count,
-      }
-    }),
+    cardCounts: draft_deck.cardCounts.map((card_count) => ({
+      ...card_count,
+    })),
     numCards: draft_deck.numCards,
     deckCode: draft_deck.deckCode,
     options: draft_deck.options,
@@ -157,9 +155,7 @@ function possibleRegionPairs(
 
   const initial_regions_in_deck = possible_regions.reduce<
     Partial<Record<Region, number>>
-  >((map, region) => {
-    return { ...map, [region]: 0 }
-  }, {})
+  >((map, region) => ({ ...map, [region]: 0 }), {})
   const regions_in_deck = card_counts.reduce<Partial<Record<Region, number>>>(
     (map, card_count) => {
       possible_regions.forEach((region) => {

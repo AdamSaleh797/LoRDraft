@@ -4,7 +4,7 @@ import { GameMetadata } from 'common/game/metadata'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { Status, isOk } from 'common/util/status'
 
-import { RootState } from 'client/store'
+import { LoRDispatch, RootState } from 'client/store'
 import { ThunkAPI, makeThunkPromise } from 'client/store/util'
 
 const enum GameMetadataState {
@@ -38,7 +38,21 @@ export interface FetchGameMetadataArgs {
   authInfo: AuthInfo
 }
 
-export const doFetchGameMetadataAsync = createAsyncThunk<
+export async function fetchGameMetadataAsync(
+  dispatch: LoRDispatch,
+  args: FetchGameMetadataArgs
+) {
+  await new Promise((resolve) => {
+    const callback = async () => {
+      setTimeout(async () => {
+        resolve(await dispatch(doFetchGameMetadataAsync(args)))
+      }, 10)
+    }
+    callback()
+  })
+}
+
+const doFetchGameMetadataAsync = createAsyncThunk<
   Status<GameMetadata>,
   FetchGameMetadataArgs,
   ThunkAPI
