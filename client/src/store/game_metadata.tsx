@@ -4,7 +4,7 @@ import { GameMetadata } from 'common/game/metadata'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { Status, isOk } from 'common/util/status'
 
-import { LoRDispatch, RootState } from 'client/store'
+import { RootState } from 'client/store'
 import { ThunkAPI, makeThunkPromise } from 'client/store/util'
 
 const enum GameMetadataState {
