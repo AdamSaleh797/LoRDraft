@@ -1,15 +1,57 @@
 import React from 'react'
 
 import { Card, cardComparator as cardsEq } from 'common/game/card'
-import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
+import {
+  DraftState,
+  DraftStateInfo,
+  canAddToDeck,
+  draftStateCardLimits,
+} from 'common/game/draft'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
-import { isOk } from 'common/util/status'
 
 import { Button } from 'client/components/common/button'
 import { CardComponent } from 'client/components/draft/Card'
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
 import { useLoRDispatch } from 'client/store/hooks'
+
+/**
+ * Before selecting the card, will unselect as many cards as necessary from the
+ * draft sketch until card can be selected without going over the state's card
+ * limit or the card conflicting with other selected cards.
+ */
+function smartSelect(
+  draft_sketch_manager: DraftSketchManager,
+  card: Card,
+  draft_state: DraftState,
+  is_selected: boolean
+) {
+  if (is_selected) {
+    draft_sketch_manager.removeCard(card)
+  } else {
+    const min_max = draftStateCardLimits(draft_state)
+    if (min_max === null) {
+      return
+    }
+
+    let sketch = draft_sketch_manager.sketch()
+    const cards_to_remove = []
+
+    // If the round max number of cards have already been chosen, remove
+    // the least-recently-added card, continue to do so while the card
+    // selected is incompatible with the deck.
+    while (
+      sketch.addedCards.length >= min_max[1] ||
+      (sketch.addedCards.length > 0 && !canAddToDeck(sketch.deck, card))
+    ) {
+      cards_to_remove.push(sketch.addedCards[0])
+      sketch = sketch.removeCardFromSketch(sketch.addedCards[0])
+    }
+
+    draft_sketch_manager.removeCards(cards_to_remove)
+    draft_sketch_manager.addCard(card)
+  }
+}
 
 export interface PoolComponentProps {
   socket: LoRDraftClientSocket
@@ -45,21 +87,13 @@ export function PoolComponent(props: PoolComponentProps) {
       return
     }
 
-    const choose_cards_action = await dispatch(
+    dispatch(
       doChooseDraftCardsAsync({
         socket: props.socket,
         authInfo: props.authInfo,
         cards: revertedCards,
       })
     )
-
-    // If the cards were successfully chosen, then reset the selected cards.
-    if (
-      choose_cards_action.payload !== undefined &&
-      isOk(choose_cards_action.payload)
-    ) {
-      // setSelectedRef.current([])
-    }
   }
 
   function exitDraft() {
@@ -78,12 +112,13 @@ export function PoolComponent(props: PoolComponentProps) {
           cardsEq(selected_card, card)
         )
 
-        function select() {
-          if (is_selected) {
-            props.draftSketchManager.removeCard(card)
-          } else {
-            props.draftSketchManager.addCard(card)
-          }
+        const doSelect = () => {
+          smartSelect(
+            props.draftSketchManager,
+            card,
+            props.draftState.state,
+            is_selected
+          )
         }
 
         return (
@@ -92,7 +127,7 @@ export function PoolComponent(props: PoolComponentProps) {
             card={card}
             numCards={cards.length}
             isSelected={is_selected}
-            select={select}
+            select={doSelect}
           />
         )
       })}

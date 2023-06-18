@@ -75,4 +75,32 @@ export class DraftSketch {
 
     return new DraftSketch(deck, this.originalDeck, added_cards)
   }
+
+  /**
+   * Removes a set of cards from the draft sketch, returning the new DraftSketch
+   * object that was constructed with the card removed. Will ignore cards which
+   * aren't in the draft but were in `cards`.
+   */
+  removeCardsFromSketch(cards: Card[]): DraftSketch {
+    const remaining = this.addedCards.filter(
+      (card) => cards.find((c) => cardComparator(card, c)) === undefined
+    )
+
+    // Copy the deck and re-insert all remaining added cards.
+    const deck = copyDraftDeck(this.originalDeck)
+    if (
+      remaining.some((card) => {
+        // If any card can't be added for some reason, terminate the loop
+        // early.
+        return !addCardToDeck(deck, card)
+      })
+    ) {
+      // Reset the draft sketch. This should never happen, since addedCards
+      // have already been verified to fit in the deck, so any subset of them
+      // should also fit. But keep this as a failsafe.
+      return new DraftSketch(this.originalDeck)
+    }
+
+    return new DraftSketch(deck, this.originalDeck, remaining)
+  }
 }

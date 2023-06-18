@@ -53,19 +53,25 @@ export function RegionIconList(props: RegionIconListComponentProps) {
 
   const region_counts = props.draftSketch.deck.cardCounts.reduce<
     Partial<Record<Region, number>>
-  >((region_counts, card_count) => {
-    const region = regions_to_render.find((region) =>
-      regionContains(region, card_count.card)
-    )
-    if (region === undefined) {
-      return region_counts
-    }
+  >(
+    (region_counts, card_count) => {
+      const region = regions_to_render.find((region) =>
+        regionContains(region, card_count.card)
+      )
+      if (region === undefined) {
+        return region_counts
+      }
 
-    return {
-      ...region_counts,
-      [region]: (region_counts[region] ?? 0) + card_count.count,
-    }
-  }, {})
+      return {
+        ...region_counts,
+        [region]: (region_counts[region] ?? 0) + card_count.count,
+      }
+    },
+    regions_to_render.reduce(
+      (region_counts, region) => ({ ...region_counts, [region]: 0 }),
+      {}
+    )
+  )
 
   return (
     <div>

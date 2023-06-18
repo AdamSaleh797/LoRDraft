@@ -27,4 +27,9 @@ export class DraftSketchManager {
     this.sketch_ = this.sketch_.removeCardFromSketch(card)
     this.update_callback_(this.sketch_)
   }
+
+  removeCards(cards: Card[]) {
+    this.sketch_ = this.sketch_.removeCardsFromSketch(cards)
+    this.update_callback_(this.sketch_)
+  }
 }

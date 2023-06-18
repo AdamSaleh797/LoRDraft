@@ -1,12 +1,5 @@
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import {
-  Array as ArrayT,
-  Null,
-  Number,
-  Record as RecordT,
-  String,
-  Union,
-} from 'runtypes'
+import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
 
 import {
   Card,
@@ -59,14 +52,12 @@ export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
   cardCounts: ArrayT(CardCountT),
   numCards: Number,
-  deckCode: Union(String, Null),
 })
 
 export interface DraftDeck {
   regions: Region[]
   cardCounts: CardCount[]
   numCards: number
-  deckCode: string | null
   readonly options: DraftOptions
 }
 
@@ -112,7 +103,6 @@ export function makeDraftDeck(
     regions: allRegions(),
     cardCounts: [],
     numCards: 0,
-    deckCode: null,
     options: options,
   }
 
@@ -130,7 +120,6 @@ export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
       ...card_count,
     })),
     numCards: draft_deck.numCards,
-    deckCode: draft_deck.deckCode,
     options: draft_deck.options,
   }
 }
@@ -399,16 +388,11 @@ export function getDeckCode(deck: DraftDeck): Status<string> {
       `Cannot generate deck code for deck, expect ${CARDS_PER_DECK} cards, found ${deck.numCards}.`
     )
   }
-  if (deck.deckCode !== null) {
-    return makeOkStatus(deck.deckCode)
-  }
 
   const deckcodes_deck = deck.cardCounts.map((card_count) => ({
     cardCode: card_count.card.cardCode,
     count: card_count.count,
   }))
 
-  const code = getCodeFromDeck(deckcodes_deck)
-  deck.deckCode = code
-  return makeOkStatus(code)
+  return makeOkStatus(getCodeFromDeck(deckcodes_deck))
 }
