@@ -2,46 +2,22 @@ import React from 'react'
 
 import style from './modal.module.css'
 
-import { LoRDraftClientSocket } from 'common/game/socket-msgs'
-
-import { SignInComponent } from 'client/components/auth/SignInComponent'
-import { UserComponent } from 'client/components/auth/UserInfoComponent'
 import { Button } from 'client/components/common/button'
-import { useLoRSelector } from 'client/store/hooks'
-import { isSignedIn, selectSessionState } from 'client/store/session'
 
 export interface ModalProps {
+  title: string
   setOpenModal: (b: boolean) => void
-  socket: LoRDraftClientSocket
+  children: React.ReactNode
 }
 
 export function Modal(props: ModalProps) {
-  const session_state = useLoRSelector(selectSessionState)
-
   return (
     <div className={style.modalBackground}>
       <div className={style.modalContainer}>
-        <Button
-          onClick={() => {
-            props.setOpenModal(false)
-          }}
-        >
-          Close &times;
-        </Button>
-
         <div className={style.title}>
-          <h3>Login | Registration</h3>
+          <h4>{props.title}</h4>
         </div>
-        <div className={style.body}>
-          {isSignedIn(session_state) ? (
-            <UserComponent
-              socket={props.socket}
-              authInfo={session_state.authInfo}
-            />
-          ) : (
-            <SignInComponent socket={props.socket} />
-          )}
-        </div>
+        <div className={style.body}>{props.children}</div>
         <div className={style.footer}>
           <Button
             className={style.cancelBtn}

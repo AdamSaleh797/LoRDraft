@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 
 import style from './App.module.css'
 
+import { SignInComponent } from 'client/components/auth/SignInComponent'
+import { UserComponent } from 'client/components/auth/UserInfoComponent'
 import { Button } from 'client/components/common/button'
 import { Header } from 'client/components/common/header'
 import { Layout } from 'client/components/common/layout'
@@ -42,7 +44,18 @@ export default function App() {
           Login
         </Button>
         {modalOpen && (
-          <Modal setOpenModal={setModalOpen} socket={socket_ref.current} />
+          <Modal title='Login | Registration' setOpenModal={setModalOpen}>
+            <div>
+              {isSignedIn(session_state) ? (
+                <UserComponent
+                  socket={socket_ref.current}
+                  authInfo={session_state.authInfo}
+                />
+              ) : (
+                <SignInComponent socket={socket_ref.current} />
+              )}
+            </div>
+          </Modal>
         )}
       </Header>
       <Layout>
