@@ -1,5 +1,12 @@
-.deckList {
+.deckListContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(327px, 1fr));
+  grid-gap: 10px;
+}
+
+.cardDisplayContainer {
   aspect-ratio: 190 / 35;
+  width: 327px;
   display: inline-block;
 }
 

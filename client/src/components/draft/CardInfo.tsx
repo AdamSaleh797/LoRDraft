@@ -24,11 +24,15 @@ export function CardInfo(props: CardDisplayProps) {
   }
   return (
     <div className={`${style.fade} ${regionColorStyle}`}>
-      <div className={style.cost}>{props.card.cost}</div>
+      <div className={style.cost}>
+        <div className={style.costContainer}>{props.card.cost}</div>
+      </div>
       <div className={style.name}>{props.card.name}</div>
       <div className={style.count}>
-        {findCardCount(props.draftState.deck.cardCounts, props.card)?.count ??
-          0}
+        <div className={style.countContainer}>
+          {findCardCount(props.draftState.deck.cardCounts, props.card)?.count ??
+            0}
+        </div>
       </div>
     </div>
   )

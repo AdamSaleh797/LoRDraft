@@ -21,7 +21,11 @@ export function CardDisplay(props: CardDisplayProps) {
       <div className={style.fadeContainer}>
         <CardInfo card={props.card} draftState={props.draftState} />
         <img
-          className={style.image}
+          className={
+            ['Spell', 'Equipment'].includes(props.card.type)
+              ? style.circleImage
+              : style.rectangleImage
+          }
           src={props.card.fullImageUrl}
           alt={props.card.name}
         ></img>
