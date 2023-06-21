@@ -1,12 +1,5 @@
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import {
-  Array as ArrayT,
-  Null,
-  Number,
-  Record as RecordT,
-  String,
-  Union,
-} from 'runtypes'
+import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
 
 import {
   Card,
@@ -59,14 +52,12 @@ export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
   cardCounts: ArrayT(CardCountT),
   numCards: Number,
-  deckCode: Union(String, Null),
 })
 
 export interface DraftDeck {
   regions: Region[]
   cardCounts: CardCount[]
   numCards: number
-  deckCode: string | null
   readonly options: DraftOptions
 }
 
@@ -112,7 +103,6 @@ export function makeDraftDeck(
     regions: allRegions(),
     cardCounts: [],
     numCards: 0,
-    deckCode: null,
     options: options,
   }
 
@@ -126,13 +116,10 @@ export function makeDraftDeck(
 export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
   return {
     regions: draft_deck.regions.slice(),
-    cardCounts: draft_deck.cardCounts.map((card_count) => {
-      return {
-        ...card_count,
-      }
-    }),
+    cardCounts: draft_deck.cardCounts.map((card_count) => ({
+      ...card_count,
+    })),
     numCards: draft_deck.numCards,
-    deckCode: draft_deck.deckCode,
     options: draft_deck.options,
   }
 }
@@ -151,15 +138,9 @@ function possibleRegionPairs(
   card_counts: CardCount[],
   possible_regions: Region[]
 ): [Region, Region][] {
-  if (possible_regions.length === 2) {
-    return [possible_regions as [Region, Region]]
-  }
-
   const initial_regions_in_deck = possible_regions.reduce<
     Partial<Record<Region, number>>
-  >((map, region) => {
-    return { ...map, [region]: 0 }
-  }, {})
+  >((map, region) => ({ ...map, [region]: 0 }), {})
   const regions_in_deck = card_counts.reduce<Partial<Record<Region, number>>>(
     (map, card_count) => {
       possible_regions.forEach((region) => {
@@ -223,10 +204,6 @@ function possibleRegionsForCards(
   card_counts: CardCount[],
   possible_regions: Region[]
 ): Region[] | null {
-  if (possible_regions.length === 2) {
-    return possible_regions
-  }
-
   const region_set = new Set<Region>()
   possibleRegionPairs(card_counts, possible_regions).forEach(
     ([region1, region2]) => {
@@ -295,6 +272,14 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
   ) {
     return false
   }
+
+  // If the deck only has two possible regions, these must be the two regions
+  // for the deck. We can simply check if this card is in either of those two
+  // regions.
+  if (deck.regions.length === 2) {
+    return deck.regions.some((region) => regionContains(region, card))
+  }
+
   const card_counts = addToCardCounts(deck.cardCounts, card)
   return possibleRegionsForCards(card_counts, deck.regions) !== null
 }
@@ -308,10 +293,25 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
  */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   const card_counts = addToCardCounts(deck.cardCounts, card)
-  const new_regions = possibleRegionsForCards(card_counts, deck.regions)
+  let new_regions
+  if (deck.regions.length === 2) {
+    // If the deck only has two possible regions, these must be the two regions
+    // for the deck. We can simply check if this card is in either of those two
+    // regions.
+    if (deck.regions.some((region) => regionContains(region, card))) {
+      new_regions = deck.regions
+    } else {
+      // If neither of the two regions of the deck contain the card, this card
+      // can't be added.
+      return false
+    }
+  } else {
+    // Otherwise, we have to narrow the possible remaining regions.
+    new_regions = possibleRegionsForCards(card_counts, deck.regions)
 
-  if (new_regions === null) {
-    return false
+    if (new_regions === null) {
+      return false
+    }
   }
 
   deck.cardCounts = card_counts
@@ -388,16 +388,11 @@ export function getDeckCode(deck: DraftDeck): Status<string> {
       `Cannot generate deck code for deck, expect ${CARDS_PER_DECK} cards, found ${deck.numCards}.`
     )
   }
-  if (deck.deckCode !== null) {
-    return makeOkStatus(deck.deckCode)
-  }
 
   const deckcodes_deck = deck.cardCounts.map((card_count) => ({
     cardCode: card_count.card.cardCode,
     count: card_count.count,
   }))
 
-  const code = getCodeFromDeck(deckcodes_deck)
-  deck.deckCode = code
-  return makeOkStatus(code)
+  return makeOkStatus(getCodeFromDeck(deckcodes_deck))
 }

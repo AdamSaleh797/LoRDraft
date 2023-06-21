@@ -238,6 +238,10 @@ export function selectDraftState(state: RootState) {
   return state.draft
 }
 
+export function selectDraftStateDeck(state: RootState) {
+  return state.draft.state?.deck
+}
+
 export const { clearDraftState } = draftStateSlice.actions
 
 export default draftStateSlice.reducer
