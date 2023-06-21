@@ -1,0 +1,32 @@
+.typeCategory {
+  display: block;
+}
+
+.cardDisplayContainer {
+  aspect-ratio: 190 / 35;
+  width: 327px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.categoryLabel {
+  font-weight: 600;
+  display: flex;
+}
+
+.categoryIcon {
+  display: flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.categoryName {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.categoryCount {
+  display: flex;
+  align-items: center;
+}
