@@ -28,6 +28,7 @@ export function RegionIconList(props: RegionIconListComponentProps) {
     props.draftSketch.deck.regions.every((region) => isOrigin(region)) &&
     props.draftSketch.deck.regions.length === 2
 
+  // TODO always include certain runeterran regions
   const certain_regions = certainRegionsForDeck(props.draftSketch.deck)
 
   const regions_to_render = (mainRegions() as Region[])
