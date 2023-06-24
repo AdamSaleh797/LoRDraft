@@ -18,6 +18,7 @@ export function CardDisplay(props: CardDisplayProps) {
   }
   return (
     <div className={style.display}>
+      <img src={props.card.imageUrl} className={style.hoverImage} />
       <div className={style.fadeContainer}>
         <CardInfo card={props.card} draftState={props.draftState} />
         <img

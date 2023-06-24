@@ -1,5 +1,7 @@
 import React from 'react'
 
+import style from './PoolComponent.module.css'
+
 import { Card, cardComparator as cardsEq } from 'common/game/card'
 import {
   DraftState,
@@ -106,33 +108,36 @@ export function PoolComponent(props: PoolComponentProps) {
   }
 
   return (
-    <div>
-      {cards.map((card, index) => {
-        const is_selected = selected_cards.some((selected_card) =>
-          cardsEq(selected_card, card)
-        )
-
-        const doSelect = () => {
-          smartSelect(
-            props.draftSketchManager,
-            card,
-            props.draftState.state,
-            is_selected
+    <div className={style.poolComponent}>
+      <div className={style.cardContainer}>
+        {cards.map((card, index) => {
+          const is_selected = selected_cards.some((selected_card) =>
+            cardsEq(selected_card, card)
           )
-        }
 
-        return (
-          <CardComponent
-            key={`${index}${card.cardCode}`}
-            card={card}
-            numCards={cards.length}
-            isSelected={is_selected}
-            select={doSelect}
-          />
-        )
-      })}
-      <Button onClick={confirm}>CONFIRM!</Button>
-      <Button onClick={exitDraft}>EXIT!</Button>
+          const doSelect = () => {
+            smartSelect(
+              props.draftSketchManager,
+              card,
+              props.draftState.state,
+              is_selected
+            )
+          }
+          return (
+            <CardComponent
+              key={`${index}${card.cardCode}`}
+              card={card}
+              numCards={cards.length}
+              isSelected={is_selected}
+              select={doSelect}
+            />
+          )
+        })}
+      </div>
+      <div className={style.buttonContainer}>
+        <Button onClick={confirm}>CONFIRM!</Button>
+        <Button onClick={exitDraft}>EXIT!</Button>
+      </div>
     </div>
   )
 }

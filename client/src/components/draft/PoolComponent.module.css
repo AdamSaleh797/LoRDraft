@@ -1,0 +1,13 @@
+.poolComponent {
+  margin-bottom: 20px;
+}
+
+.cardContainer {
+  display: flex;
+  width: 100%;
+}
+
+.buttonContainer {
+  display: inline-block;
+  width: 20%;
+}
