@@ -9,7 +9,6 @@ import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { PoolComponent } from 'client/components/draft/PoolComponent'
-import { TypeCounts } from 'client/components/draft/TypeCounts'
 import { DraftSketch } from 'client/context/draft/draft_sketch'
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 
@@ -46,11 +45,11 @@ export function DraftComponent(props: DraftProps) {
         draftSketchManager={sketchManager}
       />
       <div className={style.deckInfoDisplay}>
-        <ManaCurve draftState={props.draftState} />
+        <ManaCurve draftSketch={sketchManager.sketch()} />
       </div>
-      <div className={style.deckInfoDisplay}>
-        <TypeCounts draftState={props.draftState} />
-      </div>
+      {/* <div className={style.deckInfoDisplay}>
+        <TypeCounts draftSketch={sketchManager.sketch()} />
+      </div> */}
       <div>
         <DeckList
           draftState={props.draftState}

@@ -2,7 +2,6 @@ import React from 'react'
 
 import style from './DeckList.module.css'
 
-import { Card } from 'common/game/card'
 import {
   CARDS_PER_DECK,
   CardCount,
@@ -12,36 +11,18 @@ import {
 import { GameMetadata } from 'common/game/metadata'
 import { isOk } from 'common/util/status'
 
-import { CardDisplay } from 'client/components/draft/CardDisplay'
 import { RegionIconList } from 'client/components/draft/RegionIconList'
+import {
+  CardCategory,
+  TypeCategory,
+  cardType,
+} from 'client/components/draft/TypeCategory'
 import { DraftSketch } from 'client/context/draft/draft_sketch'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo
   draftSketch: DraftSketch
   gameMetadata: GameMetadata | null
-}
-
-type CardCategory = 'Champion' | 'Follower' | 'Spell' | 'Landmark' | 'Equipment'
-
-function cardType(card: Card): CardCategory {
-  switch (card.type) {
-    case 'Unit':
-      if (card.rarity === 'Champion') {
-        return 'Champion'
-      } else {
-        return 'Follower'
-      }
-    case 'Spell':
-      return 'Spell'
-    case 'Landmark':
-      return 'Landmark'
-    case 'Equipment':
-      return 'Equipment'
-    case 'Ability':
-    case 'Trap':
-      throw Error('Uncollectable card found in deck')
-  }
 }
 
 export function DeckList(props: DeckListComponentProps) {
@@ -79,25 +60,21 @@ export function DeckList(props: DeckListComponentProps) {
     <div>
       <div className={style.deckCode}>{deckCode === null ? [] : deckCode}</div>
       <RegionIconList
-        draftState={props.draftState}
         draftSketch={props.draftSketch}
         gameMetadata={props.gameMetadata}
       />
       <br></br>
-      {Object.entries(typeCategories).map(([_category, cardCounts]) => (
-        //TODO: Use category
-        <div className={style.deckListContainer}>
-          {cardCounts.map((cardCount) => (
-            <div className={style.cardDisplayContainer}>
-              <CardDisplay
-                key={cardCount.card.cardCode}
-                card={cardCount.card}
-                draftState={props.draftState}
-              />
-            </div>
-          ))}
-        </div>
-      ))}
+      <div>
+        {Object.entries(typeCategories).map(([category, cardCounts]) => (
+          <div className={style.typeCategoryContainer}>
+            <TypeCategory
+              draftState={props.draftState}
+              category={category as CardCategory}
+              cardCounts={cardCounts}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
