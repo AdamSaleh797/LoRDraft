@@ -9,9 +9,16 @@
   display: inline-block;
 }
 
+.cardDisplayContainer:nth-child(2) {
+}
+
 .categoryLabel {
   font-weight: 600;
   display: flex;
+  border-bottom: 1px solid black;
+  border-width: 0 0 2px 0;
+  width: 327px;
+  margin-bottom: 10px;
 }
 
 .categoryIcon {
@@ -23,10 +30,11 @@
 .categoryName {
   display: flex;
   align-items: center;
-  margin-right: 20px;
 }
 
 .categoryCount {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  width: 100%;
 }
