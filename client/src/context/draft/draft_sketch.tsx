@@ -2,6 +2,11 @@ import { Card, cardComparator } from 'common/game/card'
 import { DraftDeck, copyDraftDeck } from 'common/game/draft'
 import { addCardToDeck } from 'common/game/draft'
 
+/**
+ * The draft sketch is a representation of the current draft with pending cards
+ * added to it. It is meant to manage the smart selection logic when choosing
+ * cards from the pool of available cards.
+ */
 export class DraftSketch {
   /**
    * The sketch deck, which reflects the current deck with `addedCards`
