@@ -2,7 +2,6 @@ import React from 'react'
 
 import {
   Region,
-  isOrigin,
   mainRegions,
   originRegions,
   regionContains,
