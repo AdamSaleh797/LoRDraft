@@ -133,40 +133,6 @@ export function randSampleNumbers(
 }
 
 /**
- * @param size The number of numbers to choose from.
- * @param samples The number of samples to take. This cannot exceed `size`.
- * @returns A list of numbers sampled randomly from [0, size) with no repeats if
- *   possible, otherwise with minimal skew in the distribution of chosen values.
- */
-export function randSampleNumbersAvoidingRepeats(
-  size: number,
-  samples: number
-): number[] {
-  if (samples === 0) {
-    return []
-  }
-
-  const n_repeats = Math.floor(samples / size)
-  samples = samples % size
-
-  const broadcast: number[] = Array.from({ length: size }, (_1, i) =>
-    Array(n_repeats).fill(i)
-  ).flat(1) as number[]
-
-  const sample_idx = new Array<number>(samples).fill(-1)
-
-  sample_idx.forEach((_1, idx, self) => {
-    let rand_idx
-    do {
-      rand_idx = Math.floor(Math.random() * size)
-    } while (self.includes(rand_idx))
-    self[idx] = rand_idx
-  })
-
-  return broadcast.concat(sample_idx)
-}
-
-/**
  * Narrows an object to include only fields of the type `type`, discarding the other fields.
  * @param type
  * @param obj
@@ -312,4 +278,21 @@ export function keyInUnknown<Key extends string | number>(
  */
 export function isArray(obj: unknown): obj is unknown[] {
   return Array.isArray(obj)
+}
+
+export function arrayContains<T>(
+  array: T[],
+  predicate: (element: T) => boolean
+): boolean {
+  return array.some((element) => predicate(element))
+}
+
+export function arrayCount<T>(
+  array: T[],
+  predicate: (element: T) => boolean
+): number {
+  return array.reduce(
+    (count, element) => count + (predicate(element) ? 1 : 0),
+    0
+  )
 }

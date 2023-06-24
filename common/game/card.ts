@@ -281,6 +281,6 @@ export function isChampion(card: Card): boolean {
   return card.rarity === 'Champion'
 }
 
-export function cardComparator(card1: Card, card2: Card): boolean {
+export function cardsEqual(card1: Card, card2: Card): boolean {
   return card1.cardCode === card2.cardCode
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Card, cardComparator as cardsEq } from 'common/game/card'
+import { Card, cardsEqual as cardsEq, cardsEqual } from 'common/game/card'
 import {
   DraftState,
   DraftStateInfo,
@@ -69,7 +69,8 @@ export function PoolComponent(props: PoolComponentProps) {
   function confirm() {
     const revertedCards = selected_cards.map(
       (chosen_card) =>
-        cards.find((card) => cardsEq(card, chosen_card)) ?? (undefined as never)
+        cards.find((card) => cardsEqual(card, chosen_card)) ??
+        (undefined as never)
     )
     chooseCards(revertedCards)
   }
