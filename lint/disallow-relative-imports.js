@@ -37,10 +37,7 @@ module.exports = {
           node.source.value.startsWith('.')
         ) {
           // Allow relative imports if module stylesheets.
-          if (
-            node.source.value ===
-            `./${stripExt(path.basename(context.filename))}.module.css`
-          ) {
+          if (node.source.value.endsWith('.module.css')) {
             return
           }
 

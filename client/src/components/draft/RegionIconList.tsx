@@ -7,14 +7,13 @@ import {
   originRegions,
   regionContains,
 } from 'common/game/card'
-import { DraftStateInfo, certainRegionsForDeck } from 'common/game/draft'
+import { certainRegionsForDeck } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 
 import { RegionIcon } from 'client/components/draft/RegionIcon'
 import { DraftSketch } from 'client/context/draft/draft_sketch'
 
 export interface RegionIconListComponentProps {
-  draftState: DraftStateInfo
   draftSketch: DraftSketch
   gameMetadata: GameMetadata | null
 }
