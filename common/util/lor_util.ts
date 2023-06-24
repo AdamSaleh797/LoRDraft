@@ -280,13 +280,6 @@ export function isArray(obj: unknown): obj is unknown[] {
   return Array.isArray(obj)
 }
 
-export function arrayContains<T>(
-  array: T[],
-  predicate: (element: T) => boolean
-): boolean {
-  return array.some((element) => predicate(element))
-}
-
 export function arrayCount<T>(
   array: T[],
   predicate: (element: T) => boolean
