@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Card, cardsEqual as cardsEq, cardsEqual } from 'common/game/card'
+import { Card, cardsEqual } from 'common/game/card'
 import {
   DraftState,
   DraftStateInfo,
@@ -110,7 +110,7 @@ export function PoolComponent(props: PoolComponentProps) {
     <div>
       {cards.map((card, index) => {
         const is_selected = selected_cards.some((selected_card) =>
-          cardsEq(selected_card, card)
+          cardsEqual(selected_card, card)
         )
 
         const doSelect = () => {
