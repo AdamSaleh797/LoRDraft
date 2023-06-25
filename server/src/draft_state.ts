@@ -403,13 +403,14 @@ function randomChampCards(
       [0, []]
     )
 
-    // Ineligible cards are cards that, if chosen, would trigger a re-pick.
+    // Ineligible champs are cards that, if chosen, would trigger a re-pick.
     // These must match the conditions checked in the loop below, otherwise it
     // is possible to attempt choosing more cards than possible.
-    const ineligible_cards = restriction_pool.concat(
+    const ineligible_champs = restriction_pool.concat(
       deck.cardCounts
         .filter(
           ({ card }) =>
+            isChampion(card) &&
             !canAddToDeck(deck, card) &&
             !restriction_pool.some((res_card) => cardsEqual(res_card, card))
         )
@@ -421,7 +422,7 @@ function randomChampCards(
       region_pool.reduce(
         (count, region) =>
           count +
-          arrayCount(ineligible_cards, (card) => regionContains(region, card)),
+          arrayCount(ineligible_champs, (card) => regionContains(region, card)),
         0
       )
     // TODO: total_eligible_champ_count still double counts eligible
