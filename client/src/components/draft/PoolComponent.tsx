@@ -11,11 +11,8 @@ import {
 } from 'common/game/draft'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
-import { Button } from 'client/components/common/button'
 import { CardComponent } from 'client/components/draft/Card'
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
-import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
-import { useLoRDispatch } from 'client/store/hooks'
 
 /**
  * Before selecting the card, will unselect as many cards as necessary from the
@@ -63,50 +60,8 @@ export interface PoolComponentProps {
 }
 
 export function PoolComponent(props: PoolComponentProps) {
-  const dispatch = useLoRDispatch()
-
   const cards = props.draftState.pendingCards
   const selected_cards = props.draftSketchManager.sketch().addedCards
-
-  function confirm() {
-    const revertedCards = selected_cards.map(
-      (chosen_card) =>
-        cards.find((card) => cardsEqual(card, chosen_card)) ??
-        (undefined as never)
-    )
-    chooseCards(revertedCards)
-  }
-
-  async function chooseCards(revertedCards: Card[]) {
-    const min_max = draftStateCardLimits(props.draftState.state)
-    if (min_max === null) {
-      return
-    }
-
-    if (
-      min_max[0] > revertedCards.length &&
-      min_max[1] < revertedCards.length
-    ) {
-      return
-    }
-
-    dispatch(
-      doChooseDraftCardsAsync({
-        socket: props.socket,
-        authInfo: props.authInfo,
-        cards: revertedCards,
-      })
-    )
-  }
-
-  function exitDraft() {
-    dispatch(
-      doExitDraftAsync({
-        socket: props.socket,
-        authInfo: props.authInfo,
-      })
-    )
-  }
 
   return (
     <div className={style.poolComponent}>
@@ -134,10 +89,6 @@ export function PoolComponent(props: PoolComponentProps) {
             />
           )
         })}
-      </div>
-      <div className={style.buttonContainer}>
-        <Button onClick={confirm}>CONFIRM!</Button>
-        <Button onClick={exitDraft}>EXIT!</Button>
       </div>
     </div>
   )
