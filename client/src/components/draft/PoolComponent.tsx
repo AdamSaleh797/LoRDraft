@@ -2,7 +2,7 @@ import React from 'react'
 
 import style from './PoolComponent.module.css'
 
-import { Card, cardComparator as cardsEq } from 'common/game/card'
+import { Card, cardsEqual } from 'common/game/card'
 import {
   DraftState,
   DraftStateInfo,
@@ -71,7 +71,8 @@ export function PoolComponent(props: PoolComponentProps) {
   function confirm() {
     const revertedCards = selected_cards.map(
       (chosen_card) =>
-        cards.find((card) => cardsEq(card, chosen_card)) ?? (undefined as never)
+        cards.find((card) => cardsEqual(card, chosen_card)) ??
+        (undefined as never)
     )
     chooseCards(revertedCards)
   }
@@ -112,7 +113,7 @@ export function PoolComponent(props: PoolComponentProps) {
       <div className={style.cardContainer}>
         {cards.map((card, index) => {
           const is_selected = selected_cards.some((selected_card) =>
-            cardsEq(selected_card, card)
+            cardsEqual(selected_card, card)
           )
 
           const doSelect = () => {

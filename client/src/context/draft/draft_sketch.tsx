@@ -1,7 +1,12 @@
-import { Card, cardComparator } from 'common/game/card'
+import { Card, cardsEqual } from 'common/game/card'
 import { DraftDeck, copyDraftDeck } from 'common/game/draft'
 import { addCardToDeck } from 'common/game/draft'
 
+/**
+ * The draft sketch is a representation of the current draft with pending cards
+ * added to it. It is meant to manage the smart selection logic when choosing
+ * cards from the pool of available cards.
+ */
 export class DraftSketch {
   /**
    * The sketch deck, which reflects the current deck with `addedCards`
@@ -49,7 +54,7 @@ export class DraftSketch {
    */
   removeCardFromSketch(card: Card): DraftSketch {
     const idx = this.addedCards.findIndex((added_card) =>
-      cardComparator(card, added_card)
+      cardsEqual(card, added_card)
     )
     if (idx === -1) {
       return this
@@ -83,7 +88,7 @@ export class DraftSketch {
    */
   removeCardsFromSketch(cards: Card[]): DraftSketch {
     const remaining = this.addedCards.filter(
-      (card) => cards.find((c) => cardComparator(card, c)) === undefined
+      (card) => cards.find((c) => cardsEqual(card, c)) === undefined
     )
 
     // Copy the deck and re-insert all remaining added cards.

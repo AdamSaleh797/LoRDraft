@@ -2,7 +2,6 @@ import React from 'react'
 
 import {
   Region,
-  isOrigin,
   mainRegions,
   originRegions,
   regionContains,
@@ -19,29 +18,27 @@ export interface RegionIconListComponentProps {
 }
 
 export function RegionIconList(props: RegionIconListComponentProps) {
-  // If true, all Runeterran regions should be rendered as separate icons.
-  // Otherwise, the presence of any number of Runeterran regions should generate
-  // only one Runeterran icon. The former scheme is only used when the two
-  // regions are finalized and they are both Runeterran regions.
-  const render_all_runeterran_icons =
-    props.draftSketch.deck.regions.every((region) => isOrigin(region)) &&
-    props.draftSketch.deck.regions.length === 2
-
   const certain_regions = certainRegionsForDeck(props.draftSketch.deck)
 
   const regions_to_render = (mainRegions() as Region[])
     .filter((region) => {
       return props.draftSketch.deck.regions.includes(region)
     })
+    // Include all certain Runeterran regions.
+    .concat(
+      originRegions().filter((region) => certain_regions.includes(region))
+    )
+    // Include at most one uncertain Runeterran region. This is done because
+    // Runeterran regions all have the same symbol icon, so displaying any more
+    // than one makes the region list look a bit silly.
     .concat(
       originRegions()
-        .filter((region) => {
-          return props.draftSketch.deck.regions.includes(region)
-        })
-        // If `render_all_runeterran_icons`, leave the list unchanged,
-        // otherwise only take the first element from the list of origin
-        // regions.
-        .slice(0, render_all_runeterran_icons ? undefined : 1)
+        .filter(
+          (region) =>
+            props.draftSketch.deck.regions.includes(region) &&
+            !certain_regions.includes(region)
+        )
+        .slice(0, 1)
     )
     // Place certain regions first, followed by uncertain regions.
     .sort(

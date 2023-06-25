@@ -30,6 +30,10 @@ export function DraftComponent(props: DraftProps) {
 
   React.useEffect(() => {
     setSketch(new DraftSketch(props.draftState.deck))
+
+    // Reset the draft sketch whenever the deck changes. The deck can only
+    // change by adding cards, so we can just monitor the number of cards in the
+    // deck to monitor changes.
   }, [props.draftState.deck.numCards])
 
   return (
