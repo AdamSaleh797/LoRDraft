@@ -19,7 +19,8 @@
     "build-server": "cd server && npm run build",
     "build-server-prod": "cd server && npm run build-prod",
     "build": "npm run check-common && npm run build-client && npm run build-server",
-    "build-prod": "npm run build-client-prod && npm run build-server-prod"
+    "build-prod": "npm run build-client-prod && npm run build-server-prod",
+    "clean": "rm -rf dist"
   },
   "author": "",
   "license": "ISC",
