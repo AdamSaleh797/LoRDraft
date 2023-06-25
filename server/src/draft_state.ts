@@ -1,10 +1,4 @@
-import {
-  Card,
-  MAX_CARD_COPIES,
-  cardsEqual,
-  isChampion,
-  regionContains,
-} from 'common/game/card'
+import { Card, cardsEqual, isChampion, regionContains } from 'common/game/card'
 import {
   DraftDeck,
   DraftState,
