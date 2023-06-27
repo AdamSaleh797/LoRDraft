@@ -382,7 +382,7 @@ export function draftStateCardLimits(
 }
 
 export function getDeckCode(deck: DraftDeck): Status<string> {
-  if (deck.numCards !== CARDS_PER_DECK) {
+  if (deck.numCards < CARDS_PER_DECK) {
     return makeErrStatus(
       StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
       `Cannot generate deck code for deck, expect ${CARDS_PER_DECK} cards, found ${deck.numCards}.`

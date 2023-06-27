@@ -1,10 +1,4 @@
-import {
-  Card,
-  MAX_CARD_COPIES,
-  cardsEqual,
-  isChampion,
-  regionContains,
-} from 'common/game/card'
+import { Card, cardsEqual, isChampion, regionContains } from 'common/game/card'
 import {
   DraftDeck,
   DraftState,
@@ -18,6 +12,7 @@ import {
 import {
   DraftOptions,
   DraftOptionsT,
+  DraftRarityRestriction,
   formatContainsCard,
 } from 'common/game/draft_options'
 import { CardListT, LoRDraftSocket } from 'common/game/socket-msgs'
@@ -192,6 +187,27 @@ function chooseNextCards(
     callback(OkStatus)
   }
 
+  const champCardsCallback = (status: Status<Card[]>) => {
+    if (!isOk(status)) {
+      callback(status)
+      return
+    }
+
+    // Update the draft state.
+    draft_state.state = next_draft_state
+
+    const cards = status.value
+    if (cards.length === 0) {
+      // If no champs were chosen, move immediately to the next round (which is
+      // a non-champ round).
+      chooseNextCards(draft_state, callback)
+    } else {
+      // If cards were chosen successfully, then update the draft state.
+      draft_state.pendingCards = cards
+      callback(OkStatus)
+    }
+  }
+
   switch (next_draft_state) {
     case DraftState.INIT: {
       callback(
@@ -203,12 +219,17 @@ function chooseNextCards(
       return
     }
     case DraftState.INITIAL_SELECTION: {
-      chooseChampCards(next_draft_state, draft_state.deck, cardsCallback, false)
+      chooseChampCards(
+        next_draft_state,
+        draft_state.deck,
+        champCardsCallback,
+        false
+      )
       return
     }
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2: {
-      chooseChampCards(next_draft_state, draft_state.deck, cardsCallback)
+      chooseChampCards(next_draft_state, draft_state.deck, champCardsCallback)
       return
     }
     case DraftState.RANDOM_SELECTION_1:
@@ -385,6 +406,12 @@ function randomChampCards(
   restriction_pool: Card[],
   callback: (cards: Status<Card[]>) => void
 ): void {
+  // For commons-only drafts, no champs can be chosen.
+  if (deck.options.rarityRestriction === DraftRarityRestriction.COMMONS) {
+    callback(makeOkStatus([]))
+    return
+  }
+
   regionSets((status) => {
     if (!isOk(status)) {
       callback(status)
@@ -411,8 +438,8 @@ function randomChampCards(
         .filter(
           ({ card }) =>
             isChampion(card) &&
-            !canAddToDeck(deck, card) &&
-            !restriction_pool.some((res_card) => cardsEqual(res_card, card))
+            (!canAddToDeck(deck, card) ||
+              restriction_pool.some((res_card) => cardsEqual(res_card, card)))
         )
         .map(({ card }) => card)
     )
@@ -426,9 +453,10 @@ function randomChampCards(
         0
       )
     // TODO: total_eligible_champ_count still double counts eligible
-    // multi-region cards. I can't think of an example where this would lead to
-    // over estimating the number of cards you can choose, where the true number
-    // is less than 4, so for now this edge case is uncovered.
+    // multi-region cards, and doesn't account for the draft options. I can't
+    // think of an example where this would lead to over estimating the number
+    // of cards you can choose, where the true number is less than 4, so for now
+    // this edge case is uncovered.
 
     const cards_to_choose = Math.min(num_champs, total_eligible_champ_count)
 
@@ -493,6 +521,8 @@ function randomChampCards(
             arrayCount(region_pool, (region) => regionContains(region, champ))),
         1
       ) < Math.random() ||
+      // Don't pick ineligible cards.
+      champs.some((champ) => !formatContainsCard(deck.options, champ)) ||
       // It is possible for multi-region cards to be selected multiple times.
       containsDuplicates(champs, (champ) => {
         return champ.cardCode
@@ -526,7 +556,7 @@ function randomChampCardsFromDeck(
   callback: (cards: Status<Card[]>) => void
 ): void {
   const champs = deck.cardCounts.filter(
-    ({ card, count }) => isChampion(card) && count < MAX_CARD_COPIES
+    ({ card }) => isChampion(card) && canAddToDeck(deck, card)
   )
 
   const num_champs = Math.min(desired_num_champs, champs.length)
