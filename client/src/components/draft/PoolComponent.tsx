@@ -5,7 +5,7 @@ import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 import { isOk } from 'common/util/status'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common'
 import { CardComponent } from 'client/components/draft/Card'
 import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
 import { useLoRDispatch } from 'client/store/hooks'

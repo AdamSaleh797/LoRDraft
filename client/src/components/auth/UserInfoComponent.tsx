@@ -2,7 +2,7 @@ import React from 'react'
 
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common'
 import { useLoRDispatch } from 'client/store/hooks'
 import { logoutUser } from 'client/store/session'
 

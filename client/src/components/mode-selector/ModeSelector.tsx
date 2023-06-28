@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 
-import { ButtonGroup } from 'client/components/common/button_group'
-import { ListItem } from 'client/components/common/list_item'
+import { ButtonGroup, ListItem } from 'client/components/common'
 
 export function ModeSelector() {
   const [selectedDraftMode, setSelectedDraftMode] = useState<string>('hs')
@@ -110,35 +109,45 @@ export function ModeSelector() {
           title='Normal'
           description='No restrictions'
           selected={selectedListItem === 'normal'}
-          onClick={() => {selectListItem('normal')}}
+          onClick={() => {
+            selectListItem('normal')
+          }}
         />
         <ListItem
           key='pauper'
           title='pauper'
           description='only Commons'
           selected={selectedListItem === 'pauper'}
-          onClick={() => {selectListItem('pauper')}}
+          onClick={() => {
+            selectListItem('pauper')
+          }}
         />
         <ListItem
           key='pauperPlus'
           title='pauper+'
           description='only commons and rare'
           selected={selectedListItem === 'pauperPlus'}
-          onClick={() => {selectListItem('pauperPlus')}}
+          onClick={() => {
+            selectListItem('pauperPlus')
+          }}
         />
         <ListItem
           key='noChampions'
           title='No Champions'
           description='this will exclude Champions'
           selected={selectedListItem === 'noChampions'}
-          onClick={() => {selectListItem('noChampions')}}
+          onClick={() => {
+            selectListItem('noChampions')
+          }}
         />
         <ListItem
           key='unitsOnly'
           title='only units'
           description='only commons and uncommons'
           selected={selectedListItem === 'unitsOnly'}
-          onClick={() => {selectListItem('unitsOnly')}}
+          onClick={() => {
+            selectListItem('unitsOnly')
+          }}
         />
 
         <h5>Start Draft with these Settings?</h5>

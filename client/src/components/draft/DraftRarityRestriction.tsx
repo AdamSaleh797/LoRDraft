@@ -2,7 +2,7 @@ import React from 'react'
 
 import { DraftRarityRestriction } from 'common/game/draft_options'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common'
 
 interface DraftRarityRestrictionComponentProps {
   selectRarityRestrictionFn: (

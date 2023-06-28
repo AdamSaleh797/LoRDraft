@@ -4,10 +4,7 @@ import style from './App.module.css'
 
 import { SignInComponent } from 'client/components/auth/SignInComponent'
 import { UserComponent } from 'client/components/auth/UserInfoComponent'
-import { Button } from 'client/components/common/button'
-import { Header } from 'client/components/common/header'
-import { Layout } from 'client/components/common/layout'
-import { Modal } from 'client/components/common/modal'
+import { Button, Header, Layout, Modal } from 'client/components/common'
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow'
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks'
 import {

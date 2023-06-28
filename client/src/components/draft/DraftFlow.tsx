@@ -2,10 +2,9 @@ import React, { useState } from 'react'
 
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
-import { Modal } from 'client/components/common/modal'
-import { Button } from 'client/components/common/button'
+import { Button, Modal } from 'client/components/common'
 import { DraftComponent } from 'client/components/draft/Draft'
-import { ModeSelector } from 'client/components/mode-selector/mode_selector'
+import { ModeSelector } from 'client/components/mode-selector/ModeSelector'
 import { inDraft, selectDraftState } from 'client/store/draft'
 import {
   doFetchGameMetadataAsync,
@@ -37,30 +36,30 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   if (!inDraft(draft_state)) {
     return (
       <>
-      {/* first we select the Mode, than we continue to the DraftWorkflow (DraftOptionsComponent?) from there */}
-      <Button
+        {/* first we select the Mode, than we continue to the DraftWorkflow (DraftOptionsComponent?) from there */}
+        <Button
           onClick={() => {
             setModalOpen(true)
           }}
         >
           Select your Draft Mode
-      </Button>
-      <div>
-        {modalOpen && (
-          <Modal title='Draft Options' setOpenModal={setModalOpen}>
-            <ModeSelector></ModeSelector>
-          </Modal>
-        )}
-      </div>
+        </Button>
+        <div>
+          {modalOpen && (
+            <Modal title='Draft Options' setOpenModal={setModalOpen}>
+              <ModeSelector></ModeSelector>
+            </Modal>
+          )}
+        </div>
 
-      {/*
+        {/*
         <DraftOptionsComponent
           socket={props.socket}
           authInfo={props.authInfo}
           gameMetadata={game_metadata.metadata}
         />
       */}
-     </>
+      </>
     )
   } else {
     return (

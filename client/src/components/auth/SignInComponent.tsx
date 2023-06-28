@@ -6,7 +6,7 @@ import {
   RegisterInfo,
 } from 'common/game/socket-msgs'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common'
 import { useLoRDispatch } from 'client/store/hooks'
 import { doRegisterAsync, loginUser } from 'client/store/session'
 import { APP_TITLE } from 'client/utils/constants'

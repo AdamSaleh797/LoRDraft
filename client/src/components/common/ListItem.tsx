@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './list_item.module.css'
+import styles from './ListItem.module.css'
 
 interface ListItemProps {
   key: string
@@ -10,11 +10,13 @@ interface ListItemProps {
   onClick: () => void
 }
 
-export function ListItem(props: ListItemProps){
+export function ListItem(props: ListItemProps) {
   return (
     <div
       key={props.key}
-      className={`${styles['list-item']} ${props.selected ? styles.selected : ''}`}
+      className={`${styles['list-item']} ${
+        props.selected ? styles.selected : ''
+      }`}
       onClick={props.onClick}
     >
       <h3>{props.title}</h3>

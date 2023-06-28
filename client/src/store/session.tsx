@@ -16,7 +16,7 @@ import {
   makeOkStatus,
 } from 'common/util/status'
 
-import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
+import { CachedAuthInfo } from 'client/components/auth/CachedAuthInfo'
 import { LoRDispatch, RootState } from 'client/store'
 import { clearDraftState, doUpdateDraftAsync } from 'client/store/draft'
 import { ThunkAPI, makeThunkPromise } from 'client/store/util'

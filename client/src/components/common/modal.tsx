@@ -1,8 +1,8 @@
 import React from 'react'
 
-import style from './modal.module.css'
+import styles from './modal.module.css'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common/Button'
 
 export interface ModalProps {
   title: string
@@ -12,15 +12,15 @@ export interface ModalProps {
 
 export function Modal(props: ModalProps) {
   return (
-    <div className={style.modalBackground}>
-      <div className={style.modalContainer}>
-        <div className={style.title}>
+    <div className={styles.modalBackground}>
+      <div className={styles.modalContainer}>
+        <div className={styles.title}>
           <h4>{props.title}</h4>
         </div>
-        <div className={style.body}>{props.children}</div>
-        <div className={style.footer}>
+        <div className={styles.body}>{props.children}</div>
+        <div className={styles.footer}>
           <Button
-            className={style.cancelBtn}
+            className={styles.cancelBtn}
             onClick={() => {
               props.setOpenModal(false)
             }}
