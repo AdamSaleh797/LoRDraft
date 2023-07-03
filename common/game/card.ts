@@ -120,6 +120,28 @@ const ORIGINS = {
       card.cardCode === '06RU009'
     )
   },
+  Neeko: (card: Card): boolean => {
+    return (
+      ((card.subtypes.includes('spider') ||
+        card.subtypes.includes('dog') ||
+        card.subtypes.includes('elnuk') ||
+        card.subtypes.includes('cat') ||
+        card.subtypes.includes('bird') ||
+        card.subtypes.includes('fae') ||
+        card.subtypes.includes('reptile')) &&
+        !isChampion(card)) ||
+      card.cardCode === '07RU012'
+    )
+  },
+  'The Poro King': (card: Card): boolean => {
+    return (
+      ((card.subtypes.includes('poro') ||
+        card.description.includes('poro') ||
+        card.name.includes('poro')) &&
+        !isChampion(card)) ||
+      card.cardCode === '07RU015'
+    )
+  },
   /* eslint-enable @typescript-eslint/naming-convention */
 } as const
 
