@@ -1,6 +1,6 @@
 {
   "root_dir": "../dist/dev",
   "port": 2000,
-  "download": true,
+  "download": false,
   "sequential": false
 }
