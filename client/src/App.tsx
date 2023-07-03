@@ -14,7 +14,7 @@ import {
   tryInitializeUserSession,
 } from 'client/store/session'
 import { createLoRSocket } from 'client/utils/network'
-import { ModeSelector } from './components/mode-selector/ModeSelector'
+import { ModeSelector } from 'client/components/mode-selector/ModeSelector'
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false)

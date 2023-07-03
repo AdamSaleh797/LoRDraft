@@ -35,3 +35,25 @@
 .confirmBtn {
   background-color: forestgreen;
 }
+
+.cancelBtn:hover,
+.cancelBtn:focus {
+  background-color: #FF5C5C; /* Different shade for cancel button hover and focus */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 92, 92, 0.3);
+}
+
+.cancelBtn:active {
+  background-color: #FF0000; /* Different shade for cancel button active state */
+}
+
+.confirmBtn:hover,
+.confirmBtn:focus {
+  background-color: #3CD87C; /* Different shade for confirm button hover and focus */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(60, 216, 124, 0.3);
+}
+
+.confirmBtn:active {
+  background-color: #00B33C; /* Different shade for confirm button active state */
+}

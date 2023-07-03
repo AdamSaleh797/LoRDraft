@@ -36,22 +36,6 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   if (!inDraft(draft_state)) {
     return (
       <>
-        {/* first we select the Mode, than we continue to the DraftWorkflow (DraftOptionsComponent?) from there */}
-        <Button
-          onClick={() => {
-            setModalOpen(true)
-          }}
-        >
-          Select your Draft Mode
-        </Button>
-        <div>
-          {modalOpen && (
-            <Modal title='Draft Options' setOpenModal={setModalOpen}>
-              <ModeSelector></ModeSelector>
-            </Modal>
-          )}
-        </div>
-
         {/*
         <DraftOptionsComponent
           socket={props.socket}
