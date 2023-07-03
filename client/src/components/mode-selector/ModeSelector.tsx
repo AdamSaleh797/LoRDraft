@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { ButtonGroup, ListItem } from 'client/components/common'
+import { Button, ButtonGroup, ListItem } from 'client/components/common'
 
 export function ModeSelector() {
   const [selectedDraftMode, setSelectedDraftMode] = useState<string>('hs')
@@ -151,7 +151,7 @@ export function ModeSelector() {
         />
 
         <h5>Start Draft with these Settings?</h5>
-        <button onClick={handleSubmit}>Submit</button>
+        <Button onClick={handleSubmit} buttonType="confirm">Submit</Button>
       </div>
     </div>
   )

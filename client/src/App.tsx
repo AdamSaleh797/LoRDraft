@@ -4,7 +4,7 @@ import style from './App.module.css'
 
 import { SignInComponent } from 'client/components/auth/SignInComponent'
 import { UserComponent } from 'client/components/auth/UserInfoComponent'
-import { Button, Header, Layout, Modal } from 'client/components/common'
+import { Button, Header, Layout, Modal, Drawer } from 'client/components/common'
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow'
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks'
 import {
@@ -14,9 +14,11 @@ import {
   tryInitializeUserSession,
 } from 'client/store/session'
 import { createLoRSocket } from 'client/utils/network'
+import { ModeSelector } from './components/mode-selector/ModeSelector'
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const session_state = useLoRSelector(selectSessionState)
 
   const socket_ref = React.useRef(createLoRSocket())
@@ -30,17 +32,32 @@ export default function App() {
     })
   }
 
+  const handleDrawerToggle = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
   return (
     <div className={style.App}>
-      <Header>
-        <Button
-          onClick={() => {
-            setModalOpen(true)
-          }}
-        >
-          Login
-        </Button>
-        {modalOpen && (
+
+      <Header
+        leftElement={
+          isSignedIn(session_state) ?  <Button 
+            onClick={handleDrawerToggle}>
+            Toggle Drawer
+          </Button> : <></>
+        }
+        rightElement={
+          <Button
+            onClick={() => {
+              setModalOpen(true)
+            }}
+          >
+            Login
+          </Button>
+        }
+      />
+
+      {modalOpen && (
           <Modal title='Login | Registration' setOpenModal={setModalOpen}>
             <div>
               {isSignedIn(session_state) ? (
@@ -54,17 +71,25 @@ export default function App() {
             </div>
           </Modal>
         )}
-      </Header>
+
+<Drawer isOpen={isDrawerOpen} onClose={handleDrawerToggle}>
+  <Layout>
+    <ModeSelector></ModeSelector>
+  </Layout>
+</Drawer>
       <Layout>
         {isSignedIn(session_state) ? (
-          <DraftFlowComponent
-            socket={socket_ref.current}
-            authInfo={session_state.authInfo}
-          ></DraftFlowComponent>
+          
+            <DraftFlowComponent
+              socket={socket_ref.current}
+              authInfo={session_state.authInfo}
+            />
+        
         ) : (
           <div>Must sign in to start a draft!</div>
         )}
       </Layout>
+      
     </div>
   )
 }

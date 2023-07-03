@@ -1,27 +1,27 @@
 import React, { useState } from 'react'
-
 import styles from './drawer.module.css'
 
 interface DrawerProps {
   children: React.ReactNode
+  isOpen: boolean
+  onClose: () => void
 }
-//in development, stil has alot issues
-export function Drawer(props: DrawerProps) {
-  const [isOpen, setIsOpen] = useState(false)
 
-  const handleToggle = () => {
-    setIsOpen(!isOpen)
+export function Drawer(props: DrawerProps) {
+  const { isOpen, onClose } = props
+
+  const handleBackdropClick = () => {
+    onClose()
+  }
+
+  const handleDrawerClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation()
   }
 
   return (
     <>
-      {isOpen && (
-        <div className={styles.drawerBackdrop} onClick={handleToggle} />
-      )}
-      <button className={styles.drawerToggle} onClick={handleToggle}>
-        Toggle Drawer
-      </button>
-      <div className={`${styles.drawer} ${isOpen ? styles.open : ''}`}>
+      {isOpen && <div className={styles.drawerBackdrop} onClick={handleBackdropClick} />}
+      <div className={`${styles.drawer} ${isOpen ? styles.open : ''}`} onClick={handleDrawerClick}>
         {props.children}
       </div>
     </>

@@ -1,15 +1,18 @@
 import React from 'react'
-
 import styles from './header.module.css'
-
 import { APP_TITLE } from 'client/utils/constants'
 
-export function Header(props: { children: React.ReactNode }) {
+type HeaderProps = {
+  leftElement?: React.ReactNode,
+  rightElement?: React.ReactNode,
+}
+
+export function Header(props: HeaderProps) {
   return (
     <div className={styles.header}>
-      <div className={styles.leftElement}>Something</div>
+      <div className={styles.leftElement}>{props.leftElement}</div>
       <div className={styles.centerTitle}>{APP_TITLE}</div>
-      <div className={styles.rightElement}>{props.children}</div>
+      <div className={styles.rightElement}>{props.rightElement}</div>
     </div>
   )
 }

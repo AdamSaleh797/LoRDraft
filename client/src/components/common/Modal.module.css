@@ -74,10 +74,3 @@
   cursor: pointer;
 }
 
-#cancelBtn {
-  background-color: crimson;
-}
-
-#confirmBtn {
-  background-color: forestgreen;
-}

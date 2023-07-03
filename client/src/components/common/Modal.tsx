@@ -20,7 +20,7 @@ export function Modal(props: ModalProps) {
         <div className={styles.body}>{props.children}</div>
         <div className={styles.footer}>
           <Button
-            className={styles.cancelBtn}
+            buttonType='cancel'
             onClick={() => {
               props.setOpenModal(false)
             }}

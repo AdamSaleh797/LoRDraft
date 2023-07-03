@@ -27,3 +27,11 @@
 .button:active {
   background-color: #1565c0;
 }
+
+.cancelBtn {
+  background-color: crimson;
+}
+
+.confirmBtn {
+  background-color: forestgreen;
+}
