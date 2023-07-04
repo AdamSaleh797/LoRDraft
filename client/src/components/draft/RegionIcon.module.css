@@ -1,0 +1,34 @@
+.regionIconContainer {
+  display: inline-block;
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+
+.regionIcon {
+  height: 100%;
+  aspect-ratio: 1;
+}
+
+.faded {
+  opacity: 0.4;
+}
+
+.cardCountContainer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 40%;
+  aspect-ratio: 1;
+  border: 1px solid black;
+  border-radius: 100%;
+  font-size: 9px;
+  background-color: #262931;
+  color: white;
+}
+
+.cardCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

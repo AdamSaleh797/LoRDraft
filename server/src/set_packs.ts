@@ -115,7 +115,7 @@ function loadSetPack(
               subtype.toLowerCase()
             ),
             keywords: parsed_card.keywordRefs,
-            type: parsed_card.type.toLowerCase(),
+            type: parsed_card.type,
             isStandard: parsed_card.formatRefs.includes(STANDARD_FORMAT_REF),
           }
 
@@ -152,15 +152,13 @@ export function regionSets(
   }
 
   const region_sets: RegionSetMap = allRegions().reduce<Partial<RegionSetMap>>(
-    (region_sets, region) => {
-      return {
-        ...region_sets,
-        [region]: {
-          champs: [],
-          nonChamps: [],
-        },
-      }
-    },
+    (region_sets, region) => ({
+      ...region_sets,
+      [region]: {
+        champs: [],
+        nonChamps: [],
+      },
+    }),
     {}
   ) as RegionSetMap
 

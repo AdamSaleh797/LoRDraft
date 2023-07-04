@@ -3,12 +3,13 @@
   width: 100%;
   position: relative;
   z-index: 1;
+  display: flex;
 }
 
 .Demacia {
   background-image: linear-gradient(
     90deg,
-    rgb(231, 217, 184) 30%,
+    rgb(231, 217, 184) 32.4%,
     rgba(231, 217, 184, 0) 70%
   );
 }
@@ -16,7 +17,7 @@
 .Shurima {
   background-image: linear-gradient(
     90deg,
-    rgb(238, 205, 50) 30%,
+    rgb(238, 205, 50) 32.4%,
     rgba(238, 205, 50, 0) 70%
   );
 }
@@ -24,7 +25,7 @@
 .PiltoverZaun {
   background-image: linear-gradient(
     90deg,
-    rgb(222, 199, 69) 30%,
+    rgb(222, 199, 69) 32.4%,
     rgba(222, 199, 69, 0) 70%
   );
 }
@@ -32,7 +33,7 @@
 .Bilgewater {
   background-image: linear-gradient(
     90deg,
-    rgb(209, 109, 73) 30%,
+    rgb(209, 109, 73) 32.4%,
     rgba(209, 109, 73, 0) 70%
   );
 }
@@ -40,7 +41,7 @@
 .Noxus {
   background-image: linear-gradient(
     90deg,
-    rgb(200, 77, 74) 30%,
+    rgb(200, 77, 74) 32.4%,
     rgba(200, 77, 74, 0) 70%
   );
 }
@@ -48,7 +49,7 @@
 .Ionia {
   background-image: linear-gradient(
     90deg,
-    rgb(207, 130, 155) 30%,
+    rgb(207, 130, 155) 32.4%,
     rgba(207, 130, 155, 0) 70%
   );
 }
@@ -56,7 +57,7 @@
 .BandleCity {
   background-image: linear-gradient(
     90deg,
-    rgb(193, 207, 17) 30%,
+    rgb(193, 207, 17) 32.4%,
     rgba(193, 207, 17, 0) 70%
   );
 }
@@ -64,7 +65,7 @@
 .ShadowIsles {
   background-image: linear-gradient(
     90deg,
-    rgb(12, 161, 132) 30%,
+    rgb(12, 161, 132) 32.4%,
     rgba(12, 161, 132, 0) 70%
   );
 }
@@ -72,7 +73,7 @@
 .Targon {
   background-image: linear-gradient(
     90deg,
-    rgb(91, 55, 229) 30%,
+    rgb(91, 55, 229) 32.4%,
     rgba(91, 55, 229, 0) 70%
   );
 }
@@ -80,7 +81,7 @@
 .Freljord {
   background-image: linear-gradient(
     90deg,
-    rgb(147, 223, 250) 30%,
+    rgb(147, 223, 250) 32.4%,
     rgba(147, 223, 250, 0) 70%
   );
 }
@@ -88,7 +89,7 @@
 .Runeterra {
   background-image: linear-gradient(
     90deg,
-    rgb(171, 148, 89) 30%,
+    rgb(171, 148, 89) 32.4%,
     rgba(171, 148, 89, 0) 70%
   );
 }
@@ -96,17 +97,68 @@
 .cost {
   width: 18.4%;
   height: 100%;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.costContainer {
+  width: 40%;
+  height: 40%;
+  border-radius: 100%;
+  color: white;
+  font-weight: 600;
+  border: 1px solid black;
+  box-shadow: #140b2499 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(
+      137deg,
+      rgb(160, 223, 246) 16%,
+      rgba(41, 150, 164, 0) 25%,
+      rgba(41, 150, 164, 0) 104%,
+      rgb(160, 223, 246) 82%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgb(47, 79, 143),
+      rgb(41, 70, 129) 44%,
+      rgb(9, 127, 149) 73%,
+      rgb(45, 165, 183) 76%
+    );
 }
 
 .name {
   width: 63.2%;
   height: 100%;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  color: white;
+  text-shadow: rgb(0 0 0) 0px 1px 3px;
+  font-weight: 600;
+}
+
+.countContainer {
+  width: 40%;
+  height: 60%;
+  border-radius: 5px;
+  color: white;
+  font-weight: 600;
+  border: 1px solid lightgoldenrodyellow;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #262931;
 }
 
 .count {
   width: 18.4%;
+  color: white;
+  font-weight: 600;
   height: 100%;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

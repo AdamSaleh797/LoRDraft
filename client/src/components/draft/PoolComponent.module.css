@@ -1,0 +1,8 @@
+.poolComponent {
+  margin-bottom: 20px;
+}
+
+.cardContainer {
+  display: flex;
+  width: 50%;
+}

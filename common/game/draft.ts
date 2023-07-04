@@ -1,12 +1,5 @@
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import {
-  Array as ArrayT,
-  Null,
-  Number,
-  Record as RecordT,
-  String,
-  Union,
-} from 'runtypes'
+import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
 
 import {
   Card,
@@ -59,15 +52,13 @@ export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
   cardCounts: ArrayT(CardCountT),
   numCards: Number,
-  deckCode: Union(String, Null),
 })
 
 export interface DraftDeck {
   regions: Region[]
   cardCounts: CardCount[]
   numCards: number
-  deckCode: string | null
-  options: DraftOptions
+  readonly options: DraftOptions
 }
 
 export function findCardCount(
@@ -112,7 +103,6 @@ export function makeDraftDeck(
     regions: allRegions(),
     cardCounts: [],
     numCards: 0,
-    deckCode: null,
     options: options,
   }
 
@@ -121,6 +111,83 @@ export function makeDraftDeck(
   })
 
   return deck
+}
+
+export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
+  return {
+    regions: draft_deck.regions.slice(),
+    cardCounts: draft_deck.cardCounts.map((card_count) => ({
+      ...card_count,
+    })),
+    numCards: draft_deck.numCards,
+    options: draft_deck.options,
+  }
+}
+
+/**
+ * Calculates all possible pairs of regions that the list of cards can be
+ * compatible with.
+ *
+ * This will return an empty list if `card_counts` is empty.
+ *
+ * @param cards The list of cards in the deck.
+ * @param possible_regions The list of possible regions that the deck can be in.
+ * @returns A list of possible region pairs for the cards given.
+ */
+function possibleRegionPairs(
+  card_counts: CardCount[],
+  possible_regions: Region[]
+): [Region, Region][] {
+  const initial_regions_in_deck = possible_regions.reduce<
+    Partial<Record<Region, number>>
+  >((map, region) => ({ ...map, [region]: 0 }), {})
+  const regions_in_deck = card_counts.reduce<Partial<Record<Region, number>>>(
+    (map, card_count) => {
+      possible_regions.forEach((region) => {
+        if (regionContains(region, card_count.card)) {
+          map[region] = (map[region] ?? (0 as never)) + 1
+        }
+      })
+      return map
+    },
+    initial_regions_in_deck
+  )
+
+  // Sort regions in non-increasing order of size
+  const region_search_order = Array.from(
+    Object.entries(regions_in_deck) as [Region, number][]
+  )
+    .sort((a, b) => b[1] - a[1])
+    .map((region_count) => region_count[0])
+
+  const region_pairs: [Region, Region][] = []
+
+  for (let i = 1; i < region_search_order.length; i++) {
+    const region1 = region_search_order[i]
+
+    for (let j = 0; j < i; j++) {
+      const region2 = region_search_order[j]
+
+      // If both regions are size 0, we don't need to check them, as they are
+      // trivially not a possible pairing of regions.
+      if ((regions_in_deck[region2] ?? (0 as never)) === 0) {
+        break
+      }
+
+      if (
+        !card_counts.some(
+          (card_count) =>
+            !regionContains(region1, card_count.card) &&
+            !regionContains(region2, card_count.card)
+        )
+      ) {
+        // region1 and region2 are valid regions to choose for this deck.
+        region_pairs.push([region1, region2])
+      }
+    }
+  }
+
+  return region_pairs
 }
 
 /**
@@ -137,57 +204,13 @@ function possibleRegionsForCards(
   card_counts: CardCount[],
   possible_regions: Region[]
 ): Region[] | null {
-  if (possible_regions.length === 2) {
-    return possible_regions
-  }
-
-  const initial_regions_in_deck = possible_regions.reduce<Map<Region, number>>(
-    (map, region) => map.set(region, 0),
-    new Map()
-  )
-  const regions_in_deck = card_counts.reduce<Map<Region, number>>(
-    (map, card_count) => {
-      possible_regions.forEach((region) => {
-        if (regionContains(region, card_count.card)) {
-          map.set(region, (map.get(region) ?? (0 as never)) + 1)
-        }
-      })
-      return map
-    },
-    initial_regions_in_deck
-  )
-
-  // Sort regions in non-increasing order of size
-  const region_search_order = Array.from(regions_in_deck.entries())
-    .sort((a, b) => b[1] - a[1])
-    .map((region_count) => region_count[0])
-
   const region_set = new Set<Region>()
-
-  for (let i = 1; i < region_search_order.length; i++) {
-    const region1 = region_search_order[i]
-    for (let j = 0; j < i; j++) {
-      const region2 = region_search_order[j]
-
-      // If both regions are size 0, we don't need to check them, as they are
-      // trivially not a possible pairing of regions.
-      if ((regions_in_deck.get(region2) ?? 0) === 0) {
-        break
-      }
-
-      if (
-        !card_counts.some(
-          (card_count) =>
-            !regionContains(region1, card_count.card) &&
-            !regionContains(region2, card_count.card)
-        )
-      ) {
-        // region1 and region2 are valid regions to choose for this deck.
-        region_set.add(region1)
-        region_set.add(region2)
-      }
+  possibleRegionPairs(card_counts, possible_regions).forEach(
+    ([region1, region2]) => {
+      region_set.add(region1)
+      region_set.add(region2)
     }
-  }
+  )
 
   if (region_set.size === 0) {
     // This deck would be invalid if the card were added to it.
@@ -195,6 +218,41 @@ function possibleRegionsForCards(
   }
 
   return Array.from(region_set.values())
+}
+
+/**
+ * Given the draft deck, returns the list of regions that are certainly in the
+ * draft. The remaining regions in `deck.regions` may possibly be included, but
+ * there exist combinations of regions that don't include them.
+ */
+export function certainRegionsForDeck(deck: DraftDeck): Region[] {
+  // If there are only two possible regions, they are certainly the only two
+  // regions for the deck.
+  if (deck.regions.length === 2) {
+    return deck.regions
+  }
+  // If no cards have been chosen, all regions are uncertain.
+  if (deck.cardCounts.length === 0) {
+    return []
+  }
+
+  let regions_in_all_pairs = deck.regions
+  for (const region_pair of possibleRegionPairs(
+    deck.cardCounts,
+    deck.regions
+  )) {
+    regions_in_all_pairs = regions_in_all_pairs.filter((region) =>
+      region_pair.includes(region)
+    )
+
+    // If we've already eliminated all regions from the list of regions in all
+    // pairs, we can return early.
+    if (regions_in_all_pairs.length === 0) {
+      break
+    }
+  }
+
+  return regions_in_all_pairs
 }
 
 /**
@@ -214,6 +272,14 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
   ) {
     return false
   }
+
+  // If the deck only has two possible regions, these must be the two regions
+  // for the deck. We can simply check if this card is in either of those two
+  // regions.
+  if (deck.regions.length === 2) {
+    return deck.regions.some((region) => regionContains(region, card))
+  }
+
   const card_counts = addToCardCounts(deck.cardCounts, card)
   return possibleRegionsForCards(card_counts, deck.regions) !== null
 }
@@ -227,10 +293,25 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
  */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   const card_counts = addToCardCounts(deck.cardCounts, card)
-  const new_regions = possibleRegionsForCards(card_counts, deck.regions)
+  let new_regions
+  if (deck.regions.length === 2) {
+    // If the deck only has two possible regions, these must be the two regions
+    // for the deck. We can simply check if this card is in either of those two
+    // regions.
+    if (deck.regions.some((region) => regionContains(region, card))) {
+      new_regions = deck.regions
+    } else {
+      // If neither of the two regions of the deck contain the card, this card
+      // can't be added.
+      return false
+    }
+  } else {
+    // Otherwise, we have to narrow the possible remaining regions.
+    new_regions = possibleRegionsForCards(card_counts, deck.regions)
 
-  if (new_regions === null) {
-    return false
+    if (new_regions === null) {
+      return false
+    }
   }
 
   deck.cardCounts = card_counts
@@ -301,14 +382,11 @@ export function draftStateCardLimits(
 }
 
 export function getDeckCode(deck: DraftDeck): Status<string> {
-  if (deck.numCards !== CARDS_PER_DECK) {
+  if (deck.numCards < CARDS_PER_DECK) {
     return makeErrStatus(
       StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
       `Cannot generate deck code for deck, expect ${CARDS_PER_DECK} cards, found ${deck.numCards}.`
     )
-  }
-  if (deck.deckCode !== null) {
-    return makeOkStatus(deck.deckCode)
   }
 
   const deckcodes_deck = deck.cardCounts.map((card_count) => ({
@@ -316,7 +394,5 @@ export function getDeckCode(deck: DraftDeck): Status<string> {
     count: card_count.count,
   }))
 
-  const code = getCodeFromDeck(deckcodes_deck)
-  deck.deckCode = code
-  return makeOkStatus(code)
+  return makeOkStatus(getCodeFromDeck(deckcodes_deck))
 }

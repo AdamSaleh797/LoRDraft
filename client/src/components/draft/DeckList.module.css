@@ -1,8 +1,7 @@
-.deckList {
-  aspect-ratio: 190 / 35;
-  display: inline-block;
-}
-
 .deckCode {
   overflow-wrap: break-word;
+}
+
+.typeCategoryContainer {
+  margin-bottom: 10px;
 }

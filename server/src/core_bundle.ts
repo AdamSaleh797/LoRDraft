@@ -55,12 +55,13 @@ function parseRegionsMetadata(
       ) {
         ident = region.nameRef
       }
-      return makeErrStatus(
-        StatusCode.INVALID_SET_PACK_FORMAT,
+
+      console.warn(
         `Region '${ident}' is either unknown or does not match ` +
           `expected format. Try updating the global list of regions ` +
           `if this region is new.`
       )
+      continue
     }
 
     region_metadata_builder[region.nameRef as RegionRef] = {

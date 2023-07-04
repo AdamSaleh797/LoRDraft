@@ -18,21 +18,6 @@ export interface GlobalGameMetadata {
   metadata: GameMetadata | null
 }
 
-export interface InitializedGlobalGameMetadata extends GlobalGameMetadata {
-  state: GameMetadataState.INITIALIZED
-  metadata: GameMetadata
-}
-
-/**
- * Returns true if the game metadata has been fetched. Will narrow the field
- * `metadata` to `GameMetadata` (removing the `| null`).
- */
-export function hasGameMetadata(
-  state: GlobalGameMetadata
-): state is InitializedGlobalGameMetadata {
-  return state.state === GameMetadataState.INITIALIZED
-}
-
 export interface FetchGameMetadataArgs {
   socket: LoRDraftClientSocket
   authInfo: AuthInfo
@@ -86,7 +71,7 @@ const gameMetadataSlice = createSlice({
 })
 
 export function selectGameMetadataState(state: RootState) {
-  return state.gameMetadata
+  return state.gameMetadata.metadata
 }
 
 export default gameMetadataSlice.reducer

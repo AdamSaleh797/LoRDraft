@@ -12,13 +12,8 @@ export interface CardComponentProps {
 }
 
 export function CardComponent(props: CardComponentProps) {
-  // Card size is controlled entirely by the width of its container
-  const card_style = {
-    width: `${100 / props.numCards}%`,
-  }
-
   return (
-    <div className={style.card} style={card_style} onClick={props.select}>
+    <div className={style.card} onClick={props.select}>
       {props.card === null ? (
         <div />
       ) : (
@@ -26,6 +21,7 @@ export function CardComponent(props: CardComponentProps) {
           className={props.isSelected ? style.selected : ''}
           src={props.card.imageUrl}
           alt={props.card.name}
+          draggable={false}
         ></img>
       )}
     </div>

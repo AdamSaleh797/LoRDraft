@@ -2,20 +2,28 @@ import React from 'react'
 
 import style from './DeckList.module.css'
 
-import { CARDS_PER_DECK, DraftStateInfo, getDeckCode } from 'common/game/draft'
+import {
+  CARDS_PER_DECK,
+  CardCount,
+  DraftStateInfo,
+  getDeckCode,
+} from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 import { isOk } from 'common/util/status'
 
-import { CardDisplay } from 'client/components/draft/CardDisplay'
 import { RegionIconList } from 'client/components/draft/RegionIconList'
+import {
+  CardCategory,
+  TypeCategory,
+  cardType,
+} from 'client/components/draft/TypeCategory'
+import { DraftSketch } from 'client/context/draft/draft_sketch'
 
 export interface DeckListComponentProps {
   draftState: DraftStateInfo
+  draftSketch: DraftSketch
   gameMetadata: GameMetadata | null
 }
-
-export const ROWS = 15
-export const COLUMNS = 3
 
 export function DeckList(props: DeckListComponentProps) {
   let deckCode
@@ -31,41 +39,42 @@ export function DeckList(props: DeckListComponentProps) {
     deckCode = null
   }
 
-  const deckListStyle = {
-    width: `${100 / COLUMNS}%`,
-  }
+  const typeCategories = cardCounts.reduce<Record<CardCategory, CardCount[]>>(
+    (typeCategories, cardCount) => {
+      const type = cardType(cardCount.card)
+      return {
+        ...typeCategories,
+        [type]: typeCategories[type].concat([cardCount]),
+      }
+    },
+    {
+      Champion: [],
+      Follower: [],
+      Spell: [],
+      Landmark: [],
+      Equipment: [],
+    }
+  )
 
   return (
     <div>
-      <div className={style.deckList} style={deckListStyle}>
-        {deckCode === null ? [] : deckCode}
-      </div>
+      <div className={style.deckCode}>{deckCode === null ? [] : deckCode}</div>
       <RegionIconList
-        draftState={props.draftState}
+        draftSketch={props.draftSketch}
         gameMetadata={props.gameMetadata}
       />
       <br></br>
-      {Array(ROWS * COLUMNS)
-        .fill(0)
-        .map((_, i) => {
-          const array_index = (i % COLUMNS) * ROWS + Math.floor(i / COLUMNS)
-          if (array_index < cardCounts.length) {
-            return (
-              <div
-                key={`${cardCounts[array_index].card.cardCode}${i}`}
-                style={deckListStyle}
-                className={style.deckList}
-              >
-                <CardDisplay
-                  card={cardCounts[array_index].card}
-                  draftState={props.draftState}
-                />
-              </div>
-            )
-          } else {
-            return <div key={i} className={style.deckCode}></div>
-          }
-        })}
+      <div>
+        {Object.entries(typeCategories).map(([category, cardCounts]) => (
+          <div className={style.typeCategoryContainer}>
+            <TypeCategory
+              draftState={props.draftState}
+              category={category as CardCategory}
+              cardCounts={cardCounts}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

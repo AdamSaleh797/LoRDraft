@@ -13,6 +13,17 @@ export const MAX_CARD_COPIES = 3
 
 export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None'
 
+const CardTypeT = Union(
+  Literal('Spell'),
+  Literal('Unit'),
+  Literal('Equipment'),
+  Literal('Landmark'),
+  Literal('Trap'),
+  Literal('Ability')
+)
+
+export type CardType = Static<typeof CardTypeT>
+
 export const RUNETERRA = 'Runeterra' as const
 
 const MAIN_REGIONS = [
@@ -213,7 +224,7 @@ export const SetPackCardT = Record({
   ),
   subtypes: Array(String),
   supertype: String,
-  type: String,
+  type: CardTypeT,
   collectible: Boolean,
   set: String,
   formats: Array(String),
@@ -246,7 +257,7 @@ export const CardT = Record({
   regions: Array(RegionT),
   subtypes: Array(String),
   keywords: Array(String),
-  type: String,
+  type: CardTypeT,
   isStandard: Boolean,
 })
 
@@ -262,10 +273,14 @@ export interface Card {
   regions: Region[]
   subtypes: string[]
   keywords: string[]
-  type: string
+  type: CardType
   isStandard: boolean
 }
 
 export function isChampion(card: Card): boolean {
   return card.rarity === 'Champion'
+}
+
+export function cardsEqual(card1: Card, card2: Card): boolean {
+  return card1.cardCode === card2.cardCode
 }
