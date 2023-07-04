@@ -58,7 +58,8 @@ const RYZE_ORIGIN = [
   '06BC040', '06BC043', '06BC017', '06BC011', '06BC032', '02BW023',
   '02BW029', '02BW049', '02BW020', '02BW044', '04BW014', '04BW008',
   '04BW004', '06BW030', '06BW037', '06BW041', '06BW043', '06BW039',
-  '01IO029', '01IO054', '02IO009', '05IO006', '06IO036'
+  '01IO029', '01IO054', '02IO009', '05IO006', '06IO036', '07NX009',
+  '06FR041', '06PZ046', '07IO017', 
 ]
 
 export type MainRegion = (typeof MAIN_REGIONS)[number]
@@ -118,6 +119,28 @@ const ORIGINS = {
     return (
       (card.subtypes.includes('cultist') && !isChampion(card)) ||
       card.cardCode === '06RU009'
+    )
+  },
+  Neeko: (card: Card): boolean => {
+    return (
+      ((card.subtypes.includes('spider') ||
+        card.subtypes.includes('dog') ||
+        card.subtypes.includes('elnuk') ||
+        card.subtypes.includes('cat') ||
+        card.subtypes.includes('bird') ||
+        card.subtypes.includes('fae') ||
+        card.subtypes.includes('reptile')) &&
+        !isChampion(card)) ||
+      card.cardCode === '07RU012'
+    )
+  },
+  'The Poro King': (card: Card): boolean => {
+    return (
+      ((card.subtypes.includes('poro') ||
+        card.description.includes('poro') ||
+        card.name.includes('poro')) &&
+        !isChampion(card)) ||
+      card.cardCode === '07RU015'
     )
   },
   /* eslint-enable @typescript-eslint/naming-convention */

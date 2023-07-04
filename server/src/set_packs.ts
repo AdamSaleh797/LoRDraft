@@ -109,7 +109,7 @@ function loadSetPack(
             cost: parsed_card.cost,
             name: parsed_card.name,
             cardCode: parsed_card.cardCode,
-            description: parsed_card.description.toLowerCase(),
+            description: parsed_card.descriptionRaw.toLowerCase(),
             regions: regions,
             subtypes: parsed_card.subtypes.map((subtype) =>
               subtype.toLowerCase()
