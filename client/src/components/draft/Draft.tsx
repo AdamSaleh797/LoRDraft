@@ -1,6 +1,6 @@
 import React from 'react'
 
-import style, { cardSelectLayout } from './Draft.module.css'
+import style from './Draft.module.css'
 
 import { Card, cardsEqual } from 'common/game/card'
 import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
@@ -110,9 +110,6 @@ export function DraftComponent(props: DraftProps) {
       <div>
         <Button onClick={exitDraft}>EXIT!</Button>
       </div>
-      {/* <div className={style.deckInfoDisplay}>
-        <TypeCounts draftSketch={sketchManager.sketch()} />
-      </div> */}
     </div>
   )
 }
