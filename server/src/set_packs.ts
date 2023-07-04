@@ -6,7 +6,6 @@ import {
   SetPackCardT,
   allRegions,
   isChampion,
-  isOrigin,
   isRuneterran,
   regionContains,
   runeterranOrigin,
@@ -26,6 +25,7 @@ import {
 } from 'common/util/status'
 
 import { readBundle } from 'server/bundle'
+import bundles from 'server/config/bundles.json'
 
 interface RegionSet {
   champs: readonly Card[]
@@ -33,16 +33,9 @@ interface RegionSet {
 }
 type RegionSetMap = Record<Region, RegionSet>
 
-const SET_PACKS = [
-  'set1-en_us.json',
-  'set2-en_us.json',
-  'set3-en_us.json',
-  'set4-en_us.json',
-  'set5-en_us.json',
-  'set6-en_us.json',
-  'set6cde-en_us.json',
-  'set7-en_us.json',
-]
+const SET_PACKS = bundles
+  .filter((bundle) => bundle.setName !== 'core')
+  .map((bundle) => `${bundle.setName}-en_us.json`)
 
 let g_region_sets: RegionSetMap | undefined
 
@@ -60,6 +53,16 @@ function loadSetPack(
     if (
       obj.some((parsed_card: unknown) => {
         if (!SetPackCardT.guard(parsed_card)) {
+          if (
+            keyInUnknown(parsed_card, 'collectible') &&
+            typeof parsed_card.collectible === 'boolean' &&
+            !parsed_card.collectible
+          ) {
+            // Silently ignore non-collectible cards that don't match the
+            // expected format.
+            return false
+          }
+
           let ident = '?'
           if (
             keyInUnknown(parsed_card, 'cardCode') &&
@@ -87,7 +90,8 @@ function loadSetPack(
           let regions: Region[]
 
           if (isRuneterran(region_refs)) {
-            if (!isOrigin(parsed_card.name)) {
+            const origins = runeterranOrigin(parsed_card.name, region_refs)
+            if (origins === null) {
               callback(
                 makeErrStatus(
                   StatusCode.MISSING_RUNETERRAN_CHAMP,
@@ -97,7 +101,7 @@ function loadSetPack(
               return true
             }
 
-            regions = runeterranOrigin(parsed_card.name, region_refs)
+            regions = origins
           } else {
             regions = region_refs as Region[]
           }
