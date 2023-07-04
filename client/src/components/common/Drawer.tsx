@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
+
 import styles from './drawer.module.css'
 
 interface DrawerProps {
@@ -20,8 +21,13 @@ export function Drawer(props: DrawerProps) {
 
   return (
     <>
-      {isOpen && <div className={styles.drawerBackdrop} onClick={handleBackdropClick} />}
-      <div className={`${styles.drawer} ${isOpen ? styles.open : ''}`} onClick={handleDrawerClick}>
+      {isOpen && (
+        <div className={styles.drawerBackdrop} onClick={handleBackdropClick} />
+      )}
+      <div
+        className={`${styles.drawer} ${isOpen ? styles.open : ''}`}
+        onClick={handleDrawerClick}
+      >
         {props.children}
       </div>
     </>

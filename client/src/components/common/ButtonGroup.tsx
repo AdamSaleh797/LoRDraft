@@ -21,7 +21,9 @@ export function ButtonGroup({
         <Button
           key={button.id}
           className={`${selectedButton === button.id ? styles.selected : ''}`}
-          onClick={() => onButtonClick(button.id)}
+          onClick={() => {
+            onButtonClick(button.id)
+          }}
         >
           {button.label}
         </Button>

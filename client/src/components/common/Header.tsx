@@ -1,10 +1,12 @@
 import React from 'react'
+
 import styles from './header.module.css'
+
 import { APP_TITLE } from 'client/utils/constants'
 
-type HeaderProps = {
-  leftElement?: React.ReactNode,
-  rightElement?: React.ReactNode,
+interface HeaderProps {
+  leftElement?: React.ReactNode
+  rightElement?: React.ReactNode
 }
 
 export function Header(props: HeaderProps) {

@@ -7,7 +7,7 @@ import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common/Button'
 import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { PoolComponent } from 'client/components/draft/PoolComponent'
