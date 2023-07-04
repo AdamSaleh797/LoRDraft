@@ -62,6 +62,8 @@ const REGION_ABBREVIATIONS = [
   'Kayn',
   'Evelynn',
   'Bard',
+  'Neeko',
+  'POROKING',
   'DE',
   'RU',
   'FR',

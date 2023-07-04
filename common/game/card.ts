@@ -134,7 +134,7 @@ const ORIGINS = {
       card.cardCode === '07RU012'
     )
   },
-  'The Poro King': (card: Card): boolean => {
+  PoroKing: (card: Card): boolean => {
     return (
       ((card.subtypes.includes('poro') ||
         card.description.includes('poro') ||
@@ -189,9 +189,16 @@ export function isRuneterran(regions: readonly string[]): boolean {
 }
 
 export function runeterranOrigin(
-  card_name: Origin,
+  card_name: string,
   regions: readonly string[]
-): Region[] {
+): Region[] | null {
+  if (card_name === 'The Poro King') {
+    card_name = 'PoroKing'
+  }
+  if (!isOrigin(card_name)) {
+    return null
+  }
+
   const origins = regions.filter((region) => region !== RUNETERRA)
   if (!origins.includes(card_name)) {
     origins.push(card_name)
