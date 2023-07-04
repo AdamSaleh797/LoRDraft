@@ -11,6 +11,50 @@
   transition: all 0.2s ease-out;
 }
 
+.Demacia {
+  background-color: rgb(231, 217, 184);
+}
+
+.Shurima {
+  background-color: rgb(238, 205, 50);
+}
+
+.PiltoverZaun {
+  background-color: rgb(222, 199, 69);
+}
+
+.Bilgewater {
+  background-color: rgb(209, 109, 73);
+}
+
+.Noxus {
+  background-color: rgb(200, 77, 74);
+}
+
+.Ionia {
+  background-color: rgb(207, 130, 155);
+}
+
+.BandleCity {
+  background-color: rgb(193, 207, 17);
+}
+
+.ShadowIsles {
+  background-color: rgb(12, 161, 132);
+}
+
+.Targon {
+  background-color: rgb(91, 55, 229);
+}
+
+.Freljord {
+  background-color: rgb(147, 223, 250);
+}
+
+.Runeterra {
+  background-color: rgb(171, 148, 89);
+}
+
 .card > img:hover {
   box-shadow: rgb(157, 157, 157) 0 0 10px;
   border-radius: 10px;
@@ -18,7 +62,6 @@
 
 .card > .selected {
   box-shadow: rgb(157, 157, 157) 0 0 30px;
-  background-color: rgb(157, 157, 157);
   border-radius: 10px;
   filter: grayscale(50%);
 }
