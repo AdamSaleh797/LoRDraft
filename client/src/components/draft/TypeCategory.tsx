@@ -41,6 +41,21 @@ export function cardType(card: Card): CardCategory {
   }
 }
 
+export function pluralizeCardCategory(cardCategory: CardCategory) {
+  switch (cardCategory) {
+    case 'Champion':
+      return 'Champions'
+    case 'Follower':
+      return 'Followers'
+    case 'Spell':
+      return 'Spells'
+    case 'Landmark':
+      return 'Landmarks'
+    case 'Equipment':
+      return 'Equipment'
+  }
+}
+
 export function TypeCategory(props: TypeCategoryProps) {
   if (props.cardCounts.length === 0) {
     return <div></div>
@@ -51,7 +66,9 @@ export function TypeCategory(props: TypeCategoryProps) {
         <div className={style.categoryIcon}>
           <TypeIcon category={props.category} />
         </div>
-        <div className={style.categoryName}>{props.category}s</div>
+        <div className={style.categoryName}>
+          {pluralizeCardCategory(props.category)}
+        </div>
         <div className={style.categoryCount}>
           {props.cardCounts.reduce(
             (count, cardCount) => count + cardCount.count,

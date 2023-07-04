@@ -9,9 +9,6 @@
   display: inline-block;
 }
 
-.cardDisplayContainer:nth-child(2) {
-}
-
 .categoryLabel {
   font-weight: 600;
   display: flex;

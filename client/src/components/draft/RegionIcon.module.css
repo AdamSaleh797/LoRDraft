@@ -22,8 +22,9 @@
   aspect-ratio: 1;
   border: 1px solid black;
   border-radius: 100%;
-  font-size: 32%;
-  flex: 0 0 auto;
+  font-size: 9px;
+  background-color: #262931;
+  color: white;
 }
 
 .cardCount {
