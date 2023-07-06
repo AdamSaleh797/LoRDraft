@@ -1,5 +1,6 @@
 import React from 'react'
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import style from './TypeIcon.module.css'
 
 import { CardCategory } from 'client/components/draft/TypeCategory'

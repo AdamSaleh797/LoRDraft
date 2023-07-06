@@ -1,5 +1,6 @@
 import React from 'react'
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import style from './DeckList.module.css'
 
 import {

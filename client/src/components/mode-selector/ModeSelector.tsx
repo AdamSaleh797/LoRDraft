@@ -19,12 +19,12 @@ export function ModeSelector() {
     setSelectedListItem(key)
   }
 
-  const DraftModeButtonData = [
+  const draftModeButtonData = [
     { id: 'hs', label: 'Hearthstone type Draft' },
     { id: 'mtg', label: 'MTG type Arena Draft' },
   ]
 
-  const RulingButtonData = [
+  const rulingButtonData = [
     { id: 'standard', label: 'Standard' },
     { id: 'eternal', label: 'Eternal' },
   ]
@@ -86,7 +86,7 @@ export function ModeSelector() {
     <div>
       <h4>Select your Draft Mode</h4>
       <ButtonGroup
-        buttons={DraftModeButtonData}
+        buttons={draftModeButtonData}
         selectedButton={selectedDraftMode}
         onButtonClick={selectDraftMode}
       />
@@ -95,7 +95,7 @@ export function ModeSelector() {
 
       <h4>Select your LoR Ruling</h4>
       <ButtonGroup
-        buttons={RulingButtonData}
+        buttons={rulingButtonData}
         selectedButton={selectedRuling}
         onButtonClick={selectRuling}
       />

@@ -1,12 +1,9 @@
-import React, { useState } from 'react'
-
-import { DraftOptionsComponent } from './DraftOptions'
+import React from 'react'
 
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
-import { Button, Modal } from 'client/components/common'
 import { DraftComponent } from 'client/components/draft/Draft'
-import { ModeSelector } from 'client/components/mode-selector/ModeSelector'
+import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
 import { inDraft, selectDraftState } from 'client/store/draft'
 import {
   doFetchGameMetadataAsync,
@@ -20,7 +17,6 @@ interface DraftFlowComponentProps {
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
-  const [modalOpen, setModalOpen] = useState(false)
   const draft_state = useLoRSelector(selectDraftState)
   const game_metadata = useLoRSelector(selectGameMetadataState)
   const dispatch = useLoRDispatch()
@@ -38,7 +34,6 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     return (
       <>
         <h4>
-          {' '}
           Following the draft Options which are getting reworked on the left
         </h4>
 

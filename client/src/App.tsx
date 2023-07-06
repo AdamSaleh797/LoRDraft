@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import style from './App.module.css'
 
 import { SignInComponent } from 'client/components/auth/SignInComponent'
