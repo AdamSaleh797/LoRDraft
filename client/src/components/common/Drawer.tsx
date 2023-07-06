@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './drawer.module.css'
+import styles from './Drawer.module.css'
 
 interface DrawerProps {
   children: React.ReactNode

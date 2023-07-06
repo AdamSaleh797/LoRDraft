@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './modal.module.css'
+import styles from './Modal.module.css'
 
 import { Button } from 'client/components/common/Button'
 

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './layout.module.css'
+import styles from './Layout.module.css'
 
 export function Layout(props: { children: React.ReactNode }) {
   return (
