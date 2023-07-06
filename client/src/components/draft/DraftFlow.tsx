@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import { DraftOptionsComponent } from './DraftOptions'
+
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
 import { Button, Modal } from 'client/components/common'
@@ -35,13 +37,16 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   if (!inDraft(draft_state)) {
     return (
       <>
-        {/*
+        <h4>
+          {' '}
+          Following the draft Options which are getting reworked on the left
+        </h4>
+
         <DraftOptionsComponent
           socket={props.socket}
           authInfo={props.authInfo}
           gameMetadata={game_metadata}
         />
-      */}
       </>
     )
   } else {

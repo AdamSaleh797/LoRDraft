@@ -151,7 +151,9 @@ export function ModeSelector() {
         />
 
         <h5>Start Draft with these Settings?</h5>
-        <Button onClick={handleSubmit} buttonType="confirm">Submit</Button>
+        <Button onClick={handleSubmit} buttonType='confirm'>
+          Submit
+        </Button>
       </div>
     </div>
   )

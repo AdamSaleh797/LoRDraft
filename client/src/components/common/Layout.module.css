@@ -1,5 +1,5 @@
 .parent {
-  background: linear-gradient(180deg, #182848, #ff4081 );
+  background: linear-gradient(180deg, #182848, #ff4081);
   position: relative;
   width: 100%;
   height: 100vh;
@@ -17,7 +17,7 @@
   transform: translate(-50%, -50%);
   border-radius: 18px;
   box-shadow: 1px 1px 3px 0px;
-  overflow-y: auto; 
+  overflow-y: auto;
 }
 
 .child::-webkit-scrollbar {
