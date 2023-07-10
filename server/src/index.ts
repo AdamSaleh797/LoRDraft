@@ -3,22 +3,9 @@ import http from 'http'
 import mime from 'mime'
 import path from 'path'
 
-import { isOk } from 'common/util/status'
-
 import { config } from 'server/args'
 import { initSocket } from 'server/socket_init'
-import { updateAssets } from 'server/update_assets'
-
-if (config.download) {
-  console.log('downloading assets.')
-  updateAssets(config.sequential, (status) => {
-    if (!isOk(status)) {
-      console.log(status)
-      return
-    }
-    console.log('done downloading!')
-  })
-}
+import { setUpPollAssetUpdates } from 'server/update_assets'
 
 const app = http.createServer(function (req, resp) {
   // This callback runs when a new connection is made to our HTTP server.
@@ -69,6 +56,8 @@ const app = http.createServer(function (req, resp) {
 initSocket(app)
 
 app.listen(config.port)
+
+setUpPollAssetUpdates()
 
 {
   let addr = app.address()

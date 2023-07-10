@@ -1,13 +1,12 @@
 import child_process from 'child_process'
 import fs from 'fs'
+import { IncomingHttpHeaders } from 'http'
 import https from 'https'
 import path from 'path'
 
 import { Status, StatusCode, isOk, statusFromError } from 'common/util/status'
 
 const ASSET_DIR = path.join(__dirname, '../assets')
-
-export type CallbackFn = (status: Status) => void
 
 function prepareAssetsDir() {
   try {
@@ -20,7 +19,7 @@ function prepareAssetsDir() {
 function unzipFile(
   file: string,
   output_dir: string,
-  callback: CallbackFn = () => undefined
+  callback: (status: Status) => void = () => undefined
 ) {
   let cmd
   if (process.platform === 'win32') {
@@ -36,7 +35,8 @@ function unzipFile(
 export function downloadZipAsset(
   url: string,
   dst_file_name: string,
-  callback: CallbackFn = () => undefined
+  callback: (status: Status, headers: IncomingHttpHeaders) => void = () =>
+    undefined
 ) {
   prepareAssetsDir()
 
@@ -51,17 +51,23 @@ export function downloadZipAsset(
 
       unzipFile(zip_path, file_path, (status) => {
         if (!isOk(status)) {
-          callback(status)
+          callback(status, response.headers)
         } else {
           fs.unlink(zip_path, (err: Error | null) => {
-            callback(statusFromError(err, StatusCode.UNZIP_ERROR, null))
+            callback(
+              statusFromError(err, StatusCode.UNZIP_ERROR, null),
+              response.headers
+            )
           })
         }
       })
     })
 
     file.on('error', (err: Error) => {
-      callback(statusFromError(err, StatusCode.FILE_ERROR, null))
+      callback(
+        statusFromError(err, StatusCode.FILE_ERROR, null),
+        response.headers
+      )
     })
   })
 }
@@ -74,7 +80,7 @@ export function extractFromBundle(
   bundle: string,
   rel_path: string,
   name: string,
-  callback: CallbackFn = () => undefined
+  callback: (status: Status) => void = () => undefined
 ) {
   prepareAssetsDir()
 
@@ -89,7 +95,7 @@ export function extractFromBundle(
 
 export function removeBundle(
   bundle: string,
-  callback: CallbackFn = () => undefined
+  callback: (status: Status) => void = () => undefined
 ) {
   prepareAssetsDir()
 
