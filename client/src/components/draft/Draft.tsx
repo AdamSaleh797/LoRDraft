@@ -11,6 +11,7 @@ import { Button } from 'client/components/common/button'
 import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { PoolComponent } from 'client/components/draft/PoolComponent'
+import { RoundLabel } from 'client/components/draft/RoundLabel'
 import { DraftSketch } from 'client/context/draft/draft_sketch'
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
@@ -95,6 +96,7 @@ export function DraftComponent(props: DraftProps) {
           draftSketchManager={sketchManager}
         />
         <div className={style.draftInformation}>
+          <RoundLabel draftState={props.draftState} />
           <ManaCurve draftSketch={sketchManager.sketch()} />
           <div className={style.buttonContainer}>
             <Button onClick={confirm}>CONFIRM!</Button>
@@ -108,7 +110,6 @@ export function DraftComponent(props: DraftProps) {
           gameMetadata={props.gameMetadata}
         />
       </div>
-
       <div>
         <Button onClick={exitDraft}>EXIT!</Button>
       </div>
