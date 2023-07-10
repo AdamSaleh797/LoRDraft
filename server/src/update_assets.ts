@@ -5,11 +5,11 @@ import path from 'path'
 import { allFullfilled } from 'common/util/lor_util'
 import {
   ErrStatusT,
-  OkStatus,
   Status,
   StatusCode,
   isOk,
   makeErrStatus,
+  makeOkStatus,
 } from 'common/util/status'
 
 import { config } from 'server/args'
@@ -74,18 +74,20 @@ async function pollAssetUpdates() {
   const result = await maybeUpdateAssets()
   if (!isOk(result)) {
     console.log('Error while polling for asset update:', result)
-  } else {
+  } else if (result.value) {
+    // Only serialize the global state if some assets were updated.
     persistor.persist()
   }
 }
 
 /**
- * Updates each asset that has changed, or that isn't downloaded at all.
+ * Updates each asset that has changed, or that isn't downloaded at all. If any
+ * set packs were updated, returns true, else returns false.
  *
  * Set packs can change when a patch comes out, but is not automatically picked
  * up when a new set pack is released.
  */
-async function maybeUpdateAssets(): Promise<Status> {
+async function maybeUpdateAssets(): Promise<Status<boolean>> {
   if (config.sequential) {
     return await maybeUpdateAssetsSerial()
   } else {
@@ -93,7 +95,7 @@ async function maybeUpdateAssets(): Promise<Status> {
   }
 }
 
-async function maybeUpdateAssetsParallel(): Promise<Status> {
+async function maybeUpdateAssetsParallel(): Promise<Status<boolean>> {
   const should_update = await Promise.allSettled(bundles.map(shouldUpdateAsset))
   if (!allFullfilled(should_update)) {
     return makeErrStatus(
@@ -129,17 +131,22 @@ async function maybeUpdateAssetsParallel(): Promise<Status> {
         )
     )
   } else {
-    return OkStatus
+    return makeOkStatus(results.length !== 0)
   }
 }
 
-async function maybeUpdateAssetsSerial(): Promise<Status> {
+async function maybeUpdateAssetsSerial(): Promise<Status<boolean>> {
   const should_update = await Promise.allSettled(bundles.map(shouldUpdateAsset))
   if (!allFullfilled(should_update)) {
     return makeErrStatus(
       StatusCode.INTERNAL_SERVER_ERROR,
       'Unexpected rejected promise in `maybeUpdateAssetsParallel`'
     )
+  }
+
+  // If no assets should update, immediately return false.
+  if (!should_update.some((result) => result.value)) {
+    return makeOkStatus(false)
   }
 
   const rejected_results: ErrStatusT[] = []
@@ -159,7 +166,7 @@ async function maybeUpdateAssetsSerial(): Promise<Status> {
       rejected_results
     )
   } else {
-    return OkStatus
+    return makeOkStatus(true)
   }
 }
 
