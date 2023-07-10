@@ -194,7 +194,7 @@ async function updateAsset(bundle: Bundle) {
             if (isOk(status)) {
               updateSetPack(dispatch, {
                 setPack: bundle.setName,
-                lastModified: headers['last-modified'] ?? null,
+                state: { lastModified: headers['last-modified'] ?? null },
               })
             }
             resolve(status)

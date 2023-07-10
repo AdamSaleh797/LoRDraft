@@ -27,16 +27,10 @@ const setPacksSlice = createSlice({
   reducers: {
     updateSetPack: (
       state,
-      action: PayloadAction<{ setPack: string; lastModified: string | null }>
+      action: PayloadAction<{ setPack: string; state: SetPackState }>
     ) => {
       const name = action.payload.setPack
-      if (stateContainsSetPack(state.setPacks, name)) {
-        state.setPacks[name].lastModified = action.payload.lastModified
-      } else {
-        state.setPacks[action.payload.setPack] = {
-          lastModified: action.payload.lastModified,
-        }
-      }
+      state.setPacks[name] = action.payload.state
     },
   },
 })
@@ -47,7 +41,7 @@ export function selectSetPacksState(state: RootState) {
 
 export function updateSetPack(
   dispatch: LoRServerDispatch,
-  args: { setPack: string; lastModified: string | null }
+  args: { setPack: string; state: SetPackState }
 ) {
   dispatch(setPacksSlice.actions.updateSetPack(args))
 }
