@@ -28,10 +28,12 @@ import {
 
 type Bundle = (typeof bundles)[number]
 
+const HOUR_MS = 60 * 60 * 1000
+
 export function setUpPollAssetUpdates() {
   // Do once, then set up interval to periodically check for updated assets.
   setImmediate(pollAssetUpdates)
-  setInterval(pollAssetUpdates, 60 * 60 * 1000)
+  setInterval(pollAssetUpdates, HOUR_MS)
 }
 
 async function shouldUpdateAsset(bundle: Bundle): Promise<boolean> {
