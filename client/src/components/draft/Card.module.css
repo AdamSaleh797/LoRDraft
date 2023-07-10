@@ -3,7 +3,66 @@
   margin-right: 10px;
 }
 
-.card > img {
+.color {
+  display: flex;
+  border-radius: 10px;
+  transition: all 0.2s ease-out;
+}
+
+.color:hover {
+  box-shadow: rgb(157, 157, 157) 0 0 10px;
+  border-radius: 10px;
+}
+
+.selectedColor {
+  box-shadow: rgb(157, 157, 157) 0 0 30px;
+}
+
+.Demacia {
+  background-color: rgb(231, 217, 184);
+}
+
+.Shurima {
+  background-color: rgb(219, 191, 67);
+}
+
+.PiltoverZaun {
+  background-color: rgb(207, 188, 84);
+}
+
+.Bilgewater {
+  background-color: rgb(195, 115, 85);
+}
+
+.Noxus {
+  background-color: rgb(188, 89, 87);
+}
+
+.Ionia {
+  background-color: rgb(199, 138, 157);
+}
+
+.BandleCity {
+  background-color: rgb(178, 188, 36);
+}
+
+.ShadowIsles {
+  background-color: rgb(28, 146, 122);
+}
+
+.Targon {
+  background-color: rgb(102, 74, 211);
+}
+
+.Freljord {
+  background-color: rgb(158, 218, 240);
+}
+
+.Runeterra {
+  background-color: rgb(163, 144, 98);
+}
+
+.image {
   width: 100%;
   height: 100%;
   user-select: none;
@@ -11,14 +70,6 @@
   transition: all 0.2s ease-out;
 }
 
-.card > img:hover {
-  box-shadow: rgb(157, 157, 157) 0 0 10px;
-  border-radius: 10px;
-}
-
-.card > .selected {
-  box-shadow: rgb(157, 157, 157) 0 0 30px;
-  background-color: rgb(157, 157, 157);
-  border-radius: 10px;
-  filter: grayscale(50%);
+.selectedImage {
+  filter: saturate(70%);
 }

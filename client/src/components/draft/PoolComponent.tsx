@@ -86,6 +86,7 @@ export function PoolComponent(props: PoolComponentProps) {
               numCards={cards.length}
               isSelected={is_selected}
               select={doSelect}
+              draftState={props.draftState}
             />
           )
         })}
