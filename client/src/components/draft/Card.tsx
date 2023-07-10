@@ -25,18 +25,24 @@ export function CardComponent(props: CardComponentProps) {
 
   return (
     <div className={style.card} onClick={props.select}>
-      <img
-        className={
+      <div
+        className={`${style.color} ${
           props.isSelected
-            ? `${style.selected} ${
+            ? `${style.selectedColor} ${
                 isMainRegion(region) ? style[region] : style.Runeterra
               }`
             : ''
-        }
-        src={props.card.imageUrl}
-        alt={props.card.name}
-        draggable={false}
-      ></img>
+        }`}
+      >
+        <img
+          className={`${style.image} ${
+            props.isSelected ? `${style.selectedImage}` : ''
+          }`}
+          src={props.card.imageUrl}
+          alt={props.card.name}
+          draggable={false}
+        ></img>
+      </div>
     </div>
   )
 }
