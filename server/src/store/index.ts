@@ -36,7 +36,7 @@ export const store = configureStore({
 })
 
 export const persistor = persistStore(store)
-export const dispatch: LoRServerDispatch = store.dispatch
+export const dispatch = store.dispatch
 
 export type LoRServerDispatch = typeof store.dispatch
 export type RootState = ReturnType<typeof store.getState>
