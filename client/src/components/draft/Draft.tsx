@@ -94,10 +94,12 @@ export function DraftComponent(props: DraftProps) {
           draftState={props.draftState}
           draftSketchManager={sketchManager}
         />
-        <ManaCurve draftSketch={sketchManager.sketch()} />
-      </div>
-      <div className={style.buttonContainer}>
-        <Button onClick={confirm}>CONFIRM!</Button>
+        <div className={style.draftInformation}>
+          <ManaCurve draftSketch={sketchManager.sketch()} />
+          <div className={style.buttonContainer}>
+            <Button onClick={confirm}>CONFIRM!</Button>
+          </div>
+        </div>
       </div>
       <div>
         <DeckList

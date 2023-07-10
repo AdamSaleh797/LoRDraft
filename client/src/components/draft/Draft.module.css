@@ -1,5 +1,9 @@
 .cardSelectLayout {
-  display: inline-block;
+  display: flex;
+}
+
+.draftInformation {
+  width: 20%;
 }
 
 .deckInfoDisplay {
