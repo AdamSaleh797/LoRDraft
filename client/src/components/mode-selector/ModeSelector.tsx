@@ -115,7 +115,7 @@ export function ModeSelector() {
         />
         <ListItem
           key='pauper'
-          title='pauper'
+          title='Pauper'
           description='only Commons'
           selected={selectedListItem === 'pauper'}
           onClick={() => {
