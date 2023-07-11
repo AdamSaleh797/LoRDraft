@@ -1,6 +1,5 @@
 import React from 'react'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import style from './ManaCurve.module.css'
 
 import { CardCount } from 'common/game/draft'

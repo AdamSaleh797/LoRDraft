@@ -1,6 +1,5 @@
 import React from 'react'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import style from './Draft.module.css'
 
 import { Card, cardsEqual } from 'common/game/card'

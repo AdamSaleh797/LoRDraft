@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import style from './App.module.css'
 
 import { SignInComponent } from 'client/components/auth/SignInComponent'
@@ -42,7 +41,7 @@ export default function App() {
       <Header
         leftElement={
           isSignedIn(session_state) ? (
-            <Button onClick={handleDrawerToggle}>Toggle Drawer</Button>
+            <Button onClick={handleDrawerToggle}>Join Draft</Button>
           ) : (
             <></>
           )
