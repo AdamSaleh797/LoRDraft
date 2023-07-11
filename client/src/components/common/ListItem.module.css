@@ -1,3 +1,9 @@
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .list-item {
   padding: 10px;
   border: 1px solid #ccc;
@@ -8,8 +14,7 @@
   background-color: #e0e0e0;
 }
 
-.list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.list-item.disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
 }

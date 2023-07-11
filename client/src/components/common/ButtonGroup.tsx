@@ -1,11 +1,12 @@
 import React from 'react'
 
+import { disabled } from './Button.module.css'
 import styles from './ButtonGroup.module.css'
 
 import { Button } from 'client/components/common/Button'
 
 interface ButtonGroupProps {
-  buttons: { id: string; label: string }[]
+  buttons: { id: string; label: string; disabled?: boolean }[]
   selectedButton: string
   onButtonClick: (buttonId: string) => void
 }
@@ -21,6 +22,7 @@ export function ButtonGroup({
         <Button
           key={button.id}
           className={`${selectedButton === button.id ? styles.selected : ''}`}
+          disabled={button.disabled}
           onClick={() => {
             onButtonClick(button.id)
           }}

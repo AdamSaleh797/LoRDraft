@@ -21,9 +21,5 @@
 }
 
 .child::-webkit-scrollbar {
-  width: calc(8px + 2 * 8px); /* Adjust as needed */
-}
-
-.child::-webkit-scrollbar-thumb {
-  border-radius: calc(8px + 2 * 8px); /* Adjust as needed */
+  width: calc(8px + 2 * 8px);
 }

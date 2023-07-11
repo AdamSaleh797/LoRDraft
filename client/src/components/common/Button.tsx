@@ -6,6 +6,7 @@ interface ButtonProps {
   children: ReactNode
   onClick?: MouseEventHandler<HTMLButtonElement>
   className?: string
+  disabled?: boolean
   buttonType?: 'confirm' | 'cancel' | 'normal'
 }
 
@@ -13,6 +14,7 @@ export function Button({
   children,
   onClick,
   className,
+  disabled = false,
   buttonType = 'normal',
 }: ButtonProps) {
   let buttonClass = `${styles.button} ${className}`
@@ -23,8 +25,12 @@ export function Button({
     buttonClass += ` ${styles.confirmBtn}`
   }
 
+  if (disabled) {
+    buttonClass += ` ${styles.disabled}`
+  }
+
   return (
-    <button className={buttonClass} onClick={onClick}>
+    <button className={buttonClass} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   )

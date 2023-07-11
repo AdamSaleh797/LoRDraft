@@ -1,6 +1,11 @@
 import React, { useState } from 'react'
 
-import { Button, ButtonGroup, ListItem } from 'client/components/common'
+import {
+  AccordionItem,
+  Button,
+  ButtonGroup,
+  ListItem,
+} from 'client/components/common'
 
 export function ModeSelector() {
   const [selectedDraftMode, setSelectedDraftMode] = useState<string>('hs')
@@ -20,8 +25,8 @@ export function ModeSelector() {
   }
 
   const draftModeButtonData = [
-    { id: 'hs', label: 'Hearthstone type Draft' },
-    { id: 'mtg', label: 'MTG type Arena Draft' },
+    { id: 'hs', label: 'Hearthstone type Draft', disabled: true },
+    { id: 'mtg', label: 'MTG Arena type Draft', disabled: true },
   ]
 
   const rulingButtonData = [
@@ -84,7 +89,7 @@ export function ModeSelector() {
 
   return (
     <div>
-      <h4>Select your Draft Mode</h4>
+      <h4>Select your Draft Mode (Work in Progress)</h4>
       <ButtonGroup
         buttons={draftModeButtonData}
         selectedButton={selectedDraftMode}
@@ -102,53 +107,60 @@ export function ModeSelector() {
 
       <hr></hr>
 
-      <h4>Select one of our Special Modes</h4>
+      <h4>Select one of our Special Modes (Work in Progress)</h4>
       <div className='list-container'>
-        <ListItem
-          key='normal'
-          title='Normal'
-          description='No restrictions'
-          selected={selectedListItem === 'normal'}
-          onClick={() => {
-            selectListItem('normal')
-          }}
-        />
-        <ListItem
-          key='pauper'
-          title='Pauper'
-          description='only Commons'
-          selected={selectedListItem === 'pauper'}
-          onClick={() => {
-            selectListItem('pauper')
-          }}
-        />
-        <ListItem
-          key='pauperPlus'
-          title='pauper+'
-          description='only commons and rare'
-          selected={selectedListItem === 'pauperPlus'}
-          onClick={() => {
-            selectListItem('pauperPlus')
-          }}
-        />
-        <ListItem
-          key='noChampions'
-          title='No Champions'
-          description='this will exclude Champions'
-          selected={selectedListItem === 'noChampions'}
-          onClick={() => {
-            selectListItem('noChampions')
-          }}
-        />
-        <ListItem
-          key='unitsOnly'
-          title='only units'
-          description='only commons and uncommons'
-          selected={selectedListItem === 'unitsOnly'}
-          onClick={() => {
-            selectListItem('unitsOnly')
-          }}
-        />
+        <AccordionItem title='Special Modes'>
+          <ListItem
+            key='normal'
+            title='Normal'
+            description='No restrictions'
+            selected={selectedListItem === 'normal'}
+            onClick={() => {
+              selectListItem('normal')
+            }}
+            disabled={true}
+          />
+          <ListItem
+            key='pauper'
+            title='Pauper'
+            description='only Commons'
+            selected={selectedListItem === 'pauper'}
+            disabled={true}
+            onClick={() => {
+              selectListItem('pauper')
+            }}
+          />
+          <ListItem
+            key='pauperPlus'
+            title='pauper+'
+            description='only commons and rare'
+            selected={selectedListItem === 'pauperPlus'}
+            disabled={true}
+            onClick={() => {
+              selectListItem('pauperPlus')
+            }}
+          />
+          <ListItem
+            key='noChampions'
+            title='No Champions'
+            description='this will exclude Champions'
+            selected={selectedListItem === 'noChampions'}
+            disabled={true}
+            onClick={() => {
+              selectListItem('noChampions')
+            }}
+          />
+          <ListItem
+            key='unitsOnly'
+            title='only units'
+            description='only commons and uncommons'
+            selected={selectedListItem === 'unitsOnly'}
+            disabled={true}
+            onClick={() => {
+              selectListItem('unitsOnly')
+            }}
+          />
+        </AccordionItem>
 
         <h5>Start Draft with these Settings?</h5>
         <Button onClick={handleSubmit} buttonType='confirm'>

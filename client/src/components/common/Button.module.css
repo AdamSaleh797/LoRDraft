@@ -57,3 +57,20 @@
 .confirmBtn:active {
   background-color: #00b33c; /* Different shade for confirm button active state */
 }
+
+.disabled {
+  background-color: #e0e0e0; /* Lighter background color for disabled state */
+  cursor: not-allowed; /* Show disabled cursor */
+}
+
+.disabled:hover {
+  background-color: #e0e0e0; /* Keep the same background color on hover */
+}
+
+.disabled:focus {
+  outline: none; /* Remove focus outline for disabled state */
+}
+
+.disabled:active {
+  background-color: #e0e0e0; /* Keep the same background color on active state */
+}
