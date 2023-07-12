@@ -1,0 +1,18 @@
+.roundLabelContainer {
+  background: #4066bab8;
+  height: -webkit-fill-available;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  color: black;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roundLabel {
+  text-align: center;
+  font-size: xx-large;
+  font-weight: 600;
+  font-family: 'BeaufortForLOL';
+}
