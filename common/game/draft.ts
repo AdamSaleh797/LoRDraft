@@ -25,6 +25,10 @@ export const POOL_SIZE = 4
  */
 export const CARDS_PER_DECK = 40
 
+export const RANDOM_SELECTION_1_CARD_CUTOFF = 20
+export const RANDOM_SELECTION_2_CARD_CUTOFF = 37
+export const RANDOM_SELECTION_3_CARD_CUTOFF = 46
+
 export const enum DraftState {
   INIT = 'INIT',
   INITIAL_SELECTION = 'INITIAL_SELECTION',
