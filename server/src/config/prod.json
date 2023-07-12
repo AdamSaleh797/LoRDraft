@@ -1,6 +1,5 @@
 {
   "root_dir": "../dist/prod",
   "port": 80,
-  "download": false,
   "sequential": false
 }
