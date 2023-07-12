@@ -35,7 +35,7 @@ const setPacksSlice = createSlice({
   },
 })
 
-export function selectSetPacksState(state: RootState) {
+export function selectSetPacksState(state: RootState): SetPacksState {
   return state.setPacks
 }
 

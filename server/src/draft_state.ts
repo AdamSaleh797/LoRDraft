@@ -34,9 +34,10 @@ import {
   makeOkStatus,
 } from 'common/util/status'
 
-import { LoggedInAuthUser, joinSession } from 'server/auth'
+import { joinSession } from 'server/auth'
 import { SessionInfo } from 'server/session'
 import { regionSets } from 'server/set_packs'
+import { LoggedInAuthUser } from 'server/store/usermap'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [

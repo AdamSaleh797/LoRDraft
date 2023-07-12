@@ -12,9 +12,11 @@ import {
 import { AsyncNodeStorage } from 'redux-persist-node-storage'
 
 import setPacksReducer from 'server/store/set_packs'
+import usermapReducer from 'server/store/usermap'
 
 const reducer = combineReducers({
   setPacks: setPacksReducer,
+  usermap: usermapReducer,
 })
 
 const persistConfig = {
