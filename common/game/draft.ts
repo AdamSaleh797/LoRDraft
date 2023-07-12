@@ -55,7 +55,7 @@ export const DraftDeckT = RecordT({
 })
 
 export interface DraftDeck {
-  regions: Region[]
+  readonly regions: Region[]
   cardCounts: CardCount[]
   numCards: number
   readonly options: DraftOptions
