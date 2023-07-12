@@ -1,8 +1,10 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import crypto from 'crypto'
 
+import { DraftStateInfo } from 'common/game/draft'
 import { LoginCred, RegisterInfo } from 'common/game/socket-msgs'
 import {
+  OkStatus,
   Status,
   StatusCode,
   makeErrStatus,
@@ -17,17 +19,17 @@ const TOKEN_LENGTH = 256
 
 export interface SessionAuthInfo {
   // Base-64 encoded token.
-  token: string
+  readonly token: string
   // The last time the user provided their login credentials, in milliseconds
   // from the epoch.
-  loginTime: number
+  readonly loginTime: number
 }
 
 export interface AuthUser {
-  username: string
+  readonly username: string
   // Base-64 encoded password hash
-  passwordHash: string
-  email: string
+  readonly passwordHash: string
+  readonly email: string
   loggedIn: boolean
   // Defined only when logged in.
   sessionInfo?: SessionInfo
@@ -38,6 +40,10 @@ export interface LoggedInAuthUser extends AuthUser {
 }
 
 export type Usermap = Partial<Record<string, AuthUser>>
+
+export interface InDraftSessionInfo extends SessionInfo {
+  draftState: DraftStateInfo
+}
 
 export function userLoggedIn(
   auth_user: AuthUser
@@ -91,14 +97,36 @@ const usermapSlice = createSlice({
       }
 
       auth_user.loggedIn = true
-      auth_user.sessionInfo = { authInfo }
+      auth_user.sessionInfo = { username: loginCred.username, authInfo }
     },
 
-    logoutUser: (
+    logoutUser: (usermap, action: PayloadAction<{ username: string }>) => {
+      const { username } = action.payload
+      const auth_user = usermap[username] as AuthUser
+      logout(auth_user as LoggedInAuthUser)
+    },
+
+    updateDraft: (
       usermap,
-      action: PayloadAction<{ authUser: LoggedInAuthUser }>
+      action: PayloadAction<{
+        sessionInfo: SessionInfo
+        draftState: DraftStateInfo
+      }>
     ) => {
-      logout(action.payload.authUser)
+      const { sessionInfo, draftState } = action.payload
+      const authUser = usermap[sessionInfo.username] as LoggedInAuthUser
+      authUser.sessionInfo.draftState = draftState
+    },
+
+    exitDraft: (
+      usermap,
+      action: PayloadAction<{
+        sessionInfo: SessionInfo
+      }>
+    ) => {
+      const { sessionInfo } = action.payload
+      const authUser = usermap[sessionInfo.username] as LoggedInAuthUser
+      delete authUser.sessionInfo.draftState
     },
   },
 })
@@ -191,8 +219,35 @@ export function loginUser(
 }
 
 export function logoutUser(authUser: LoggedInAuthUser) {
-  dispatch(usermapSlice.actions.logoutUser({ authUser }))
+  dispatch(usermapSlice.actions.logoutUser({ username: authUser.username }))
   persistor.persist()
+}
+
+export function updateDraft(
+  sessionInfo: SessionInfo,
+  draftState: DraftStateInfo
+) {
+  dispatch(usermapSlice.actions.updateDraft({ sessionInfo, draftState }))
+  persistor.persist()
+}
+
+export function exitDraft(sessionInfo: SessionInfo): Status {
+  if (!inDraft(sessionInfo)) {
+    return makeErrStatus(
+      StatusCode.NOT_IN_DRAFT_SESSION,
+      'Not in draft session'
+    )
+  }
+
+  dispatch(usermapSlice.actions.exitDraft({ sessionInfo }))
+  persistor.persist()
+  return OkStatus
+}
+
+export function inDraft(
+  sessionInfo: SessionInfo
+): sessionInfo is InDraftSessionInfo {
+  return sessionInfo.draftState !== undefined
 }
 
 export default usermapSlice.reducer

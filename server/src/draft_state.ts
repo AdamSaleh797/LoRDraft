@@ -26,7 +26,6 @@ import {
   randSampleNumbers,
 } from 'common/util/lor_util'
 import {
-  OkStatus,
   Status,
   StatusCode,
   isOk,
@@ -37,7 +36,12 @@ import {
 import { joinSession } from 'server/auth'
 import { SessionInfo } from 'server/session'
 import { regionSets } from 'server/set_packs'
-import { LoggedInAuthUser } from 'server/store/usermap'
+import {
+  LoggedInAuthUser,
+  exitDraft,
+  inDraft,
+  updateDraft,
+} from 'server/store/usermap'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [
@@ -52,10 +56,6 @@ const RANDOM_SELECTION_1_CARD_CUTOFF = 20
 const RANDOM_SELECTION_2_CARD_CUTOFF = 37
 //FIXME: REVERT THIS BACK TO 43
 const RANDOM_SELECTION_3_CARD_CUTOFF = 46
-
-interface InDraftSessionInfo extends SessionInfo {
-  draftState: DraftStateInfo
-}
 
 function chooseChampCards(
   draft_state: DraftState,
@@ -156,13 +156,11 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
 
 /**
  * Chooses the next set of cards for draft state `draft_state`, adding the
- * chosen cards to the `pending_cards` of the state and potentially changing
- * the `state` if successful. If this fails, `callback` will be called with a
- * non-OK status and `draft_state` will not have changed.
+ * chosen cards to the `pending_cards` and returning the new draft state.
  */
 function chooseNextCards(
   draft_state: DraftStateInfo,
-  callback: (status: Status) => void
+  callback: (status: Status<DraftStateInfo>) => void
 ) {
   const cur_state = draft_state.state
   const next_draft_state = nextDraftState(cur_state, draft_state.deck)
@@ -183,9 +181,13 @@ function chooseNextCards(
     }
 
     // If cards were chosen successfully, then update the draft state.
-    draft_state.pendingCards = status.value
-    draft_state.state = next_draft_state
-    callback(OkStatus)
+    callback(
+      makeOkStatus({
+        ...draft_state,
+        pendingCards: status.value,
+        state: next_draft_state,
+      })
+    )
   }
 
   const champCardsCallback = (status: Status<Card[]>) => {
@@ -204,8 +206,12 @@ function chooseNextCards(
       chooseNextCards(draft_state, callback)
     } else {
       // If cards were chosen successfully, then update the draft state.
-      draft_state.pendingCards = cards
-      callback(OkStatus)
+      callback(
+        makeOkStatus({
+          ...draft_state,
+          pendingCards: cards,
+        })
+      )
     }
   }
 
@@ -388,9 +394,8 @@ export function initDraftState(socket: LoRDraftSocket) {
           return
         }
 
-        // If OK, `choose_next_cards` will have updated `draft_state`, so
-        // return it directly.
-        resolve(makeOkStatus(draft_state))
+        updateDraft(auth_user.sessionInfo, status.value)
+        resolve(makeOkStatus(status.value))
       })
     })
   })
@@ -687,6 +692,8 @@ export function enterDraft(
       return
     }
 
+    const draft_state = status.value
+
     // Since choose_next_cards is async, we need to check again that we're not
     // already in a draft. It's possible another request to join a draft
     // finished processing between when we last checked and now.
@@ -701,25 +708,7 @@ export function enterDraft(
     }
 
     // If successful, join the draft by adding it to the session info.
-    session_info.draftState = draft_state
+    updateDraft(session_info, draft_state)
     callback(makeOkStatus(draft_state))
   })
-}
-
-export function exitDraft(session_info: SessionInfo): Status {
-  if (!inDraft(session_info)) {
-    return makeErrStatus(
-      StatusCode.NOT_IN_DRAFT_SESSION,
-      'Not in draft session'
-    )
-  }
-
-  delete (session_info as SessionInfo).draftState
-  return OkStatus
-}
-
-function inDraft(
-  session_info: SessionInfo
-): session_info is InDraftSessionInfo {
-  return session_info.draftState !== undefined
 }

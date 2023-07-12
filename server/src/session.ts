@@ -3,6 +3,7 @@ import { DraftStateInfo } from 'common/game/draft'
 import { SessionAuthInfo } from 'server/store/usermap'
 
 export interface SessionInfo {
-  authInfo: SessionAuthInfo
+  readonly username: string
+  readonly authInfo: SessionAuthInfo
   draftState?: DraftStateInfo
 }
