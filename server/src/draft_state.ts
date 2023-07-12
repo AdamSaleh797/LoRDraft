@@ -45,7 +45,7 @@ const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [
   DraftState.CHAMP_ROUND_1,
   DraftState.CHAMP_ROUND_2,
-  // DraftState.CHAMP_ROUND_3,
+  DraftState.CHAMP_ROUND_3,
 ]
 
 const MAX_CARD_REPICK_ITERATIONS = 200
@@ -138,14 +138,13 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
       if (deck.numCards < RANDOM_SELECTION_3_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_3
       } else {
-        return DraftState.GENERATE_CODE
-        // TODO revert this
-        // return DraftState.CHAMP_ROUND_3
+        //return DraftState.GENERATE_CODE
+        return DraftState.CHAMP_ROUND_3
       }
-    // case DraftState.CHAMP_ROUND_3:
-    //   return DraftState.TRIM_DECK
-    // case DraftState.TRIM_DECK:
-    //   return DraftState.GENERATE_CODE
+    case DraftState.CHAMP_ROUND_3:
+      //return DraftState.TRIM_DECK
+      //case DraftState.TRIM_DECK:
+      return DraftState.GENERATE_CODE
     case DraftState.GENERATE_CODE:
       return null
   }
@@ -226,7 +225,8 @@ function chooseNextCards(
       return
     }
     case DraftState.CHAMP_ROUND_1:
-    case DraftState.CHAMP_ROUND_2: {
+    case DraftState.CHAMP_ROUND_2:
+    case DraftState.CHAMP_ROUND_3: {
       chooseChampCards(next_draft_state, draft_state.deck, champCardsCallback)
       return
     }
@@ -311,6 +311,7 @@ export function initDraftState(socket: LoRDraftSocket) {
         resolve(status)
         return
       }
+
       const auth_user = status.value
 
       const draft_state_status = draftState(auth_user)
@@ -319,7 +320,8 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
       const draft_state = draft_state_status.value
-
+      console.log('choosing 2')
+      console.log(draft_state)
       if (draft_state.pendingCards.length === 0) {
         resolve(
           makeErrStatus(
@@ -387,6 +389,8 @@ export function initDraftState(socket: LoRDraftSocket) {
 
         // If OK, `choose_next_cards` will have updated `draft_state`, so
         // return it directly.
+        console.log('choosing')
+        console.log(draft_state)
         resolve(makeOkStatus(draft_state))
       })
     })

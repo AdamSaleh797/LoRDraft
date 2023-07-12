@@ -69,6 +69,7 @@ export function RoundLabel(props: RoundLabelProps) {
     case DraftState.INITIAL_SELECTION:
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2:
+    case DraftState.CHAMP_ROUND_3:
       return (
         <div className={style.roundLabelContainer}>
           <div className={style.roundLabel}>
