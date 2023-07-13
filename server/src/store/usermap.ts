@@ -2,7 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import crypto from 'crypto'
 import { Draft } from 'immer'
 
-import { DraftStateInfo, ReadonlyDraftStateInfo } from 'common/game/draft'
+import { DraftState, ReadonlyDraftStateInfo } from 'common/game/draft'
 import { LoginCred, RegisterInfo } from 'common/game/socket-msgs'
 import {
   OkStatus,
@@ -48,7 +48,7 @@ export interface LoggedInAuthUser extends AuthUser {
 export type Usermap = Partial<Record<string, AuthUser>>
 
 export interface InDraftSessionInfo extends SessionInfo {
-  draftState: DraftStateInfo
+  draftState: ReadonlyDraftStateInfo
 }
 
 export function userLoggedIn(
@@ -122,12 +122,13 @@ const usermapSlice = createSlice({
       usermap,
       action: PayloadAction<{
         sessionInfo: SessionInfo
-        draftState: DraftStateInfo
+        draftState: ReadonlyDraftStateInfo
       }>
     ) => {
       const { sessionInfo, draftState } = action.payload
       const authUser = usermap[sessionInfo.username] as Draft<LoggedInAuthUser>
-      authUser.sessionInfo.draftState = draftState
+      authUser.sessionInfo.draftState =
+        draftState as Draft<ReadonlyDraftStateInfo>
     },
 
     exitDraft: (
@@ -237,7 +238,7 @@ export function logoutUser(authUser: LoggedInAuthUser) {
 
 export function updateDraft(
   sessionInfo: SessionInfo,
-  draftState: DraftStateInfo
+  draftState: ReadonlyDraftStateInfo
 ) {
   dispatch(usermapSlice.actions.updateDraft({ sessionInfo, draftState }))
   persistor.persist()
