@@ -66,7 +66,7 @@ export function DeckList(props: DeckListComponentProps) {
       <br></br>
       <div>
         {Object.entries(typeCategories).map(([category, cardCounts]) => (
-          <div className={style.typeCategoryContainer}>
+          <div key={category} className={style.typeCategoryContainer}>
             <TypeCategory
               draftState={props.draftState}
               category={category as CardCategory}
