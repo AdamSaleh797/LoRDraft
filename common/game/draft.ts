@@ -55,7 +55,7 @@ export const DraftDeckT = RecordT({
 })
 
 export interface DraftDeck {
-  readonly regions: Region[]
+  regions: Region[]
   cardCounts: CardCount[]
   numCards: number
   readonly options: DraftOptions
@@ -325,17 +325,18 @@ export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
  * Adds a list of cards to the deck.
  * @param deck The deck to add `cards` to.
  * @param cards The cards to be added.
- * @returns True if the cards were all successfully added, or false if any card
- * could not be added, not mutating the deck.
+ * @returns The new deck if the cards were all successfully added, or null if
+ * any card could not be added, not mutating the deck.
  */
-export function addCardsToDeck(deck: DraftDeck, cards: Card[]): boolean {
-  const old_deck = { ...deck }
-  if (cards.some((card) => !addCardToDeck(deck, card))) {
-    // Restore the initial state of deck.
-    Object.assign(deck, old_deck.cardCounts)
-    return false
+export function addCardsToDeck(
+  deck: Readonly<DraftDeck>,
+  cards: Card[]
+): DraftDeck | null {
+  const new_deck = { ...deck }
+  if (cards.some((card) => !addCardToDeck(new_deck, card))) {
+    return null
   } else {
-    return true
+    return new_deck
   }
 }
 

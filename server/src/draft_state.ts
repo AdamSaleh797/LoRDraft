@@ -100,7 +100,9 @@ function chooseNonChampCards(
   randomNonChampCards(deck, POOL_SIZE, callback)
 }
 
-function draftState(auth_user: LoggedInAuthUser): Status<DraftStateInfo> {
+function draftState(
+  auth_user: LoggedInAuthUser
+): Status<Readonly<DraftStateInfo>> {
   if (!inDraft(auth_user.sessionInfo)) {
     return makeErrStatus(
       StatusCode.NOT_IN_DRAFT_SESSION,
@@ -327,7 +329,7 @@ export function initDraftState(socket: LoRDraftSocket) {
         resolve(draft_state_status)
         return
       }
-      const draft_state = draft_state_status.value
+      let draft_state = draft_state_status.value
 
       if (draft_state.pendingCards.length === 0) {
         resolve(
@@ -378,7 +380,8 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
 
       // Add the chosen cards to the deck.
-      if (!addCardsToDeck(draft_state.deck, chosen_cards)) {
+      const deck = addCardsToDeck(draft_state.deck, chosen_cards)
+      if (deck === null) {
         resolve(
           makeErrStatus(
             StatusCode.ILLEGAL_CARD_COMBINATION,
@@ -386,6 +389,11 @@ export function initDraftState(socket: LoRDraftSocket) {
           )
         )
         return
+      }
+
+      draft_state = {
+        ...draft_state,
+        deck,
       }
 
       chooseNextCards(draft_state, (status) => {

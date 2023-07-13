@@ -35,8 +35,6 @@ export function initAuth(socket: LoRDraftSocket): void {
   socket.respond('register', (resolve, register_info) => {
     if (!RegisterInfoT.guard(register_info)) {
       // Invalid input, we can ignore
-      console.log('received invalid register input:')
-      console.log(register_info)
       return
     }
 
@@ -48,8 +46,6 @@ export function initAuth(socket: LoRDraftSocket): void {
   socket.respond('login', (resolve, login_cred?: LoginCred) => {
     if (!LoginCredT.guard(login_cred)) {
       // Invalid input, we can ignore
-      console.log('received invalid login input:')
-      console.log(login_cred)
       return
     }
 
@@ -116,7 +112,6 @@ export function joinSession(
   const usermap = selectUsermapState(store.getState())
   const username = session_cred.username
   const token = Buffer.from(session_cred.token, 'base64')
-  console.log('join token', token.toString('base64'))
 
   const auth_user = usermap[username]
   if (auth_user === undefined) {
@@ -138,7 +133,6 @@ export function joinSession(
     auth_user.sessionInfo.authInfo.token,
     'base64'
   )
-  console.log('auth user token', auth_user_token.toString('base64'))
   if (
     token.length !== auth_user_token.length ||
     !crypto.timingSafeEqual(token, auth_user_token)
