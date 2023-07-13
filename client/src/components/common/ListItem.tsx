@@ -7,27 +7,34 @@ interface ListItemProps {
   title: string
   description: string
   selected: boolean
-  disabled?: boolean
   onClick: () => void
+  disabled?: boolean
 }
 
-export function ListItem(props: ListItemProps) {
+export function ListItem({
+  key,
+  title,
+  description,
+  selected,
+  onClick,
+  disabled = false,
+}: ListItemProps) {
   const handleClick = () => {
-    if (!props.disabled) {
-      props.onClick()
+    if (!disabled) {
+      onClick()
     }
   }
 
   return (
     <div
-      key={props.key}
-      className={`${styles['list-item']} ${
-        props.selected ? styles.selected : ''
-      } ${props.disabled ? styles.disabled : ''}`}
+      key={key}
+      className={`${styles['list-item']} ${selected ? styles.selected : ''} ${
+        disabled ? styles.disabled : ''
+      }`}
       onClick={handleClick}
     >
-      <h3>{props.title}</h3>
-      <p>{props.description}</p>
+      <h3>{title}</h3>
+      <p>{description}</p>
     </div>
   )
 }

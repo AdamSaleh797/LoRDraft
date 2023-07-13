@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { disabled } from './Button.module.css'
 import styles from './ButtonGroup.module.css'
 
 import { Button } from 'client/components/common/Button'
