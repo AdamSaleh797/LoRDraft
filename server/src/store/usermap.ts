@@ -1,7 +1,8 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import crypto from 'crypto'
+import { Draft } from 'immer'
 
-import { DraftStateInfo } from 'common/game/draft'
+import { DraftStateInfo, ReadonlyDraftStateInfo } from 'common/game/draft'
 import { LoginCred, RegisterInfo } from 'common/game/socket-msgs'
 import {
   OkStatus,
@@ -11,7 +12,6 @@ import {
   makeOkStatus,
 } from 'common/util/status'
 
-import { SessionInfo } from 'server/session'
 import { RootState, dispatch, persistor, store } from 'server/store'
 
 const PASSWORD_HASH_METHOD = 'sha256'
@@ -25,18 +25,24 @@ export interface SessionAuthInfo {
   readonly loginTime: number
 }
 
+export interface SessionInfo {
+  readonly username: string
+  readonly authInfo: SessionAuthInfo
+  readonly draftState?: ReadonlyDraftStateInfo
+}
+
 export interface AuthUser {
   readonly username: string
   // Base-64 encoded password hash
   readonly passwordHash: string
   readonly email: string
-  loggedIn: boolean
+  readonly loggedIn: boolean
   // Defined only when logged in.
-  sessionInfo?: SessionInfo
+  readonly sessionInfo?: SessionInfo
 }
 
 export interface LoggedInAuthUser extends AuthUser {
-  sessionInfo: SessionInfo
+  readonly sessionInfo: SessionInfo
 }
 
 export type Usermap = Partial<Record<string, AuthUser>>
@@ -51,9 +57,15 @@ export function userLoggedIn(
   return auth_user.loggedIn
 }
 
-function logout(user: LoggedInAuthUser) {
+function userLoggedInDraft(
+  auth_user: Draft<AuthUser>
+): auth_user is Draft<LoggedInAuthUser> {
+  return auth_user.loggedIn
+}
+
+function logout(user: Draft<LoggedInAuthUser>) {
   user.loggedIn = false
-  ;(user as AuthUser).sessionInfo = undefined
+  ;(user as Draft<AuthUser>).sessionInfo = undefined
 }
 
 const initialState: Usermap = {}
@@ -88,11 +100,11 @@ const usermapSlice = createSlice({
     ) => {
       const { loginCred, authInfo } = action.payload
 
-      const auth_user = usermap[loginCred.username] as AuthUser
+      const auth_user = usermap[loginCred.username] as Draft<AuthUser>
 
       // If the user is already logged in, log them out to erase the ephemeral
       // information associated with the old login session.
-      if (userLoggedIn(auth_user)) {
+      if (userLoggedInDraft(auth_user)) {
         logout(auth_user)
       }
 
@@ -102,8 +114,8 @@ const usermapSlice = createSlice({
 
     logoutUser: (usermap, action: PayloadAction<{ username: string }>) => {
       const { username } = action.payload
-      const auth_user = usermap[username] as AuthUser
-      logout(auth_user as LoggedInAuthUser)
+      const auth_user = usermap[username] as Draft<LoggedInAuthUser>
+      logout(auth_user)
     },
 
     updateDraft: (
@@ -114,7 +126,7 @@ const usermapSlice = createSlice({
       }>
     ) => {
       const { sessionInfo, draftState } = action.payload
-      const authUser = usermap[sessionInfo.username] as LoggedInAuthUser
+      const authUser = usermap[sessionInfo.username] as Draft<LoggedInAuthUser>
       authUser.sessionInfo.draftState = draftState
     },
 
@@ -125,7 +137,7 @@ const usermapSlice = createSlice({
       }>
     ) => {
       const { sessionInfo } = action.payload
-      const authUser = usermap[sessionInfo.username] as LoggedInAuthUser
+      const authUser = usermap[sessionInfo.username] as Draft<LoggedInAuthUser>
       delete authUser.sessionInfo.draftState
     },
   },

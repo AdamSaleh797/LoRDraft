@@ -58,7 +58,14 @@ export interface DraftDeck {
   regions: Region[]
   cardCounts: CardCount[]
   numCards: number
-  readonly options: DraftOptions
+  options: DraftOptions
+}
+
+export interface ReadonlyDraftDeck {
+  readonly regions: readonly Region[]
+  readonly cardCounts: readonly Readonly<CardCount>[]
+  readonly numCards: number
+  readonly options: Readonly<DraftOptions>
 }
 
 export function findCardCount(
@@ -349,6 +356,12 @@ export interface DraftStateInfo {
   state: DraftState
   deck: DraftDeck
   pendingCards: Card[]
+}
+
+export interface ReadonlyDraftStateInfo {
+  readonly state: DraftState
+  readonly deck: ReadonlyDraftDeck
+  readonly pendingCards: readonly Readonly<Card>[]
 }
 
 export function draftStateCardLimits(

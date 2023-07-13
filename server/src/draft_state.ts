@@ -34,10 +34,10 @@ import {
 } from 'common/util/status'
 
 import { joinSession } from 'server/auth'
-import { SessionInfo } from 'server/session'
 import { regionSets } from 'server/set_packs'
 import {
   LoggedInAuthUser,
+  SessionInfo,
   exitDraft,
   inDraft,
   updateDraft,
@@ -161,7 +161,7 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
  * chosen cards to the `pending_cards` and returning the new draft state.
  */
 function chooseNextCards(
-  draft_state: DraftStateInfo,
+  draft_state: Readonly<DraftStateInfo>,
   callback: (status: Status<DraftStateInfo>) => void
 ) {
   const cur_state = draft_state.state
@@ -198,20 +198,24 @@ function chooseNextCards(
       return
     }
 
-    // Update the draft state.
-    draft_state.state = next_draft_state
-
     const cards = status.value
     if (cards.length === 0) {
       // If no champs were chosen, move immediately to the next round (which is
       // a non-champ round).
-      chooseNextCards(draft_state, callback)
+      chooseNextCards(
+        {
+          ...draft_state,
+          state: next_draft_state,
+        },
+        callback
+      )
     } else {
       // If cards were chosen successfully, then update the draft state.
       callback(
         makeOkStatus({
           ...draft_state,
           pendingCards: cards,
+          state: next_draft_state,
         })
       )
     }
