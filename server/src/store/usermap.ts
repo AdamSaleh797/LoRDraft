@@ -58,6 +58,11 @@ export function userLoggedIn(
   return auth_user.loggedIn
 }
 
+/**
+ * Narrows a `Draft<AuthUser>` type to `Draft<LoggedInAuthUser>`, since
+ * `userLoggedIn` will narrow `Draft<AuthUser>` incorrectly to `Draft<AuthUser>
+ * | LoggedInAuthUser`.
+ */
 function userLoggedInDraft(
   auth_user: Draft<AuthUser>
 ): auth_user is Draft<LoggedInAuthUser> {

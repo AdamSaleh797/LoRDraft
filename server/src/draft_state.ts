@@ -1,3 +1,5 @@
+import { DeepReadonly } from 'ts-essentials'
+
 import { Card, cardsEqual, isChampion, regionContains } from 'common/game/card'
 import {
   DraftDeck,
@@ -42,7 +44,6 @@ import {
   inDraft,
   updateDraft,
 } from 'server/store/usermap'
-import { DeepReadonly } from 'ts-essentials'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [

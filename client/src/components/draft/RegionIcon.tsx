@@ -17,7 +17,7 @@ export interface RegionIconComponentProps {
    * A list of regions which are necessarily in the deck, no matter which cards
    * are chosen in the future.
    */
-  certainRegions: Region[]
+  certainRegions: readonly Region[]
 
   gameMetadata: GameMetadata
 }
