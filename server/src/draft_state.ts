@@ -36,12 +36,13 @@ import {
 import { joinSession } from 'server/auth'
 import { regionSets } from 'server/set_packs'
 import {
-  LoggedInAuthUser,
   SessionInfo,
   exitDraft,
+  getDraftState,
   inDraft,
   updateDraft,
 } from 'server/store/usermap'
+import { DeepReadonly } from 'ts-essentials'
 
 const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [
@@ -100,19 +101,6 @@ function chooseNonChampCards(
   randomNonChampCards(deck, POOL_SIZE, callback)
 }
 
-function draftState(
-  auth_user: LoggedInAuthUser
-): Status<Readonly<DraftStateInfo>> {
-  if (!inDraft(auth_user.sessionInfo)) {
-    return makeErrStatus(
-      StatusCode.NOT_IN_DRAFT_SESSION,
-      'No draft session found.'
-    )
-  } else {
-    return makeOkStatus(auth_user.sessionInfo.draftState)
-  }
-}
-
 /**
  * Returns the next draft state, depending on the current state and the size of
  * the deck.
@@ -161,7 +149,7 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
  * chosen cards to the `pending_cards` and returning the new draft state.
  */
 function chooseNextCards(
-  draft_state: Readonly<DraftStateInfo>,
+  draft_state: DeepReadonly<DraftStateInfo>,
   callback: (status: Status<DraftStateInfo>) => void
 ) {
   const cur_state = draft_state.state
@@ -272,7 +260,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
       const auth_user = auth_user_status.value
 
-      resolve(draftState(auth_user))
+      resolve(getDraftState(auth_user))
     })
   })
 
@@ -328,7 +316,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
       const auth_user = status.value
 
-      const draft_state_status = draftState(auth_user)
+      const draft_state_status = getDraftState(auth_user)
       if (!isOk(draft_state_status)) {
         resolve(draft_state_status)
         return

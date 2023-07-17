@@ -300,9 +300,9 @@ export interface Card {
   name: string
   cardCode: CardCode
   description: string
-  regions: Region[]
-  subtypes: string[]
-  keywords: string[]
+  regions: readonly Region[]
+  subtypes: readonly string[]
+  keywords: readonly string[]
   type: CardType
   isStandard: boolean
 }

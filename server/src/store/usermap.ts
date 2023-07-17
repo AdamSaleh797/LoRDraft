@@ -1,8 +1,9 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import crypto from 'crypto'
 import { Draft } from 'immer'
+import { DeepReadonly } from 'ts-essentials'
 
-import { DraftState, ReadonlyDraftStateInfo } from 'common/game/draft'
+import { DraftStateInfo } from 'common/game/draft'
 import { LoginCred, RegisterInfo } from 'common/game/socket-msgs'
 import {
   OkStatus,
@@ -28,7 +29,7 @@ export interface SessionAuthInfo {
 export interface SessionInfo {
   readonly username: string
   readonly authInfo: SessionAuthInfo
-  readonly draftState?: ReadonlyDraftStateInfo
+  readonly draftState?: DeepReadonly<DraftStateInfo>
 }
 
 export interface AuthUser {
@@ -48,7 +49,7 @@ export interface LoggedInAuthUser extends AuthUser {
 export type Usermap = Partial<Record<string, AuthUser>>
 
 export interface InDraftSessionInfo extends SessionInfo {
-  draftState: ReadonlyDraftStateInfo
+  draftState: DeepReadonly<DraftStateInfo>
 }
 
 export function userLoggedIn(
@@ -122,13 +123,14 @@ const usermapSlice = createSlice({
       usermap,
       action: PayloadAction<{
         sessionInfo: SessionInfo
-        draftState: ReadonlyDraftStateInfo
+        draftState: DeepReadonly<DraftStateInfo>
       }>
     ) => {
       const { sessionInfo, draftState } = action.payload
       const authUser = usermap[sessionInfo.username] as Draft<LoggedInAuthUser>
-      authUser.sessionInfo.draftState =
-        draftState as Draft<ReadonlyDraftStateInfo>
+      authUser.sessionInfo.draftState = draftState as Draft<
+        DeepReadonly<DraftStateInfo>
+      >
     },
 
     exitDraft: (
@@ -238,7 +240,7 @@ export function logoutUser(authUser: LoggedInAuthUser) {
 
 export function updateDraft(
   sessionInfo: SessionInfo,
-  draftState: ReadonlyDraftStateInfo
+  draftState: DeepReadonly<DraftStateInfo>
 ) {
   dispatch(usermapSlice.actions.updateDraft({ sessionInfo, draftState }))
   persistor.persist()
@@ -261,6 +263,19 @@ export function inDraft(
   sessionInfo: SessionInfo
 ): sessionInfo is InDraftSessionInfo {
   return sessionInfo.draftState !== undefined
+}
+
+export function getDraftState(
+  auth_user: LoggedInAuthUser
+): Status<DeepReadonly<DraftStateInfo>> {
+  if (!inDraft(auth_user.sessionInfo)) {
+    return makeErrStatus(
+      StatusCode.NOT_IN_DRAFT_SESSION,
+      'No draft session found.'
+    )
+  } else {
+    return makeOkStatus(auth_user.sessionInfo.draftState)
+  }
 }
 
 export default usermapSlice.reducer
