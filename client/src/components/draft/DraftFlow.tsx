@@ -22,12 +22,14 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   const dispatch = useLoRDispatch()
 
   if (game_metadata === null) {
-    dispatch(
-      doFetchGameMetadataAsync({
-        socket: props.socket,
-        authInfo: props.authInfo,
-      })
-    )
+    setTimeout(() => {
+      dispatch(
+        doFetchGameMetadataAsync({
+          socket: props.socket,
+          authInfo: props.authInfo,
+        })
+      )
+    }, 0)
   }
 
   if (!inDraft(draft_state)) {
