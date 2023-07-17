@@ -6,6 +6,9 @@ import {
   DraftState,
   DraftStateInfo,
   POOL_SIZE,
+  RANDOM_SELECTION_1_CARD_CUTOFF,
+  RANDOM_SELECTION_2_CARD_CUTOFF,
+  RANDOM_SELECTION_3_CARD_CUTOFF,
   addCardsToDeck,
   canAddToDeck,
   draftStateCardLimits,
@@ -53,11 +56,6 @@ const RESTRICTED_POOL_DRAFT_STATES = [
 ]
 
 const MAX_CARD_REPICK_ITERATIONS = 200
-
-const RANDOM_SELECTION_1_CARD_CUTOFF = 20
-const RANDOM_SELECTION_2_CARD_CUTOFF = 37
-//FIXME: REVERT THIS BACK TO 43
-const RANDOM_SELECTION_3_CARD_CUTOFF = 46
 
 function chooseChampCards(
   draft_state: DraftState,

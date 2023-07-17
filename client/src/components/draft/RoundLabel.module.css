@@ -1,5 +1,5 @@
 .roundLabelContainer {
-  background: #4066bab8;
+  background: lightgray;
   height: -webkit-fill-available;
   margin-bottom: 20px;
   border-radius: 5px;
@@ -15,4 +15,11 @@
   font-size: xx-large;
   font-weight: 600;
   font-family: 'BeaufortForLOL';
+}
+
+.bottomText {
+  display: flex;
+  border-top: 1px solid black;
+  align-items: center;
+  justify-content: center;
 }
