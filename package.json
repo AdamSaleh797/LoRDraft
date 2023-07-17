@@ -69,6 +69,10 @@
     "webpack-merge": "^5.9.0"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.0",
+    "@mui/material": "^5.14.0",
     "@react-hook/resize-observer": "^1.2.6",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -77,6 +81,7 @@
     "@types/react-helmet": "^6.1.6",
     "axios": "^1.4.0",
     "buffer": "^6.0.3",
+    "clipboard-copy": "^4.0.1",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "http-status-codes": "^2.2.0",
