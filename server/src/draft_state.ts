@@ -162,6 +162,18 @@ function chooseNextCards(
     return
   }
 
+  if (next_draft_state === DraftState.GENERATE_CODE) {
+    // If the selection phase is complete, don't choose more pending cards.
+    callback(
+      makeOkStatus({
+        ...draft_state,
+        pendingCards: [],
+        state: next_draft_state,
+      })
+    )
+    return
+  }
+
   const cardsCallback = (status: Status<Card[]>) => {
     if (!isOk(status)) {
       callback(status)
@@ -236,15 +248,6 @@ function chooseNextCards(
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
       chooseNonChampCards(draft_state.deck, cardsCallback)
-      return
-    }
-    case DraftState.GENERATE_CODE: {
-      callback(
-        makeErrStatus(
-          StatusCode.DRAFT_COMPLETE,
-          'The draft is complete, no more card selections to be made.'
-        )
-      )
       return
     }
   }
