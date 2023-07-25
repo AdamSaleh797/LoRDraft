@@ -2,7 +2,7 @@
 import { Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
 
-import { Empty, genUUID } from 'common/util/lor_util'
+import { DeepReadonlyTuple, Empty, genUUID } from 'common/util/lor_util'
 import { Status, StatusCode, makeErrStatus } from 'common/util/status'
 
 interface EventsMap {
@@ -174,7 +174,7 @@ export class AsyncSocketContext<
 
   emit<EventName extends EventNames<EmitEvents>>(
     event_name: EventName,
-    ...args: Parameters<EmitEvents[EventName]>
+    ...args: DeepReadonlyTuple<Parameters<EmitEvents[EventName]>>
   ) {
     this.rawSocket().emit(event_name, ...args)
   }
@@ -191,7 +191,7 @@ export class AsyncSocketContext<
   call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
     ...args: [
-      ...ReqParams<EventName, EmitEvents>,
+      ...DeepReadonlyTuple<ReqParams<EventName, EmitEvents>>,
       ResponseCallbackT<EventName, ListenEvents>
     ]
   ): void {
@@ -228,7 +228,9 @@ export class AsyncSocketContext<
   respond<EventName extends AsyncCompatibleEvents<EmitEvents, ListenEvents>>(
     event_name: EventName,
     callback: (
-      resolve: (...args: ResParams<EventName, EmitEvents>) => void,
+      resolve: (
+        ...args: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
+      ) => void,
       ...args: ReqParams<EventName, ListenEvents>
     ) => void
   ): void {
@@ -247,7 +249,7 @@ export class AsyncSocketContext<
             this.socket.emit as unknown as (
               event_name: EventName,
               uuid: string,
-              ...params: ResParams<EventName, EmitEvents>
+              ...params: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
             ) => void
           )(event_name, uuid, ...result)
         }, ...params)
