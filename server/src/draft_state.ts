@@ -313,7 +313,6 @@ export function initDraftState(socket: LoRDraftSocket) {
         resolve(status)
         return
       }
-
       const auth_user = status.value
 
       const draft_state_status = getDraftState(auth_user)
@@ -322,8 +321,7 @@ export function initDraftState(socket: LoRDraftSocket) {
         return
       }
       let draft_state = draft_state_status.value
-      console.log('choosing 2')
-      console.log(draft_state)
+
       if (draft_state.pendingCards.length === 0) {
         resolve(
           makeErrStatus(
@@ -396,8 +394,6 @@ export function initDraftState(socket: LoRDraftSocket) {
         }
 
         updateDraft(auth_user.sessionInfo, status.value)
-        console.log('choosing')
-        console.log(draft_state)
         resolve(makeOkStatus(status.value))
       })
     })
