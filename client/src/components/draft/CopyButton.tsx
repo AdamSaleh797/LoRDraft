@@ -3,6 +3,8 @@ import { Button, Snackbar } from '@mui/material'
 import clipboardCopy from 'clipboard-copy'
 import React from 'react'
 
+import style from './CopyButton.module.css'
+
 export interface CopyButtonProps {
   textToCopy: string
   buttonText: string
@@ -24,6 +26,7 @@ export function CopyButton(props: CopyButtonProps) {
   return (
     <div>
       <Button
+        className={style.button}
         variant='contained'
         color='primary'
         onClick={handleCopy}

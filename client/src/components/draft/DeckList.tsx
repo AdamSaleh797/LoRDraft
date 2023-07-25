@@ -59,10 +59,13 @@ export function DeckList(props: DeckListComponentProps) {
   }
   return (
     <div>
-      <CopyButton
-        textToCopy={deckCode === null ? '' : deckCode}
-        buttonText='Copy Code'
-      ></CopyButton>
+      {deckCode === null ? (
+        <div> </div>
+      ) : (
+        <div className={style.copyButtonContainer}>
+          <CopyButton textToCopy={deckCode} buttonText='Copy Code'></CopyButton>
+        </div>
+      )}
       <RegionIconList
         draftSketch={props.draftSketch}
         gameMetadata={props.gameMetadata}

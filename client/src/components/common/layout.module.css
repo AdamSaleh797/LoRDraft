@@ -8,4 +8,5 @@
   padding: 30px;
   margin-left: 7.5%;
   box-shadow: 1px 1px 3px 0px;
+  min-height: calc(100vh - 60px);
 }
