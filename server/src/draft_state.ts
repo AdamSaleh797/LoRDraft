@@ -130,7 +130,6 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
       if (deck.numCards < RANDOM_SELECTION_3_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_3
       } else {
-        //return DraftState.GENERATE_CODE
         return DraftState.CHAMP_ROUND_3
       }
     case DraftState.CHAMP_ROUND_3:
