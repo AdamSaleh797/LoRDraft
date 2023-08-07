@@ -1,0 +1,28 @@
+name: Lint Bot
+
+on:
+  push:
+  pull_request:
+jobs:
+  check-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out LoRDraft
+        uses: actions/checkout@v2
+        with:
+          path: LoRDraft
+          submodules: recursive
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install pipenv
+        run: |
+          python3 -m pip install pipenv
+      - name: Install packages
+        working-directory: LoRDraft/bot
+        run: |
+          python3 -m pipenv install -d
+      - name: Run pylint
+        working-directory: LoRDraft/bot
+        run: |
+          python3 -m pipenv run pylint .
