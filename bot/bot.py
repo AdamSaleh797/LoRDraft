@@ -2,7 +2,7 @@ import discord
 import responses
 from typing import List
 
-user_queue : List[str] = []
+user_queue: List[str] = []
 
 
 def run_discord_bot():
