@@ -18,8 +18,8 @@ jobs:
       - name: Install packages
         working-directory: LoRDraft/bot
         run: |
-          pipenv install
+          python3 -m pipenv install
       - name: Run pylint
         working-directory: LoRDraft/bot
         run: |
-          pipenv run pylint .
+          python3 -m pipenv run pylint .
