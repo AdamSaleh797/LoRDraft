@@ -1,15 +1,16 @@
+"""Runs Bot"""
+
 import discord
 import responses
-from typing import List
 
-user_queue: List[str] = []
+TOKEN = "MTEzNzkzOTY2MTU2Njc4MzY0OQ.G5A9mW.JZe24xFgnCB2NhIdBbn5QBg89QJrO_xc4eTKR0"
 
 
 def run_discord_bot():
+    """Runs Bot"""
     intents = discord.Intents.default()
     intents.message_content = True
 
-    TOKEN = "MTEzNzkzOTY2MTU2Njc4MzY0OQ.G5A9mW.JZe24xFgnCB2NhIdBbn5QBg89QJrO_xc4eTKR0"
     client = discord.Client(intents=intents)
 
     @client.event
@@ -24,7 +25,6 @@ def run_discord_bot():
 
         username = str(message.author)
         user_message = str(message.content)
-        channel = str(message.channel)
 
         response = responses.handle_response(user_message, username)
         await message.channel.send(response)
