@@ -25,4 +25,4 @@ jobs:
       - name: Run pylint
         working-directory: LoRDraft/bot
         run: |
-          python3 -m pipenv run pylint .
+          python3 -m pipenv run pylint *.py
