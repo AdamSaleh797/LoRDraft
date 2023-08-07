@@ -1,6 +1,6 @@
 """Handles Responses"""
 
-import queue
+import user_queue
 
 
 def handle_response(message, user) -> str:
@@ -9,21 +9,21 @@ def handle_response(message, user) -> str:
     p_message = message.lower()
 
     if p_message == "!queue":
-        if user in queue.user_queue:
+        if user in user_queue.user_queue:
             return "You are already queued!"
 
-        queue.user_queue.append(user)
+        user_queue.user_queue.append(user)
 
-        if len(queue.user_queue) == 2:
-            user1 = queue.user_queue[0]
-            user2 = queue.user_queue[1]
-            queue.user_queue.clear()
+        if len(user_queue.user_queue) == 2:
+            user1 = user_queue.user_queue[0]
+            user2 = user_queue.user_queue[1]
+            user_queue.user_queue.clear()
             return f"@{user1} has been matched against @{user2}"
 
         return f"@{user} has been added to the queue"
 
     if p_message == "!exit":
-        queue.user_queue.remove(user)
+        user_queue.user_queue.remove(user)
         return f"@{user} has exited the queue"
 
     if p_message == "!help":
