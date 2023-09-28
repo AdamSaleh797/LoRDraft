@@ -1,5 +1,6 @@
 .graph {
   height: 150px;
+  width: 30%;
   border-bottom: 1px solid black;
 }
 
@@ -38,6 +39,7 @@
 }
 
 .manaValueCountContainer {
+  width: 30%;
 }
 
 .manaValueText {

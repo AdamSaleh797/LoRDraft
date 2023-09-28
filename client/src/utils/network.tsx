@@ -7,9 +7,5 @@ import {
 import { AsyncSocketContext } from 'common/util/async_socket'
 
 export function createLoRSocket(): LoRDraftClientSocket {
-  return new AsyncSocketContext(
-    io({
-      transports: ['websocket', 'polling'],
-    }) as LoRDraftClientSocketIO
-  )
+  return new AsyncSocketContext(io() as LoRDraftClientSocketIO)
 }

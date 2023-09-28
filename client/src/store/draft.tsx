@@ -1,4 +1,4 @@
-import { Draft, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 import { Card } from 'common/game/card'
 import { DraftStateInfo } from 'common/game/draft'
@@ -195,7 +195,7 @@ const draftStateSlice = createSlice({
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = action.payload.value as Draft<DraftStateInfo>
+          state.state = action.payload.value
         }
       })
       .addCase(doUpdateDraftAsync.pending, (state) => {
@@ -206,7 +206,7 @@ const draftStateSlice = createSlice({
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = action.payload.value as Draft<DraftStateInfo>
+          state.state = action.payload.value
         }
       })
       .addCase(doExitDraftAsync.pending, (state) => {
@@ -228,7 +228,7 @@ const draftStateSlice = createSlice({
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = action.payload.value as Draft<DraftStateInfo>
+          state.state = action.payload.value
         }
       })
   },

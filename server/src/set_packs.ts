@@ -113,7 +113,7 @@ function loadSetPack(
             cost: parsed_card.cost,
             name: parsed_card.name,
             cardCode: parsed_card.cardCode,
-            description: parsed_card.description.toLowerCase(),
+            description: parsed_card.descriptionRaw.toLowerCase(),
             regions: regions,
             subtypes: parsed_card.subtypes.map((subtype) =>
               subtype.toLowerCase()
@@ -209,16 +209,6 @@ export function regionSets(
         })
       })
     })
-
-    allRegions().forEach((region) => {
-      if (region_sets[region].champs.length === 0) {
-        console.warn(`No champs in region ${region}`)
-      }
-      if (region_sets[region].nonChamps.length === 0) {
-        console.warn(`No non-champs in region ${region}`)
-      }
-    })
-
     g_region_sets = region_sets
     callback(makeOkStatus(g_region_sets))
   })

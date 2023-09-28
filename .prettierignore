@@ -7,4 +7,3 @@ assets
 *.swp
 package.json
 package-lock.json
-/bot

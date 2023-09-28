@@ -1,6 +1,5 @@
 import { Literal, Record as RecordT, Union } from 'runtypes'
 import { RuntypeBase, Static } from 'runtypes/lib/runtype'
-import { DeepReadonly, IsTuple } from 'ts-essentials'
 import { v4 as uuidv4 } from 'uuid'
 
 // Empty object type
@@ -13,10 +12,6 @@ export type Empty = RecordT<any, never>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ReturnTypeOrNever<T> = T extends (...args: any[]) => infer U
   ? U
-  : never
-
-export type DeepReadonlyTuple<Type> = Type extends IsTuple<Type>
-  ? { readonly [Key in keyof Type]: DeepReadonly<Type[Key]> }
   : never
 
 /**
@@ -286,7 +281,7 @@ export function isArray(obj: unknown): obj is unknown[] {
 }
 
 export function arrayCount<T>(
-  array: readonly T[],
+  array: T[],
   predicate: (element: T) => boolean
 ): number {
   return array.reduce(

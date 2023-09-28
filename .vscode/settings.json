@@ -6,9 +6,5 @@
   "editor.formatOnSaveMode": "file",
   "rewrap.autoWrap.enabled": true,
   "rewrap.wrappingColumn": 80,
-  "rewrap.wholeComment": true,
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
-  "python.formatting.provider": "none"
+  "rewrap.wholeComment": true
 }

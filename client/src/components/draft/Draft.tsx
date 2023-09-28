@@ -7,11 +7,10 @@ import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft'
 import { GameMetadata } from 'common/game/metadata'
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common/Button'
 import { DeckList } from 'client/components/draft/DeckList'
 import { ManaCurve } from 'client/components/draft/ManaCurve'
 import { PoolComponent } from 'client/components/draft/PoolComponent'
-import { RoundLabel } from 'client/components/draft/RoundLabel'
 import { DraftSketch } from 'client/context/draft/draft_sketch'
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
 import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft'
@@ -95,13 +94,10 @@ export function DraftComponent(props: DraftProps) {
           draftState={props.draftState}
           draftSketchManager={sketchManager}
         />
-        <div className={style.draftInformation}>
-          <RoundLabel draftState={props.draftState} />
-          <ManaCurve draftSketch={sketchManager.sketch()} />
-          <div className={style.buttonContainer}>
-            <Button onClick={confirm}>CONFIRM!</Button>
-          </div>
-        </div>
+        <ManaCurve draftSketch={sketchManager.sketch()} />
+      </div>
+      <div className={style.buttonContainer}>
+        <Button onClick={confirm}>CONFIRM!</Button>
       </div>
       <div>
         <DeckList
@@ -110,6 +106,7 @@ export function DraftComponent(props: DraftProps) {
           gameMetadata={props.gameMetadata}
         />
       </div>
+
       <div>
         <Button onClick={exitDraft}>EXIT!</Button>
       </div>

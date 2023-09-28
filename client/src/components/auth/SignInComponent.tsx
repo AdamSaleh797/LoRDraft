@@ -6,7 +6,7 @@ import {
   RegisterInfo,
 } from 'common/game/socket-msgs'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common'
 import { useLoRDispatch } from 'client/store/hooks'
 import { doRegisterAsync, loginUser } from 'client/store/session'
 import { APP_TITLE } from 'client/utils/constants'
@@ -75,6 +75,7 @@ function LoginComponent(props: LoginComponentProps) {
           setUsername(change_event.target.value)
         }}
       />
+      <br />
       <input
         type='password'
         value={password}
@@ -82,6 +83,7 @@ function LoginComponent(props: LoginComponentProps) {
           setPassword(change_event.target.value)
         }}
       />
+      <br />
       <Button
         onClick={() => {
           props.loginFn({ username: username, password: password })

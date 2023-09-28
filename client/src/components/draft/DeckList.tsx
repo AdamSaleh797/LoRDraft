@@ -11,7 +11,6 @@ import {
 import { GameMetadata } from 'common/game/metadata'
 import { isOk } from 'common/util/status'
 
-import { CopyButton } from 'client/components/draft/CopyButton'
 import { RegionIconList } from 'client/components/draft/RegionIconList'
 import {
   CardCategory,
@@ -27,7 +26,18 @@ export interface DeckListComponentProps {
 }
 
 export function DeckList(props: DeckListComponentProps) {
+  let deckCode
   const cardCounts = props.draftState.deck.cardCounts
+  if (props.draftState.deck.numCards >= CARDS_PER_DECK) {
+    const code = getDeckCode(props.draftState.deck)
+    if (!isOk(code)) {
+      deckCode = null
+    } else {
+      deckCode = code.value
+    }
+  } else {
+    deckCode = null
+  }
 
   const typeCategories = cardCounts.reduce<Record<CardCategory, CardCount[]>>(
     (typeCategories, cardCount) => {
@@ -46,23 +56,9 @@ export function DeckList(props: DeckListComponentProps) {
     }
   )
 
-  let deckCode: string | null
-  if (props.draftState.deck.numCards >= CARDS_PER_DECK) {
-    const code = getDeckCode(props.draftState.deck)
-    if (!isOk(code)) {
-      deckCode = null
-    } else {
-      deckCode = code.value
-    }
-  } else {
-    deckCode = null
-  }
   return (
     <div>
-      <CopyButton
-        textToCopy={deckCode === null ? '' : deckCode}
-        buttonText='Copy Code'
-      ></CopyButton>
+      <div className={style.deckCode}>{deckCode === null ? [] : deckCode}</div>
       <RegionIconList
         draftSketch={props.draftSketch}
         gameMetadata={props.gameMetadata}
@@ -70,7 +66,7 @@ export function DeckList(props: DeckListComponentProps) {
       <br></br>
       <div>
         {Object.entries(typeCategories).map(([category, cardCounts]) => (
-          <div key={category} className={style.typeCategoryContainer}>
+          <div className={style.typeCategoryContainer}>
             <TypeCategory
               draftState={props.draftState}
               category={category as CardCategory}

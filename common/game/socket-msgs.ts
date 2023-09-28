@@ -1,4 +1,5 @@
-import { Record, Static, String } from 'runtypes'
+import { Buffer } from 'buffer'
+import { InstanceOf, Record, Static, String } from 'runtypes'
 import { Array as ArrayT } from 'runtypes'
 import { Server, Socket as ServerSocket } from 'socket.io'
 import { Socket as ClientSocket } from 'socket.io-client'
@@ -28,7 +29,7 @@ export type LoginCred = Static<typeof LoginCredT>
 
 export const AuthInfoT = Record({
   username: String,
-  token: String,
+  token: InstanceOf(Buffer),
 })
 
 export type AuthInfo = Static<typeof AuthInfoT>

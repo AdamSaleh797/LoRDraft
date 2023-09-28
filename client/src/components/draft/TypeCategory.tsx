@@ -77,11 +77,12 @@ export function TypeCategory(props: TypeCategoryProps) {
         </div>
       </div>
       {props.cardCounts.map((cardCount) => (
-        <div
-          key={cardCount.card.cardCode}
-          className={style.cardDisplayContainer}
-        >
-          <CardDisplay card={cardCount.card} draftState={props.draftState} />
+        <div className={style.cardDisplayContainer}>
+          <CardDisplay
+            key={cardCount.card.cardCode}
+            card={cardCount.card}
+            draftState={props.draftState}
+          />
         </div>
       ))}
     </div>

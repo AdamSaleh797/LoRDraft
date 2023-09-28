@@ -22,23 +22,27 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   const dispatch = useLoRDispatch()
 
   if (game_metadata === null) {
-    setTimeout(() => {
-      dispatch(
-        doFetchGameMetadataAsync({
-          socket: props.socket,
-          authInfo: props.authInfo,
-        })
-      )
-    }, 0)
+    dispatch(
+      doFetchGameMetadataAsync({
+        socket: props.socket,
+        authInfo: props.authInfo,
+      })
+    )
   }
 
   if (!inDraft(draft_state)) {
     return (
-      <DraftOptionsComponent
-        socket={props.socket}
-        authInfo={props.authInfo}
-        gameMetadata={game_metadata}
-      />
+      <>
+        <h4>
+          Following the draft Options which are getting reworked on the left
+        </h4>
+
+        <DraftOptionsComponent
+          socket={props.socket}
+          authInfo={props.authInfo}
+          gameMetadata={game_metadata}
+        />
+      </>
     )
   } else {
     return (

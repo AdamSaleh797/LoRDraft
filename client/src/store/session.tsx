@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { Buffer } from 'buffer'
 
 import {
   AuthInfo,
@@ -12,9 +13,10 @@ import {
   StatusCode,
   isOk,
   makeErrStatus,
+  makeOkStatus,
 } from 'common/util/status'
 
-import { CachedAuthInfo } from 'client/components/auth/cached_auth_info'
+import { CachedAuthInfo } from 'client/components/auth/CachedAuthInfo'
 import { LoRDispatch, RootState } from 'client/store'
 import { clearDraftState, doUpdateDraftAsync } from 'client/store/draft'
 import { ThunkAPI, makeThunkPromise } from 'client/store/util'
@@ -167,7 +169,15 @@ const doInitializeAsync = createAsyncThunk<
         return
       }
 
-      args.socket.call('join_session', auth_info, resolve)
+      args.socket.call('join_session', auth_info, (status) => {
+        if (!isOk(status)) {
+          resolve(status)
+        } else {
+          const auth_info = status.value
+          auth_info.token = Buffer.from(auth_info.token)
+          resolve(makeOkStatus(auth_info))
+        }
+      })
     })
   },
   {
@@ -194,7 +204,15 @@ const doLoginAsync = createAsyncThunk<Status<AuthInfo>, LoginArgs, ThunkAPI>(
   'session/loginAsync',
   async (args: LoginArgs) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('login', args.loginInfo, resolve)
+      args.socket.call('login', args.loginInfo, (status) => {
+        if (!isOk(status)) {
+          resolve(status)
+        } else {
+          const auth_info = status.value
+          auth_info.token = Buffer.from(auth_info.token)
+          resolve(makeOkStatus(auth_info))
+        }
+      })
     })
   },
   {

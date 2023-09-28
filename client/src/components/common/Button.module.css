@@ -1,0 +1,76 @@
+/* Global button styling */
+.button {
+  display: inline-block;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #2196f3;
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #1976d2;
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+}
+
+.button:active {
+  background-color: #1565c0;
+}
+
+.cancelBtn {
+  background-color: crimson;
+}
+
+.confirmBtn {
+  background-color: forestgreen;
+}
+
+.cancelBtn:hover,
+.cancelBtn:focus {
+  background-color: #ff5c5c; /* Different shade for cancel button hover and focus */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 92, 92, 0.3);
+}
+
+.cancelBtn:active {
+  background-color: #ff0000; /* Different shade for cancel button active state */
+}
+
+.confirmBtn:hover,
+.confirmBtn:focus {
+  background-color: #3cd87c; /* Different shade for confirm button hover and focus */
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(60, 216, 124, 0.3);
+}
+
+.confirmBtn:active {
+  background-color: #00b33c; /* Different shade for confirm button active state */
+}
+
+.disabled {
+  background-color: #e0e0e0; /* Lighter background color for disabled state */
+  cursor: not-allowed; /* Show disabled cursor */
+}
+
+.disabled:hover {
+  background-color: #e0e0e0; /* Keep the same background color on hover */
+}
+
+.disabled:focus {
+  outline: none; /* Remove focus outline for disabled state */
+}
+
+.disabled:active {
+  background-color: #e0e0e0; /* Keep the same background color on active state */
+}

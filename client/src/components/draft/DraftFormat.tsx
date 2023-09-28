@@ -6,7 +6,7 @@ import {
   allDraftFormats,
 } from 'common/game/metadata'
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common'
 
 interface DraftFormatComponentProps {
   selectFormatFn: (draft_format: DraftFormat) => void
