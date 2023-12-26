@@ -59,7 +59,8 @@ const RYZE_ORIGIN = [
   '02BW029', '02BW049', '02BW020', '02BW044', '04BW014', '04BW008',
   '04BW004', '06BW030', '06BW037', '06BW041', '06BW043', '06BW039',
   '01IO029', '01IO054', '02IO009', '05IO006', '06IO036', '07NX009',
-  '06FR041', '06PZ046', '07IO017', 
+  '06FR041', '06PZ046', '07IO017', '07SH041', '08BW002', '07MT013',
+  '08SH009', '08BW032', '07IO041',
 ]
 
 export type MainRegion = (typeof MAIN_REGIONS)[number]
@@ -143,6 +144,9 @@ const ORIGINS = {
       card.cardCode === '07RU015'
     )
   },
+  ElderDragon: (card: Card): boolean => {
+    return (card.cost >= 6 && !isChampion(card)) || card.cardCode === '08RU014'
+  },
   /* eslint-enable @typescript-eslint/naming-convention */
 } as const
 
@@ -194,6 +198,8 @@ export function runeterranOrigin(
 ): Region[] | null {
   if (card_name === 'The Poro King') {
     card_name = 'PoroKing'
+  } else if (card_name === 'Elder Dragon') {
+    card_name = 'ElderDragon'
   }
   if (!isOrigin(card_name)) {
     return null

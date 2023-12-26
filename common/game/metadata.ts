@@ -64,6 +64,7 @@ const REGION_ABBREVIATIONS = [
   'Bard',
   'Neeko',
   'POROKING',
+  'ELD',
   'DE',
   'RU',
   'FR',
