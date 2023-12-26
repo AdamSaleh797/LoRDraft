@@ -28,7 +28,7 @@ export const CARDS_PER_DECK = 40
 
 export const RANDOM_SELECTION_1_CARD_CUTOFF = 20
 export const RANDOM_SELECTION_2_CARD_CUTOFF = 37
-export const RANDOM_SELECTION_3_CARD_CUTOFF = 46
+export const RANDOM_SELECTION_3_CARD_CUTOFF = 43
 
 export const enum DraftState {
   INIT = 'INIT',
@@ -38,7 +38,7 @@ export const enum DraftState {
   RANDOM_SELECTION_2 = 'RANDOM_SELECTION_2',
   CHAMP_ROUND_2 = 'CHAMP_ROUND_2',
   RANDOM_SELECTION_3 = 'RANDOM_SELECTION_3',
-  // CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
+  CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
   // TRIM_DECK = 'TRIM_DECK',
   GENERATE_CODE = 'GENERATE_CODE',
 }
@@ -375,9 +375,9 @@ export function draftStateCardLimits(
     case DraftState.CHAMP_ROUND_2: {
       return [0, 2]
     }
-    // case DraftState.CHAMP_ROUND_3: {
-    //   return [0, 2]
-    // }
+    case DraftState.CHAMP_ROUND_3: {
+      return [0, 2]
+    }
     // case DraftState.TRIM_DECK: {
     //   return [5, 5]
     // }

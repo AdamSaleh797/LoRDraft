@@ -52,7 +52,7 @@ const GUARANTEED_CHAMP_COUNT = 2
 const RESTRICTED_POOL_DRAFT_STATES = [
   DraftState.CHAMP_ROUND_1,
   DraftState.CHAMP_ROUND_2,
-  // DraftState.CHAMP_ROUND_3,
+  DraftState.CHAMP_ROUND_3,
 ]
 
 const MAX_CARD_REPICK_ITERATIONS = 200
@@ -130,14 +130,12 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
       if (deck.numCards < RANDOM_SELECTION_3_CARD_CUTOFF) {
         return DraftState.RANDOM_SELECTION_3
       } else {
-        return DraftState.GENERATE_CODE
-        // TODO revert this
-        // return DraftState.CHAMP_ROUND_3
+        return DraftState.CHAMP_ROUND_3
       }
-    // case DraftState.CHAMP_ROUND_3:
-    //   return DraftState.TRIM_DECK
-    // case DraftState.TRIM_DECK:
-    //   return DraftState.GENERATE_CODE
+    case DraftState.CHAMP_ROUND_3:
+      //return DraftState.TRIM_DECK
+      //case DraftState.TRIM_DECK:
+      return DraftState.GENERATE_CODE
     case DraftState.GENERATE_CODE:
       return null
   }
@@ -159,6 +157,18 @@ function chooseNextCards(
         StatusCode.DRAFT_COMPLETE,
         'The draft is complete, no more card selections to be made.'
       )
+    )
+    return
+  }
+
+  if (next_draft_state === DraftState.GENERATE_CODE) {
+    // If the selection phase is complete, don't choose more pending cards.
+    callback(
+      makeOkStatus({
+        ...draft_state,
+        pendingCards: [],
+        state: next_draft_state,
+      })
     )
     return
   }
@@ -228,7 +238,8 @@ function chooseNextCards(
       return
     }
     case DraftState.CHAMP_ROUND_1:
-    case DraftState.CHAMP_ROUND_2: {
+    case DraftState.CHAMP_ROUND_2:
+    case DraftState.CHAMP_ROUND_3: {
       chooseChampCards(next_draft_state, draft_state.deck, champCardsCallback)
       return
     }
@@ -236,15 +247,6 @@ function chooseNextCards(
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
       chooseNonChampCards(draft_state.deck, cardsCallback)
-      return
-    }
-    case DraftState.GENERATE_CODE: {
-      callback(
-        makeErrStatus(
-          StatusCode.DRAFT_COMPLETE,
-          'The draft is complete, no more card selections to be made.'
-        )
-      )
       return
     }
   }
