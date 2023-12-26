@@ -9,9 +9,10 @@ import {
   Region,
   RegionT,
   allRegions,
+  mainRegions,
   regionContains,
 } from 'common/game/card'
-import { DraftOptions } from 'common/game/draft_options'
+import { DraftOptions, DraftRarityRestriction } from 'common/game/draft_options'
 import {
   Status,
   StatusCode,
@@ -104,8 +105,19 @@ export function makeDraftDeck(
   options: DraftOptions,
   cards: Card[] = []
 ): DraftDeck {
+  let regions
+  switch (options.rarityRestriction) {
+    case DraftRarityRestriction.COMMONS: {
+      regions = mainRegions()
+      break
+    }
+    case DraftRarityRestriction.ANY_RARITY: {
+      regions = allRegions()
+      break
+    }
+  }
   const deck: DraftDeck = {
-    regions: allRegions(),
+    regions: regions,
     cardCounts: [],
     numCards: 0,
     options: options,

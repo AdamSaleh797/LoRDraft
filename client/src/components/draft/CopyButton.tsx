@@ -5,7 +5,6 @@ import React from 'react'
 
 export interface CopyButtonProps {
   textToCopy: string
-  buttonText: string
 }
 
 export function CopyButton(props: CopyButtonProps) {
