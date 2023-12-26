@@ -1,3 +1,4 @@
+import { createTheme } from '@mui/material'
 import React, { useState } from 'react'
 
 import style from './App.module.css'
@@ -23,6 +24,24 @@ export default function App() {
   const socket_ref = React.useRef(createLoRSocket())
   const dispatch = useLoRDispatch()
 
+  React.useEffect(() => {
+    const theme = createTheme({
+      palette: {
+        primary: {
+          light: '#757ce8',
+          main: '#4066ba',
+          dark: '#002884',
+          contrastText: '#fff',
+        },
+        secondary: {
+          light: '#ff7961',
+          main: '#f44336',
+          dark: '#ba000d',
+          contrastText: '#000',
+        },
+      },
+    })
+  }, [])
   // If the session state has not initialized, then trigger the initialization
   if (shouldInitialize(session_state)) {
     tryInitializeUserSession(dispatch, {
