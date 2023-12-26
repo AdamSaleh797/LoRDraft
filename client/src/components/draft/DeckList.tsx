@@ -59,13 +59,10 @@ export function DeckList(props: DeckListComponentProps) {
   }
   return (
     <div>
-      {deckCode === null ? (
-        <div> </div>
-      ) : (
-        <div className={style.copyButtonContainer}>
-          <CopyButton textToCopy={deckCode} buttonText='Copy Code'></CopyButton>
-        </div>
-      )}
+      <CopyButton
+        textToCopy={deckCode === null ? '' : deckCode}
+        buttonText='Copy Code'
+      ></CopyButton>
       <RegionIconList
         draftSketch={props.draftSketch}
         gameMetadata={props.gameMetadata}
@@ -73,7 +70,7 @@ export function DeckList(props: DeckListComponentProps) {
       <br></br>
       <div>
         {Object.entries(typeCategories).map(([category, cardCounts]) => (
-          <div className={style.typeCategoryContainer}>
+          <div key={category} className={style.typeCategoryContainer}>
             <TypeCategory
               draftState={props.draftState}
               category={category as CardCategory}

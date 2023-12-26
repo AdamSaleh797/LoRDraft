@@ -17,7 +17,8 @@ export function ManaCurve(props: ManaCurveComponentProps) {
     0
   ) as number[]
 
-  const deck_card_counts: CardCount[] = props.draftSketch.deck.cardCounts
+  const deck_card_counts: readonly Readonly<CardCount>[] =
+    props.draftSketch.deck.cardCounts
 
   deck_card_counts.forEach((cardCount: CardCount) => {
     histogram[Math.min(cardCount.card.cost, MAX_DISPLAY_COST)] +=

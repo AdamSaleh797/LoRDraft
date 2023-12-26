@@ -1,5 +1,6 @@
 import { getCodeFromDeck } from 'lor-deckcodes-ts'
 import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
+import { DeepReadonly } from 'ts-essentials'
 
 import {
   Card,
@@ -27,7 +28,7 @@ export const CARDS_PER_DECK = 40
 
 export const RANDOM_SELECTION_1_CARD_CUTOFF = 20
 export const RANDOM_SELECTION_2_CARD_CUTOFF = 37
-export const RANDOM_SELECTION_3_CARD_CUTOFF = 46
+export const RANDOM_SELECTION_3_CARD_CUTOFF = 43
 
 export const enum DraftState {
   INIT = 'INIT',
@@ -37,7 +38,7 @@ export const enum DraftState {
   RANDOM_SELECTION_2 = 'RANDOM_SELECTION_2',
   CHAMP_ROUND_2 = 'CHAMP_ROUND_2',
   RANDOM_SELECTION_3 = 'RANDOM_SELECTION_3',
-  // CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
+  CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
   // TRIM_DECK = 'TRIM_DECK',
   GENERATE_CODE = 'GENERATE_CODE',
 }
@@ -59,10 +60,10 @@ export const DraftDeckT = RecordT({
 })
 
 export interface DraftDeck {
-  regions: Region[]
-  cardCounts: CardCount[]
+  regions: readonly Region[]
+  cardCounts: readonly Readonly<CardCount>[]
   numCards: number
-  readonly options: DraftOptions
+  options: DraftOptions
 }
 
 export function findCardCount(
@@ -139,8 +140,8 @@ export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
  * @returns A list of possible region pairs for the cards given.
  */
 function possibleRegionPairs(
-  card_counts: CardCount[],
-  possible_regions: Region[]
+  card_counts: readonly Readonly<CardCount>[],
+  possible_regions: readonly Region[]
 ): [Region, Region][] {
   const initial_regions_in_deck = possible_regions.reduce<
     Partial<Record<Region, number>>
@@ -206,7 +207,7 @@ function possibleRegionPairs(
  */
 function possibleRegionsForCards(
   card_counts: CardCount[],
-  possible_regions: Region[]
+  possible_regions: readonly Region[]
 ): Region[] | null {
   const region_set = new Set<Region>()
   possibleRegionPairs(card_counts, possible_regions).forEach(
@@ -229,7 +230,7 @@ function possibleRegionsForCards(
  * draft. The remaining regions in `deck.regions` may possibly be included, but
  * there exist combinations of regions that don't include them.
  */
-export function certainRegionsForDeck(deck: DraftDeck): Region[] {
+export function certainRegionsForDeck(deck: DraftDeck): readonly Region[] {
   // If there are only two possible regions, they are certainly the only two
   // regions for the deck.
   if (deck.regions.length === 2) {
@@ -329,17 +330,18 @@ export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
  * Adds a list of cards to the deck.
  * @param deck The deck to add `cards` to.
  * @param cards The cards to be added.
- * @returns True if the cards were all successfully added, or false if any card
- * could not be added, not mutating the deck.
+ * @returns The new deck if the cards were all successfully added, or null if
+ * any card could not be added, not mutating the deck.
  */
-export function addCardsToDeck(deck: DraftDeck, cards: Card[]): boolean {
-  const old_deck = { ...deck }
-  if (cards.some((card) => !addCardToDeck(deck, card))) {
-    // Restore the initial state of deck.
-    Object.assign(deck, old_deck.cardCounts)
-    return false
+export function addCardsToDeck(
+  deck: DeepReadonly<DraftDeck>,
+  cards: Card[]
+): DraftDeck | null {
+  const new_deck = { ...deck }
+  if (cards.some((card) => !addCardToDeck(new_deck, card))) {
+    return null
   } else {
-    return true
+    return new_deck
   }
 }
 
@@ -373,9 +375,9 @@ export function draftStateCardLimits(
     case DraftState.CHAMP_ROUND_2: {
       return [0, 2]
     }
-    // case DraftState.CHAMP_ROUND_3: {
-    //   return [0, 2]
-    // }
+    case DraftState.CHAMP_ROUND_3: {
+      return [0, 2]
+    }
     // case DraftState.TRIM_DECK: {
     //   return [5, 5]
     // }

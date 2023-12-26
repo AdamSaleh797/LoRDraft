@@ -1,0 +1,14 @@
+[Unit]
+Description=LoR Draft Server
+After=network.target
+
+[Service]
+ExecStart=/home/adamsaleh/prod/exec.sh
+Restart=always
+User=adamsaleh
+Group=adamsaleh
+AmbientCapabilities = CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+
