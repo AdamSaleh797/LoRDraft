@@ -223,3 +223,25 @@ export function regionSets(
     callback(makeOkStatus(g_region_sets));
   });
 }
+
+export function lookupCardsByCode(
+  codes: string[],
+  callback: (cards: Card[]) => void
+) {
+  regionSets((regionSetMap) => {
+    if (!isOk(regionSetMap)) {
+      return;
+    }
+    const cards = [];
+    for (const region of allRegions()) {
+      for (const unit of regionSetMap.value[region].champs.concat(
+        ...regionSetMap.value[region].nonChamps
+      )) {
+        if (codes.includes(unit.cardCode)) {
+          cards.push(unit);
+        }
+      }
+    }
+    callback(cards);
+  });
+}

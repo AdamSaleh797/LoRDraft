@@ -1,9 +1,17 @@
+import { Deck } from '@mui/icons-material';
+import { Card } from '@mui/material';
 import fs from 'fs';
 import http from 'http';
 import mime from 'mime';
 import path from 'path';
 
+import { makeDraftDeck } from 'common/game/draft';
+import { DraftRarityRestriction } from 'common/game/draft_options';
+import { isOk } from 'common/util/status';
+
 import { config } from 'server/args';
+import { CardType, SampleMode, randomSampleCards } from 'server/card_pool';
+import { lookupCardsByCode } from 'server/set_packs';
 import { initSocket } from 'server/socket_init';
 import { setUpPollAssetUpdates } from 'server/update_assets';
 
@@ -70,3 +78,31 @@ setUpPollAssetUpdates();
   }
   console.log(`Server running on http://${addr}`);
 }
+
+lookupCardsByCode(['06RU001', '06BC015'], (cards) => {
+  const deck = makeDraftDeck(
+    {
+      rarityRestriction: DraftRarityRestriction.ANY_RARITY,
+      draftFormat: 'Eternal',
+    },
+    cards
+  );
+
+  const m = {};
+
+  randomSampleCards(
+    {
+      cardType: CardType.NON_CHAMP,
+      numCards: 4,
+      deck: deck,
+      sampleMode: SampleMode.UNIFORM,
+    },
+    (cards) => {
+      if (!isOk(cards)) {
+        console.log(cards);
+        return;
+      }
+      console.log(cards.value.map((card) => card.regions));
+    }
+  );
+});
