@@ -246,15 +246,6 @@ function chooseNextCards(
       chooseNonChampCards(draft_state.deck, cardsCallback);
       return;
     }
-    case DraftState.GENERATE_CODE: {
-      callback(
-        makeErrStatus(
-          StatusCode.DRAFT_COMPLETE,
-          'The draft is complete, no more card selections to be made.'
-        )
-      );
-      return;
-    }
   }
 }
 
