@@ -54,19 +54,19 @@ export enum StatusCode {
 }
 
 export interface OkStatusT<T = null> {
-  readonly status: StatusCode.OK
-  readonly value: T
+  readonly status: StatusCode.OK;
+  readonly value: T;
 }
 
-export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>
+export type ErrStatusCode = Exclude<StatusCode, StatusCode.OK>;
 
 export interface ErrStatusT {
-  readonly status: ErrStatusCode
-  readonly message: string
-  readonly fromStatuses?: readonly ErrStatusT[]
+  readonly status: ErrStatusCode;
+  readonly message: string;
+  readonly fromStatuses?: readonly ErrStatusT[];
 }
 
-export type Status<T = null> = OkStatusT<T> | ErrStatusT
+export type Status<T = null> = OkStatusT<T> | ErrStatusT;
 
 export function makeErrStatus(
   status: ErrStatusCode,
@@ -77,7 +77,7 @@ export function makeErrStatus(
     status: status,
     message: message,
     fromStatuses: from_statuses,
-  }
+  };
 }
 
 export function withSubStatuses(
@@ -88,7 +88,7 @@ export function withSubStatuses(
     status.status,
     status.message,
     status.fromStatuses?.concat(from_statuses) ?? from_statuses
-  )
+  );
 }
 
 export function statusFromError<E extends Error, T>(
@@ -98,20 +98,20 @@ export function statusFromError<E extends Error, T>(
 ): Status<T> {
   return error === null
     ? makeOkStatus<T>(value_on_success)
-    : makeErrStatus(code, error.message)
+    : makeErrStatus(code, error.message);
 }
 
-export const OkStatus: OkStatusT = { status: StatusCode.OK, value: null }
+export const OkStatus: OkStatusT = { status: StatusCode.OK, value: null };
 
 export function makeOkStatus<T>(value: T): OkStatusT<T> {
   return {
     status: StatusCode.OK,
     value: value,
-  }
+  };
 }
 
 export function isOk<T>(status: Status<T>): status is OkStatusT<T> {
-  return status.status === StatusCode.OK
+  return status.status === StatusCode.OK;
 }
 
 export function isInternalError(status: ErrStatusT): boolean {
@@ -123,9 +123,9 @@ export function isInternalError(status: ErrStatusT): boolean {
     case StatusCode.FILE_RM_ERROR:
     case StatusCode.CHILD_PROCESS_EXEC_ERROR:
     case StatusCode.SET_PACK_UPDATE_ERROR:
-      return true
+      return true;
     default:
-      return false
+      return false;
   }
 }
 
@@ -135,8 +135,8 @@ export function statusSanitizeError<T extends Status>(
   sanitized_message: string
 ): T | ErrStatusT {
   if (!isOk(status) && isInternalError(status)) {
-    return makeErrStatus(sanitized_code, sanitized_message)
+    return makeErrStatus(sanitized_code, sanitized_message);
   } else {
-    return status
+    return status;
   }
 }

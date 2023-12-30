@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import style from './RoundLabel.module.css'
+import style from './RoundLabel.module.css';
 
 import {
   DraftDeck,
@@ -9,14 +9,14 @@ import {
   RANDOM_SELECTION_1_CARD_CUTOFF,
   RANDOM_SELECTION_2_CARD_CUTOFF,
   RANDOM_SELECTION_3_CARD_CUTOFF,
-} from 'common/game/draft'
+} from 'common/game/draft';
 
 interface NonChampRoundLabelProps {
   state:
     | DraftState.RANDOM_SELECTION_1
     | DraftState.RANDOM_SELECTION_2
-    | DraftState.RANDOM_SELECTION_3
-  deck: DraftDeck
+    | DraftState.RANDOM_SELECTION_3;
+  deck: DraftDeck;
 }
 
 function NonChampRoundLabel(props: NonChampRoundLabelProps) {
@@ -32,7 +32,7 @@ function NonChampRoundLabel(props: NonChampRoundLabelProps) {
             <div className={style.bottomText}>select one</div>
           </div>
         </div>
-      )
+      );
     case DraftState.RANDOM_SELECTION_2:
       return (
         <div className={style.roundLabelContainer}>
@@ -44,7 +44,7 @@ function NonChampRoundLabel(props: NonChampRoundLabelProps) {
             <div className={style.bottomText}>select one</div>
           </div>
         </div>
-      )
+      );
     case DraftState.RANDOM_SELECTION_3:
       return (
         <div className={style.roundLabelContainer}>
@@ -56,12 +56,12 @@ function NonChampRoundLabel(props: NonChampRoundLabelProps) {
             <div className={style.bottomText}>select one</div>
           </div>
         </div>
-      )
+      );
   }
 }
 
 export interface RoundLabelProps {
-  draftState: DraftStateInfo
+  draftState: DraftStateInfo;
 }
 
 export function RoundLabel(props: RoundLabelProps) {
@@ -77,7 +77,7 @@ export function RoundLabel(props: RoundLabelProps) {
             <div className={style.bottomText}>select up to two</div>
           </div>
         </div>
-      )
+      );
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3:
@@ -86,9 +86,9 @@ export function RoundLabel(props: RoundLabelProps) {
           state={props.draftState.state}
           deck={props.draftState.deck}
         />
-      )
+      );
     case DraftState.GENERATE_CODE:
     case DraftState.INIT:
-      return <div></div>
+      return <div></div>;
   }
 }

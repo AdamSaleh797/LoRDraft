@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import style from './icon_style.module.css'
+import style from './icon_style.module.css';
 
 export function EquipmentIcon() {
   return (
@@ -35,5 +35,5 @@ export function EquipmentIcon() {
         ></path>
       </svg>
     </div>
-  )
+  );
 }

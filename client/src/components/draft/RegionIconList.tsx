@@ -1,28 +1,28 @@
-import React from 'react'
+import React from 'react';
 
 import {
   Region,
   mainRegions,
   originRegions,
   regionContains,
-} from 'common/game/card'
-import { certainRegionsForDeck } from 'common/game/draft'
-import { GameMetadata } from 'common/game/metadata'
+} from 'common/game/card';
+import { certainRegionsForDeck } from 'common/game/draft';
+import { GameMetadata } from 'common/game/metadata';
 
-import { RegionIcon } from 'client/components/draft/RegionIcon'
-import { DraftSketch } from 'client/context/draft/draft_sketch'
+import { RegionIcon } from 'client/components/draft/RegionIcon';
+import { DraftSketch } from 'client/context/draft/draft_sketch';
 
 export interface RegionIconListComponentProps {
-  draftSketch: DraftSketch
-  gameMetadata: GameMetadata | null
+  draftSketch: DraftSketch;
+  gameMetadata: GameMetadata | null;
 }
 
 export function RegionIconList(props: RegionIconListComponentProps) {
-  const certain_regions = certainRegionsForDeck(props.draftSketch.deck)
+  const certain_regions = certainRegionsForDeck(props.draftSketch.deck);
 
   const regions_to_render = (mainRegions() as Region[])
     .filter((region) => {
-      return props.draftSketch.deck.regions.includes(region)
+      return props.draftSketch.deck.regions.includes(region);
     })
     // Include all certain Runeterran regions.
     .concat(
@@ -45,7 +45,7 @@ export function RegionIconList(props: RegionIconListComponentProps) {
       (a, b) =>
         (certain_regions.includes(b) ? 1 : 0) -
         (certain_regions.includes(a) ? 1 : 0)
-    )
+    );
 
   const region_counts = props.draftSketch.deck.cardCounts.reduce<
     Partial<Record<Region, number>>
@@ -53,21 +53,21 @@ export function RegionIconList(props: RegionIconListComponentProps) {
     (region_counts, card_count) => {
       const region = regions_to_render.find((region) =>
         regionContains(region, card_count.card)
-      )
+      );
       if (region === undefined) {
-        return region_counts
+        return region_counts;
       }
 
       return {
         ...region_counts,
         [region]: (region_counts[region] ?? 0) + card_count.count,
-      }
+      };
     },
     regions_to_render.reduce(
       (region_counts, region) => ({ ...region_counts, [region]: 0 }),
       {}
     )
-  )
+  );
 
   return (
     <div>
@@ -81,12 +81,12 @@ export function RegionIconList(props: RegionIconListComponentProps) {
               certainRegions={certain_regions}
               gameMetadata={props.gameMetadata}
             />
-          )
+          );
         } else {
           // TODO make this alt less ugly.
-          return <span key={index}>{region}, </span>
+          return <span key={index}>{region}, </span>;
         }
       })}
     </div>
-  )
+  );
 }

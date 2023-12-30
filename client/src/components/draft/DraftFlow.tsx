@@ -1,25 +1,25 @@
-import React from 'react'
+import React from 'react';
 
-import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
-import { DraftComponent } from 'client/components/draft/Draft'
-import { DraftOptionsComponent } from 'client/components/draft/DraftOptions'
-import { inDraft, selectDraftState } from 'client/store/draft'
+import { DraftComponent } from 'client/components/draft/Draft';
+import { DraftOptionsComponent } from 'client/components/draft/DraftOptions';
+import { inDraft, selectDraftState } from 'client/store/draft';
 import {
   doFetchGameMetadataAsync,
   selectGameMetadataState,
-} from 'client/store/game_metadata'
-import { useLoRDispatch, useLoRSelector } from 'client/store/hooks'
+} from 'client/store/game_metadata';
+import { useLoRDispatch, useLoRSelector } from 'client/store/hooks';
 
 interface DraftFlowComponentProps {
-  socket: LoRDraftClientSocket
-  authInfo: AuthInfo
+  socket: LoRDraftClientSocket;
+  authInfo: AuthInfo;
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
-  const draft_state = useLoRSelector(selectDraftState)
-  const game_metadata = useLoRSelector(selectGameMetadataState)
-  const dispatch = useLoRDispatch()
+  const draft_state = useLoRSelector(selectDraftState);
+  const game_metadata = useLoRSelector(selectGameMetadataState);
+  const dispatch = useLoRDispatch();
 
   if (game_metadata === null) {
     setTimeout(() => {
@@ -28,8 +28,8 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
           socket: props.socket,
           authInfo: props.authInfo,
         })
-      )
-    }, 0)
+      );
+    }, 0);
   }
 
   if (!inDraft(draft_state)) {
@@ -39,7 +39,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
         authInfo={props.authInfo}
         gameMetadata={game_metadata}
       />
-    )
+    );
   } else {
     return (
       <DraftComponent
@@ -48,6 +48,6 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
         draftState={draft_state.state}
         gameMetadata={game_metadata}
       />
-    )
+    );
   }
 }

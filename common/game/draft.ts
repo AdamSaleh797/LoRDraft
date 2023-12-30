@@ -1,6 +1,6 @@
-import { getCodeFromDeck } from 'lor-deckcodes-ts'
-import { Array as ArrayT, Number, Record as RecordT } from 'runtypes'
-import { DeepReadonly } from 'ts-essentials'
+import { getCodeFromDeck } from 'lor-deckcodes-ts';
+import { Array as ArrayT, Number, Record as RecordT } from 'runtypes';
+import { DeepReadonly } from 'ts-essentials';
 
 import {
   Card,
@@ -11,25 +11,28 @@ import {
   allRegions,
   mainRegions,
   regionContains,
-} from 'common/game/card'
-import { DraftOptions, DraftRarityRestriction } from 'common/game/draft_options'
+} from 'common/game/card';
+import {
+  DraftOptions,
+  DraftRarityRestriction,
+} from 'common/game/draft_options';
 import {
   Status,
   StatusCode,
   makeErrStatus,
   makeOkStatus,
-} from 'common/util/status'
+} from 'common/util/status';
 
-export const POOL_SIZE = 4
+export const POOL_SIZE = 4;
 
 /**
  * The total number of cards in a complete deck.
  */
-export const CARDS_PER_DECK = 40
+export const CARDS_PER_DECK = 40;
 
-export const RANDOM_SELECTION_1_CARD_CUTOFF = 20
-export const RANDOM_SELECTION_2_CARD_CUTOFF = 37
-export const RANDOM_SELECTION_3_CARD_CUTOFF = 43
+export const RANDOM_SELECTION_1_CARD_CUTOFF = 20;
+export const RANDOM_SELECTION_2_CARD_CUTOFF = 37;
+export const RANDOM_SELECTION_3_CARD_CUTOFF = 43;
 
 export const enum DraftState {
   INIT = 'INIT',
@@ -47,24 +50,24 @@ export const enum DraftState {
 export const CardCountT = RecordT({
   card: CardT,
   count: Number,
-})
+});
 
 export interface CardCount {
-  card: Card
-  count: number
+  card: Card;
+  count: number;
 }
 
 export const DraftDeckT = RecordT({
   regions: ArrayT(RegionT).asReadonly(),
   cardCounts: ArrayT(CardCountT),
   numCards: Number,
-})
+});
 
 export interface DraftDeck {
-  regions: readonly Region[]
-  cardCounts: readonly Readonly<CardCount>[]
-  numCards: number
-  options: DraftOptions
+  regions: readonly Region[];
+  cardCounts: readonly Readonly<CardCount>[];
+  numCards: number;
+  options: DraftOptions;
 }
 
 export function findCardCount(
@@ -73,9 +76,9 @@ export function findCardCount(
 ): CardCount | null {
   return (
     card_case.find((card_count) => {
-      return card.cardCode === card_count.card.cardCode
+      return card.cardCode === card_count.card.cardCode;
     }) ?? null
-  )
+  );
 }
 
 export function addToCardCounts(
@@ -83,21 +86,21 @@ export function addToCardCounts(
   card: Card
 ): CardCount[] {
   const idx = card_counts.findIndex((card_count) => {
-    return card.cardCode === card_count.card.cardCode
-  })
+    return card.cardCode === card_count.card.cardCode;
+  });
 
   if (idx === -1) {
     return card_counts.concat({
       card: card,
       count: 1,
-    })
+    });
   } else {
-    const copy = card_counts.slice()
+    const copy = card_counts.slice();
     copy[idx] = {
       card: copy[idx].card,
       count: copy[idx].count + 1,
-    }
-    return copy
+    };
+    return copy;
   }
 }
 
@@ -105,15 +108,15 @@ export function makeDraftDeck(
   options: DraftOptions,
   cards: Card[] = []
 ): DraftDeck {
-  let regions
+  let regions;
   switch (options.rarityRestriction) {
     case DraftRarityRestriction.COMMONS: {
-      regions = mainRegions()
-      break
+      regions = mainRegions();
+      break;
     }
     case DraftRarityRestriction.ANY_RARITY: {
-      regions = allRegions()
-      break
+      regions = allRegions();
+      break;
     }
   }
   const deck: DraftDeck = {
@@ -121,13 +124,13 @@ export function makeDraftDeck(
     cardCounts: [],
     numCards: 0,
     options: options,
-  }
+  };
 
   cards.forEach((card) => {
-    addCardToDeck(deck, card)
-  })
+    addCardToDeck(deck, card);
+  });
 
-  return deck
+  return deck;
 }
 
 export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
@@ -138,7 +141,7 @@ export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
     })),
     numCards: draft_deck.numCards,
     options: draft_deck.options,
-  }
+  };
 }
 
 /**
@@ -157,38 +160,38 @@ function possibleRegionPairs(
 ): [Region, Region][] {
   const initial_regions_in_deck = possible_regions.reduce<
     Partial<Record<Region, number>>
-  >((map, region) => ({ ...map, [region]: 0 }), {})
+  >((map, region) => ({ ...map, [region]: 0 }), {});
   const regions_in_deck = card_counts.reduce<Partial<Record<Region, number>>>(
     (map, card_count) => {
       possible_regions.forEach((region) => {
         if (regionContains(region, card_count.card)) {
-          map[region] = (map[region] ?? (0 as never)) + 1
+          map[region] = (map[region] ?? (0 as never)) + 1;
         }
-      })
-      return map
+      });
+      return map;
     },
     initial_regions_in_deck
-  )
+  );
 
   // Sort regions in non-increasing order of size
   const region_search_order = Array.from(
     Object.entries(regions_in_deck) as [Region, number][]
   )
     .sort((a, b) => b[1] - a[1])
-    .map((region_count) => region_count[0])
+    .map((region_count) => region_count[0]);
 
-  const region_pairs: [Region, Region][] = []
+  const region_pairs: [Region, Region][] = [];
 
   for (let i = 1; i < region_search_order.length; i++) {
-    const region1 = region_search_order[i]
+    const region1 = region_search_order[i];
 
     for (let j = 0; j < i; j++) {
-      const region2 = region_search_order[j]
+      const region2 = region_search_order[j];
 
       // If both regions are size 0, we don't need to check them, as they are
       // trivially not a possible pairing of regions.
       if ((regions_in_deck[region2] ?? (0 as never)) === 0) {
-        break
+        break;
       }
 
       if (
@@ -199,12 +202,12 @@ function possibleRegionPairs(
         )
       ) {
         // region1 and region2 are valid regions to choose for this deck.
-        region_pairs.push([region1, region2])
+        region_pairs.push([region1, region2]);
       }
     }
   }
 
-  return region_pairs
+  return region_pairs;
 }
 
 /**
@@ -221,20 +224,20 @@ function possibleRegionsForCards(
   card_counts: CardCount[],
   possible_regions: readonly Region[]
 ): Region[] | null {
-  const region_set = new Set<Region>()
+  const region_set = new Set<Region>();
   possibleRegionPairs(card_counts, possible_regions).forEach(
     ([region1, region2]) => {
-      region_set.add(region1)
-      region_set.add(region2)
+      region_set.add(region1);
+      region_set.add(region2);
     }
-  )
+  );
 
   if (region_set.size === 0) {
     // This deck would be invalid if the card were added to it.
-    return null
+    return null;
   }
 
-  return Array.from(region_set.values())
+  return Array.from(region_set.values());
 }
 
 /**
@@ -246,30 +249,30 @@ export function certainRegionsForDeck(deck: DraftDeck): readonly Region[] {
   // If there are only two possible regions, they are certainly the only two
   // regions for the deck.
   if (deck.regions.length === 2) {
-    return deck.regions
+    return deck.regions;
   }
   // If no cards have been chosen, all regions are uncertain.
   if (deck.cardCounts.length === 0) {
-    return []
+    return [];
   }
 
-  let regions_in_all_pairs = deck.regions
+  let regions_in_all_pairs = deck.regions;
   for (const region_pair of possibleRegionPairs(
     deck.cardCounts,
     deck.regions
   )) {
     regions_in_all_pairs = regions_in_all_pairs.filter((region) =>
       region_pair.includes(region)
-    )
+    );
 
     // If we've already eliminated all regions from the list of regions in all
     // pairs, we can return early.
     if (regions_in_all_pairs.length === 0) {
-      break
+      break;
     }
   }
 
-  return regions_in_all_pairs
+  return regions_in_all_pairs;
 }
 
 /**
@@ -287,18 +290,18 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
       (card_count) => card_count.card.cardCode === card.cardCode
     )?.count ?? 0) === MAX_CARD_COPIES
   ) {
-    return false
+    return false;
   }
 
   // If the deck only has two possible regions, these must be the two regions
   // for the deck. We can simply check if this card is in either of those two
   // regions.
   if (deck.regions.length === 2) {
-    return deck.regions.some((region) => regionContains(region, card))
+    return deck.regions.some((region) => regionContains(region, card));
   }
 
-  const card_counts = addToCardCounts(deck.cardCounts, card)
-  return possibleRegionsForCards(card_counts, deck.regions) !== null
+  const card_counts = addToCardCounts(deck.cardCounts, card);
+  return possibleRegionsForCards(card_counts, deck.regions) !== null;
 }
 
 /**
@@ -309,33 +312,33 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
  * could not be added because adding it would violate a rule of deck building.
  */
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
-  const card_counts = addToCardCounts(deck.cardCounts, card)
-  let new_regions
+  const card_counts = addToCardCounts(deck.cardCounts, card);
+  let new_regions;
   if (deck.regions.length === 2) {
     // If the deck only has two possible regions, these must be the two regions
     // for the deck. We can simply check if this card is in either of those two
     // regions.
     if (deck.regions.some((region) => regionContains(region, card))) {
-      new_regions = deck.regions
+      new_regions = deck.regions;
     } else {
       // If neither of the two regions of the deck contain the card, this card
       // can't be added.
-      return false
+      return false;
     }
   } else {
     // Otherwise, we have to narrow the possible remaining regions.
-    new_regions = possibleRegionsForCards(card_counts, deck.regions)
+    new_regions = possibleRegionsForCards(card_counts, deck.regions);
 
     if (new_regions === null) {
-      return false
+      return false;
     }
   }
 
-  deck.cardCounts = card_counts
-  deck.regions = new_regions
-  deck.numCards++
+  deck.cardCounts = card_counts;
+  deck.regions = new_regions;
+  deck.numCards++;
 
-  return true
+  return true;
 }
 
 /**
@@ -349,23 +352,23 @@ export function addCardsToDeck(
   deck: DeepReadonly<DraftDeck>,
   cards: Card[]
 ): DraftDeck | null {
-  const new_deck = { ...deck }
+  const new_deck = { ...deck };
   if (cards.some((card) => !addCardToDeck(new_deck, card))) {
-    return null
+    return null;
   } else {
-    return new_deck
+    return new_deck;
   }
 }
 
 export const DraftStateInfoT = RecordT({
   deck: DraftDeckT,
   pendingCards: ArrayT(CardT),
-})
+});
 
 export interface DraftStateInfo {
-  state: DraftState
-  deck: DraftDeck
-  pendingCards: Card[]
+  state: DraftState;
+  deck: DraftDeck;
+  pendingCards: Card[];
 }
 
 export function draftStateCardLimits(
@@ -373,28 +376,28 @@ export function draftStateCardLimits(
 ): [number, number] | null {
   switch (draft_state) {
     case DraftState.INIT: {
-      return null
+      return null;
     }
     case DraftState.INITIAL_SELECTION: {
-      return [2, 2]
+      return [2, 2];
     }
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
-      return [1, 1]
+      return [1, 1];
     }
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2: {
-      return [0, 2]
+      return [0, 2];
     }
     case DraftState.CHAMP_ROUND_3: {
-      return [0, 2]
+      return [0, 2];
     }
     // case DraftState.TRIM_DECK: {
     //   return [5, 5]
     // }
     case DraftState.GENERATE_CODE: {
-      return null
+      return null;
     }
   }
 }
@@ -404,13 +407,13 @@ export function getDeckCode(deck: DraftDeck): Status<string> {
     return makeErrStatus(
       StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
       `Cannot generate deck code for deck, expect ${CARDS_PER_DECK} cards, found ${deck.numCards}.`
-    )
+    );
   }
 
   const deckcodes_deck = deck.cardCounts.map((card_count) => ({
     cardCode: card_count.card.cardCode,
     count: card_count.count,
-  }))
+  }));
 
-  return makeOkStatus(getCodeFromDeck(deckcodes_deck))
+  return makeOkStatus(getCodeFromDeck(deckcodes_deck));
 }
