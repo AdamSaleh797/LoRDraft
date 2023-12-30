@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import style from './icon_style.module.css'
+import style from './icon_style.module.css';
 
 export function LandmarkIcon() {
   return (
@@ -21,5 +21,5 @@ export function LandmarkIcon() {
         </g>
       </svg>
     </div>
-  )
+  );
 }

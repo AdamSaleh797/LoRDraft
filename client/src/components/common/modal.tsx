@@ -1,29 +1,29 @@
-import React from 'react'
+import React from 'react';
 
-import style from './modal.module.css'
+import style from './modal.module.css';
 
-import { LoRDraftClientSocket } from 'common/game/socket-msgs'
+import { LoRDraftClientSocket } from 'common/game/socket-msgs';
 
-import { SignInComponent } from 'client/components/auth/SignInComponent'
-import { UserComponent } from 'client/components/auth/UserInfoComponent'
-import { Button } from 'client/components/common/button'
-import { useLoRSelector } from 'client/store/hooks'
-import { isSignedIn, selectSessionState } from 'client/store/session'
+import { SignInComponent } from 'client/components/auth/SignInComponent';
+import { UserComponent } from 'client/components/auth/UserInfoComponent';
+import { Button } from 'client/components/common/button';
+import { useLoRSelector } from 'client/store/hooks';
+import { isSignedIn, selectSessionState } from 'client/store/session';
 
 export interface ModalProps {
-  setOpenModal: (b: boolean) => void
-  socket: LoRDraftClientSocket
+  setOpenModal: (b: boolean) => void;
+  socket: LoRDraftClientSocket;
 }
 
 export function Modal(props: ModalProps) {
-  const session_state = useLoRSelector(selectSessionState)
+  const session_state = useLoRSelector(selectSessionState);
 
   return (
     <div className={style.modalBackground}>
       <div className={style.modalContainer}>
         <Button
           onClick={() => {
-            props.setOpenModal(false)
+            props.setOpenModal(false);
           }}
         >
           Close &times;
@@ -46,7 +46,7 @@ export function Modal(props: ModalProps) {
           <Button
             className={style.cancelBtn}
             onClick={() => {
-              props.setOpenModal(false)
+              props.setOpenModal(false);
             }}
           >
             Close
@@ -54,5 +54,5 @@ export function Modal(props: ModalProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

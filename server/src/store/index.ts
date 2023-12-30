@@ -1,4 +1,4 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import {
   FLUSH,
   PAUSE,
@@ -8,24 +8,24 @@ import {
   REHYDRATE,
   persistReducer,
   persistStore,
-} from 'redux-persist'
-import { AsyncNodeStorage } from 'redux-persist-node-storage'
+} from 'redux-persist';
+import { AsyncNodeStorage } from 'redux-persist-node-storage';
 
-import setPacksReducer from 'server/store/set_packs'
-import usermapReducer from 'server/store/usermap'
+import setPacksReducer from 'server/store/set_packs';
+import usermapReducer from 'server/store/usermap';
 
 const reducer = combineReducers({
   setPacks: setPacksReducer,
   usermap: usermapReducer,
-})
+});
 
 const persistConfig = {
   key: 'root',
   version: 1,
   storage: new AsyncNodeStorage('../dist/store'),
-}
+};
 
-const persistedReducer = persistReducer(persistConfig, reducer)
+const persistedReducer = persistReducer(persistConfig, reducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -35,10 +35,10 @@ export const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
-})
+});
 
-export const persistor = persistStore(store)
-export const dispatch = store.dispatch
+export const persistor = persistStore(store);
+export const dispatch = store.dispatch;
 
-export type LoRServerDispatch = typeof store.dispatch
-export type RootState = ReturnType<typeof store.getState>
+export type LoRServerDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;

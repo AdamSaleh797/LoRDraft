@@ -1,8 +1,8 @@
-import React from 'react'
+import React from 'react';
 
-import style from './header.module.css'
+import style from './header.module.css';
 
-import { APP_TITLE } from 'client/utils/constants'
+import { APP_TITLE } from 'client/utils/constants';
 
 export function Header(props: { children: React.ReactNode }) {
   return (
@@ -11,5 +11,5 @@ export function Header(props: { children: React.ReactNode }) {
       <div className={style.centerTitle}>{APP_TITLE}</div>
       <div className={style.rightElement}>{props.children}</div>
     </div>
-  )
+  );
 }

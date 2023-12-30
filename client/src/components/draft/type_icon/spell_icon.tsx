@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import style from './icon_style.module.css'
+import style from './icon_style.module.css';
 
 export function SpellIcon() {
   return (
@@ -32,5 +32,5 @@ export function SpellIcon() {
         </g>
       </svg>
     </div>
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import React, { MouseEventHandler, ReactNode } from 'react'
+import React, { MouseEventHandler, ReactNode } from 'react';
 
-import style from './button.module.css'
+import style from './button.module.css';
 
 interface ButtonProps {
-  children: ReactNode
-  onClick?: MouseEventHandler<HTMLButtonElement>
-  className?: string
+  children: ReactNode;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  className?: string;
 }
 
 export function Button({ children, onClick, className }: ButtonProps) {
@@ -13,5 +13,5 @@ export function Button({ children, onClick, className }: ButtonProps) {
     <button className={className ?? style.button} onClick={onClick}>
       {children}
     </button>
-  )
+  );
 }
