@@ -1,11 +1,13 @@
 import { ContentCopy } from '@mui/icons-material';
-import { Button, Snackbar } from '@mui/material';
+import { Snackbar } from '@mui/material';
 import clipboardCopy from 'clipboard-copy';
 import React from 'react';
 
+import { Button } from 'client/components/common/button';
+
 export interface CopyButtonProps {
   textToCopy: string;
-  buttonText: string;
+  buttonText?: string;
 }
 
 export function CopyButton(props: CopyButtonProps) {
@@ -23,12 +25,7 @@ export function CopyButton(props: CopyButtonProps) {
 
   return (
     <div>
-      <Button
-        variant='contained'
-        color='primary'
-        onClick={handleCopy}
-        startIcon={<ContentCopy />}
-      >
+      <Button muiOps={{ startIcon: <ContentCopy /> }} onClick={handleCopy}>
         {props.buttonText}
       </Button>
       <Snackbar

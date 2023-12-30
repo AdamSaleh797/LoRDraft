@@ -5,6 +5,7 @@ import style from './DeckList.module.css';
 import {
   CARDS_PER_DECK,
   CardCount,
+  DraftState,
   DraftStateInfo,
   getDeckCode,
 } from 'common/game/draft';
@@ -59,10 +60,14 @@ export function DeckList(props: DeckListComponentProps) {
   }
   return (
     <div>
-      <CopyButton
-        textToCopy={deckCode === null ? '' : deckCode}
-        buttonText='Copy Code'
-      ></CopyButton>
+      {props.draftState.state === DraftState.GENERATE_CODE ? (
+        <CopyButton
+          textToCopy={deckCode === null ? '' : deckCode}
+          buttonText='COPY DECK'
+        ></CopyButton>
+      ) : (
+        []
+      )}
       <RegionIconList
         draftSketch={props.draftSketch}
         gameMetadata={props.gameMetadata}

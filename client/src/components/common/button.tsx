@@ -1,17 +1,25 @@
+import { ButtonOwnProps, Button as MButton } from '@mui/material';
 import React, { MouseEventHandler, ReactNode } from 'react';
 
 import style from './button.module.css';
 
 interface ButtonProps {
-  children: ReactNode;
+  children?: ReactNode;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   className?: string;
+  muiOps?: ButtonOwnProps;
 }
 
-export function Button({ children, onClick, className }: ButtonProps) {
+export function Button(props: ButtonProps) {
   return (
-    <button className={className ?? style.button} onClick={onClick}>
-      {children}
-    </button>
+    <MButton
+      className={props.className ?? style.button}
+      onClick={props.onClick}
+      color='primary'
+      variant='contained'
+      {...props.muiOps}
+    >
+      {props.children}
+    </MButton>
   );
 }

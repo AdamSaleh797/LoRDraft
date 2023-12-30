@@ -9,9 +9,13 @@ import {
   Region,
   RegionT,
   allRegions,
+  mainRegions,
   regionContains,
 } from 'common/game/card';
-import { DraftOptions } from 'common/game/draft_options';
+import {
+  DraftOptions,
+  DraftRarityRestriction,
+} from 'common/game/draft_options';
 import {
   Status,
   StatusCode,
@@ -28,7 +32,7 @@ export const CARDS_PER_DECK = 40;
 
 export const RANDOM_SELECTION_1_CARD_CUTOFF = 20;
 export const RANDOM_SELECTION_2_CARD_CUTOFF = 37;
-export const RANDOM_SELECTION_3_CARD_CUTOFF = 46;
+export const RANDOM_SELECTION_3_CARD_CUTOFF = 43;
 
 export const enum DraftState {
   INIT = 'INIT',
@@ -38,7 +42,7 @@ export const enum DraftState {
   RANDOM_SELECTION_2 = 'RANDOM_SELECTION_2',
   CHAMP_ROUND_2 = 'CHAMP_ROUND_2',
   RANDOM_SELECTION_3 = 'RANDOM_SELECTION_3',
-  // CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
+  CHAMP_ROUND_3 = 'CHAMP_ROUND_3',
   // TRIM_DECK = 'TRIM_DECK',
   GENERATE_CODE = 'GENERATE_CODE',
 }
@@ -104,8 +108,19 @@ export function makeDraftDeck(
   options: DraftOptions,
   cards: Card[] = []
 ): DraftDeck {
+  let regions;
+  switch (options.rarityRestriction) {
+    case DraftRarityRestriction.COMMONS: {
+      regions = mainRegions();
+      break;
+    }
+    case DraftRarityRestriction.ANY_RARITY: {
+      regions = allRegions();
+      break;
+    }
+  }
   const deck: DraftDeck = {
-    regions: allRegions(),
+    regions: regions,
     cardCounts: [],
     numCards: 0,
     options: options,
@@ -375,9 +390,9 @@ export function draftStateCardLimits(
     case DraftState.CHAMP_ROUND_2: {
       return [0, 2];
     }
-    // case DraftState.CHAMP_ROUND_3: {
-    //   return [0, 2]
-    // }
+    case DraftState.CHAMP_ROUND_3: {
+      return [0, 2];
+    }
     // case DraftState.TRIM_DECK: {
     //   return [5, 5]
     // }
