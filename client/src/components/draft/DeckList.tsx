@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-import style from './DeckList.module.css'
+import style from './DeckList.module.css';
 
 import {
   CARDS_PER_DECK,
@@ -8,35 +8,35 @@ import {
   DraftState,
   DraftStateInfo,
   getDeckCode,
-} from 'common/game/draft'
-import { GameMetadata } from 'common/game/metadata'
-import { isOk } from 'common/util/status'
+} from 'common/game/draft';
+import { GameMetadata } from 'common/game/metadata';
+import { isOk } from 'common/util/status';
 
-import { CopyButton } from 'client/components/draft/CopyButton'
-import { RegionIconList } from 'client/components/draft/RegionIconList'
+import { CopyButton } from 'client/components/draft/CopyButton';
+import { RegionIconList } from 'client/components/draft/RegionIconList';
 import {
   CardCategory,
   TypeCategory,
   cardType,
-} from 'client/components/draft/TypeCategory'
-import { DraftSketch } from 'client/context/draft/draft_sketch'
+} from 'client/components/draft/TypeCategory';
+import { DraftSketch } from 'client/context/draft/draft_sketch';
 
 export interface DeckListComponentProps {
-  draftState: DraftStateInfo
-  draftSketch: DraftSketch
-  gameMetadata: GameMetadata | null
+  draftState: DraftStateInfo;
+  draftSketch: DraftSketch;
+  gameMetadata: GameMetadata | null;
 }
 
 export function DeckList(props: DeckListComponentProps) {
-  const cardCounts = props.draftState.deck.cardCounts
+  const cardCounts = props.draftState.deck.cardCounts;
 
   const typeCategories = cardCounts.reduce<Record<CardCategory, CardCount[]>>(
     (typeCategories, cardCount) => {
-      const type = cardType(cardCount.card)
+      const type = cardType(cardCount.card);
       return {
         ...typeCategories,
         [type]: typeCategories[type].concat([cardCount]),
-      }
+      };
     },
     {
       Champion: [],
@@ -45,18 +45,18 @@ export function DeckList(props: DeckListComponentProps) {
       Landmark: [],
       Equipment: [],
     }
-  )
+  );
 
-  let deckCode: string | null
+  let deckCode: string | null;
   if (props.draftState.deck.numCards >= CARDS_PER_DECK) {
-    const code = getDeckCode(props.draftState.deck)
+    const code = getDeckCode(props.draftState.deck);
     if (!isOk(code)) {
-      deckCode = null
+      deckCode = null;
     } else {
-      deckCode = code.value
+      deckCode = code.value;
     }
   } else {
-    deckCode = null
+    deckCode = null;
   }
   return (
     <div>
@@ -85,5 +85,5 @@ export function DeckList(props: DeckListComponentProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

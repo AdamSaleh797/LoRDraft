@@ -1,18 +1,18 @@
-import React from 'react'
+import React from 'react';
 
-import style from './PoolComponent.module.css'
+import style from './PoolComponent.module.css';
 
-import { Card, cardsEqual } from 'common/game/card'
+import { Card, cardsEqual } from 'common/game/card';
 import {
   DraftState,
   DraftStateInfo,
   canAddToDeck,
   draftStateCardLimits,
-} from 'common/game/draft'
-import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
+} from 'common/game/draft';
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
-import { CardComponent } from 'client/components/draft/Card'
-import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager'
+import { CardComponent } from 'client/components/draft/Card';
+import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager';
 
 /**
  * Before selecting the card, will unselect as many cards as necessary from the
@@ -26,15 +26,15 @@ function smartSelect(
   is_selected: boolean
 ) {
   if (is_selected) {
-    draft_sketch_manager.removeCard(card)
+    draft_sketch_manager.removeCard(card);
   } else {
-    const min_max = draftStateCardLimits(draft_state)
+    const min_max = draftStateCardLimits(draft_state);
     if (min_max === null) {
-      return
+      return;
     }
 
-    let sketch = draft_sketch_manager.sketch()
-    const cards_to_remove = []
+    let sketch = draft_sketch_manager.sketch();
+    const cards_to_remove = [];
 
     // If the round max number of cards have already been chosen, remove
     // the least-recently-added card, continue to do so while the card
@@ -43,25 +43,25 @@ function smartSelect(
       sketch.addedCards.length >= min_max[1] ||
       (sketch.addedCards.length > 0 && !canAddToDeck(sketch.deck, card))
     ) {
-      cards_to_remove.push(sketch.addedCards[0])
-      sketch = sketch.removeCardFromSketch(sketch.addedCards[0])
+      cards_to_remove.push(sketch.addedCards[0]);
+      sketch = sketch.removeCardFromSketch(sketch.addedCards[0]);
     }
 
-    draft_sketch_manager.removeCards(cards_to_remove)
-    draft_sketch_manager.addCard(card)
+    draft_sketch_manager.removeCards(cards_to_remove);
+    draft_sketch_manager.addCard(card);
   }
 }
 
 export interface PoolComponentProps {
-  socket: LoRDraftClientSocket
-  authInfo: AuthInfo
-  draftState: DraftStateInfo
-  draftSketchManager: DraftSketchManager
+  socket: LoRDraftClientSocket;
+  authInfo: AuthInfo;
+  draftState: DraftStateInfo;
+  draftSketchManager: DraftSketchManager;
 }
 
 export function PoolComponent(props: PoolComponentProps) {
-  const cards = props.draftState.pendingCards
-  const selected_cards = props.draftSketchManager.sketch().addedCards
+  const cards = props.draftState.pendingCards;
+  const selected_cards = props.draftSketchManager.sketch().addedCards;
 
   return (
     <div className={style.poolComponent}>
@@ -69,7 +69,7 @@ export function PoolComponent(props: PoolComponentProps) {
         {cards.map((card, index) => {
           const is_selected = selected_cards.some((selected_card) =>
             cardsEqual(selected_card, card)
-          )
+          );
 
           const doSelect = () => {
             smartSelect(
@@ -77,8 +77,8 @@ export function PoolComponent(props: PoolComponentProps) {
               card,
               props.draftState.state,
               is_selected
-            )
-          }
+            );
+          };
           return (
             <CardComponent
               key={`${index}${card.cardCode}`}
@@ -88,9 +88,9 @@ export function PoolComponent(props: PoolComponentProps) {
               select={doSelect}
               draftState={props.draftState}
             />
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

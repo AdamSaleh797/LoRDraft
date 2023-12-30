@@ -1,26 +1,26 @@
-import React from 'react'
+import React from 'react';
 
-import style from './CardInfo.module.css'
+import style from './CardInfo.module.css';
 
-import { Card, isMainRegion } from 'common/game/card'
-import { DraftStateInfo, findCardCount } from 'common/game/draft'
+import { Card, isMainRegion } from 'common/game/card';
+import { DraftStateInfo, findCardCount } from 'common/game/draft';
 
 export interface CardDisplayProps {
-  card: Card
-  draftState: DraftStateInfo
+  card: Card;
+  draftState: DraftStateInfo;
 }
 
 export function CardInfo(props: CardDisplayProps) {
   const regions = props.card.regions.filter((region) =>
     props.draftState.deck.regions.includes(region)
-  )
-  const region = regions[0]
+  );
+  const region = regions[0];
 
-  let regionColorStyle
+  let regionColorStyle;
   if (isMainRegion(region)) {
-    regionColorStyle = style[region]
+    regionColorStyle = style[region];
   } else {
-    regionColorStyle = style.Runeterra
+    regionColorStyle = style.Runeterra;
   }
   return (
     <div className={`${style.fade} ${regionColorStyle}`}>
@@ -35,5 +35,5 @@ export function CardInfo(props: CardDisplayProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

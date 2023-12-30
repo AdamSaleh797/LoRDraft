@@ -1,5 +1,5 @@
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -39,4 +39,4 @@ module.exports = {
       template: path.resolve(__dirname, 'html/index_template.html'),
     }),
   ],
-}
+};

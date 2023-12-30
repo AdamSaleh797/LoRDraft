@@ -1,24 +1,24 @@
-import { Record as RecordT } from 'runtypes'
+import { Record as RecordT } from 'runtypes';
 
-import { Card } from 'common/game/card'
-import { DraftFormat, DraftFormatT } from 'common/game/metadata'
-import { enumToRuntype } from 'common/util/lor_util'
+import { Card } from 'common/game/card';
+import { DraftFormat, DraftFormatT } from 'common/game/metadata';
+import { enumToRuntype } from 'common/util/lor_util';
 
 export enum DraftRarityRestriction {
   COMMONS = 'COMMONS',
   ANY_RARITY = 'ANY_RARITY',
 }
 
-export const DraftRarityRestrictionT = enumToRuntype(DraftRarityRestriction)
+export const DraftRarityRestrictionT = enumToRuntype(DraftRarityRestriction);
 
 export const DraftOptionsT = RecordT({
   rarityRestriction: DraftRarityRestrictionT,
   draftFormat: DraftFormatT,
-})
+});
 
 export interface DraftOptions {
-  rarityRestriction: DraftRarityRestriction
-  draftFormat: DraftFormat
+  rarityRestriction: DraftRarityRestriction;
+  draftFormat: DraftFormat;
 }
 
 /**
@@ -30,25 +30,25 @@ export function formatContainsCard(
 ): boolean {
   switch (draft_options.draftFormat) {
     case 'Eternal': {
-      break
+      break;
     }
     case 'Standard': {
       if (!card.isStandard) {
-        return false
+        return false;
       }
     }
   }
 
   switch (draft_options.rarityRestriction) {
     case DraftRarityRestriction.ANY_RARITY: {
-      break
+      break;
     }
     case DraftRarityRestriction.COMMONS: {
       if (card.rarity !== 'Common') {
-        return false
+        return false;
       }
     }
   }
 
-  return true
+  return true;
 }

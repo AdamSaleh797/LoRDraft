@@ -1,27 +1,27 @@
-import { ContentCopy } from '@mui/icons-material'
-import { Snackbar } from '@mui/material'
-import clipboardCopy from 'clipboard-copy'
-import React from 'react'
+import { ContentCopy } from '@mui/icons-material';
+import { Snackbar } from '@mui/material';
+import clipboardCopy from 'clipboard-copy';
+import React from 'react';
 
-import { Button } from 'client/components/common/button'
+import { Button } from 'client/components/common/button';
 
 export interface CopyButtonProps {
-  textToCopy: string
-  buttonText?: string
+  textToCopy: string;
+  buttonText?: string;
 }
 
 export function CopyButton(props: CopyButtonProps) {
-  const [isCopied, setIsCopied] = React.useState(false)
+  const [isCopied, setIsCopied] = React.useState(false);
 
   const handleCopy = () => {
-    console.log('handling copy')
-    clipboardCopy(props.textToCopy)
-    setIsCopied(true)
-  }
+    console.log('handling copy');
+    clipboardCopy(props.textToCopy);
+    setIsCopied(true);
+  };
 
   const handleSnackbarClose = () => {
-    setIsCopied(false)
-  }
+    setIsCopied(false);
+  };
 
   return (
     <div>
@@ -39,5 +39,5 @@ export function CopyButton(props: CopyButtonProps) {
         message='Copied to clipboard!'
       />
     </div>
-  )
+  );
 }

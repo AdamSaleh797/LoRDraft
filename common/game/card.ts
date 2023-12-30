@@ -7,11 +7,11 @@ import {
   Static,
   String,
   Union,
-} from 'runtypes'
+} from 'runtypes';
 
-export const MAX_CARD_COPIES = 3
+export const MAX_CARD_COPIES = 3;
 
-export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None'
+export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Champion' | 'None';
 
 const CardTypeT = Union(
   Literal('Spell'),
@@ -20,11 +20,11 @@ const CardTypeT = Union(
   Literal('Landmark'),
   Literal('Trap'),
   Literal('Ability')
-)
+);
 
-export type CardType = Static<typeof CardTypeT>
+export type CardType = Static<typeof CardTypeT>;
 
-export const RUNETERRA = 'Runeterra' as const
+export const RUNETERRA = 'Runeterra' as const;
 
 const MAIN_REGIONS = [
   'Demacia',
@@ -37,7 +37,7 @@ const MAIN_REGIONS = [
   'BandleCity',
   'Bilgewater',
   'Ionia',
-] as const
+] as const;
 
 // burst/focus speed spell cards that do not say
 // prettier-ignore
@@ -63,15 +63,15 @@ const RYZE_ORIGIN = [
   '08SH009', '08BW032', '07IO041',
 ]
 
-export type MainRegion = (typeof MAIN_REGIONS)[number]
-const MAIN_REGION_LITERALS = MAIN_REGIONS.map((region) => Literal(region))
+export type MainRegion = (typeof MAIN_REGIONS)[number];
+const MAIN_REGION_LITERALS = MAIN_REGIONS.map((region) => Literal(region));
 export const MainRegionT = Union(
   MAIN_REGION_LITERALS[0],
   ...MAIN_REGION_LITERALS.slice(1)
-)
+);
 
-export const STANDARD_FORMAT_REF = 'client_Formats_Standard_name'
-export const ETERNAL_FORMAT_REF = 'client_Formats_Standard_name'
+export const STANDARD_FORMAT_REF = 'client_Formats_Standard_name';
+export const ETERNAL_FORMAT_REF = 'client_Formats_Standard_name';
 
 const ORIGINS = {
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -79,13 +79,13 @@ const ORIGINS = {
     return (
       (card.description.includes('husk') && !isChampion(card)) ||
       card.cardCode === '06RU025'
-    )
+    );
   },
   Bard: (card: Card): boolean => {
     return (
       (card.description.includes('link=card.chime') && !isChampion(card)) ||
       card.cardCode === '06RU001'
-    )
+    );
   },
   Jhin: (card: Card): boolean => {
     return (
@@ -93,34 +93,34 @@ const ORIGINS = {
         card.description.includes('playskill')) &&
         !isChampion(card)) ||
       card.cardCode === '06RU002'
-    )
+    );
   },
   Jax: (card: Card): boolean => {
     return (
       (card.subtypes.includes('weaponmaster') && !isChampion(card)) ||
       card.cardCode === '06RU008'
-    )
+    );
   },
   Ryze: (card: Card): boolean => {
-    return RYZE_ORIGIN.includes(card.cardCode) || card.cardCode === '06RU006'
+    return RYZE_ORIGIN.includes(card.cardCode) || card.cardCode === '06RU006';
   },
   Kayn: (card: Card): boolean => {
     return (
       (card.subtypes.includes('cultist') && !isChampion(card)) ||
       card.cardCode === '06RU005'
-    )
+    );
   },
   Aatrox: (card: Card): boolean => {
     return (
       (card.subtypes.includes('darkin') && !isChampion(card)) ||
       card.cardCode === '06RU026'
-    )
+    );
   },
   Varus: (card: Card): boolean => {
     return (
       (card.subtypes.includes('cultist') && !isChampion(card)) ||
       card.cardCode === '06RU009'
-    )
+    );
   },
   Neeko: (card: Card): boolean => {
     return (
@@ -133,7 +133,7 @@ const ORIGINS = {
         card.subtypes.includes('reptile')) &&
         !isChampion(card)) ||
       card.cardCode === '07RU012'
-    )
+    );
   },
   PoroKing: (card: Card): boolean => {
     return (
@@ -142,54 +142,54 @@ const ORIGINS = {
         card.name.includes('poro')) &&
         !isChampion(card)) ||
       card.cardCode === '07RU015'
-    )
+    );
   },
   ElderDragon: (card: Card): boolean => {
-    return (card.cost >= 6 && !isChampion(card)) || card.cardCode === '08RU014'
+    return (card.cost >= 6 && !isChampion(card)) || card.cardCode === '08RU014';
   },
   /* eslint-enable @typescript-eslint/naming-convention */
-} as const
+} as const;
 
 export type OriginsDef = {
-  [champion in keyof typeof ORIGINS]: (card: Card) => boolean
-}
+  [champion in keyof typeof ORIGINS]: (card: Card) => boolean;
+};
 // Assertion that g_origins satisfies its type
-ORIGINS satisfies OriginsDef
+ORIGINS satisfies OriginsDef;
 
-export type Origin = keyof typeof ORIGINS
-const ORIGIN_LITERALS = Object.keys(ORIGINS).map((region) => Literal(region))
-export const OriginT = Union(ORIGIN_LITERALS[0], ...ORIGIN_LITERALS.slice(1))
+export type Origin = keyof typeof ORIGINS;
+const ORIGIN_LITERALS = Object.keys(ORIGINS).map((region) => Literal(region));
+export const OriginT = Union(ORIGIN_LITERALS[0], ...ORIGIN_LITERALS.slice(1));
 
-export const RegionT = Union(MainRegionT, OriginT)
-export type Region = MainRegion | Origin
+export const RegionT = Union(MainRegionT, OriginT);
+export type Region = MainRegion | Origin;
 
 const ALL_REGIONS: Region[] = [
   ...(MAIN_REGIONS as ReadonlyArray<Region>),
   ...(Object.keys(ORIGINS) as Region[]),
-]
+];
 
 export function mainRegions(): readonly MainRegion[] {
-  return MAIN_REGIONS
+  return MAIN_REGIONS;
 }
 
 export function originRegions(): readonly Origin[] {
-  return Object.keys(ORIGINS) as Origin[]
+  return Object.keys(ORIGINS) as Origin[];
 }
 
 export function allRegions(): Region[] {
-  return ALL_REGIONS
+  return ALL_REGIONS;
 }
 
 export function isMainRegion(region: string): region is MainRegion {
-  return MAIN_REGIONS.includes(region as MainRegion)
+  return MAIN_REGIONS.includes(region as MainRegion);
 }
 
 export function isOrigin(region: string): region is Origin {
-  return Object.keys(ORIGINS).includes(region as Origin)
+  return Object.keys(ORIGINS).includes(region as Origin);
 }
 
 export function isRuneterran(regions: readonly string[]): boolean {
-  return regions.includes(RUNETERRA)
+  return regions.includes(RUNETERRA);
 }
 
 export function runeterranOrigin(
@@ -197,31 +197,31 @@ export function runeterranOrigin(
   regions: readonly string[]
 ): Region[] | null {
   if (card_name === 'The Poro King') {
-    card_name = 'PoroKing'
+    card_name = 'PoroKing';
   } else if (card_name === 'Elder Dragon') {
-    card_name = 'ElderDragon'
+    card_name = 'ElderDragon';
   }
   if (!isOrigin(card_name)) {
-    return null
+    return null;
   }
 
-  const origins = regions.filter((region) => region !== RUNETERRA)
+  const origins = regions.filter((region) => region !== RUNETERRA);
   if (!origins.includes(card_name)) {
-    origins.push(card_name)
+    origins.push(card_name);
   }
-  return origins as Region[]
+  return origins as Region[];
 }
 
 export function regionContains(region: Region, card: Card) {
   if (isMainRegion(region)) {
-    return card.regions.includes(region)
+    return card.regions.includes(region);
   } else {
-    return ORIGINS[region](card)
+    return ORIGINS[region](card);
   }
 }
 
-export const CardCodeT = String
-export type CardCode = Static<typeof CardCodeT>
+export const CardCodeT = String;
+export type CardCode = Static<typeof CardCodeT>;
 
 export const SetPackCardT = Record({
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -266,14 +266,14 @@ export const SetPackCardT = Record({
   formats: Array(String),
   formatRefs: Array(String),
   /* eslint-enable @typescript-eslint/naming-convention */
-})
+});
 
-export type SetPackCard = Static<typeof SetPackCardT>
+export type SetPackCard = Static<typeof SetPackCardT>;
 
 export function filterRegions(
   regions: (Region | typeof RUNETERRA)[]
 ): Region[] {
-  return regions.filter((region) => region !== RUNETERRA) as Region[]
+  return regions.filter((region) => region !== RUNETERRA) as Region[];
 }
 
 export const CardT = Record({
@@ -295,28 +295,28 @@ export const CardT = Record({
   keywords: Array(String),
   type: CardTypeT,
   isStandard: Boolean,
-})
+});
 
 // export type Card = Static<typeof CardT>
 export interface Card {
-  rarity: Rarity
-  imageUrl: string
-  fullImageUrl: string
-  cost: number
-  name: string
-  cardCode: CardCode
-  description: string
-  regions: readonly Region[]
-  subtypes: readonly string[]
-  keywords: readonly string[]
-  type: CardType
-  isStandard: boolean
+  rarity: Rarity;
+  imageUrl: string;
+  fullImageUrl: string;
+  cost: number;
+  name: string;
+  cardCode: CardCode;
+  description: string;
+  regions: readonly Region[];
+  subtypes: readonly string[];
+  keywords: readonly string[];
+  type: CardType;
+  isStandard: boolean;
 }
 
 export function isChampion(card: Card): boolean {
-  return card.rarity === 'Champion'
+  return card.rarity === 'Champion';
 }
 
 export function cardsEqual(card1: Card, card2: Card): boolean {
-  return card1.cardCode === card2.cardCode
+  return card1.cardCode === card2.cardCode;
 }

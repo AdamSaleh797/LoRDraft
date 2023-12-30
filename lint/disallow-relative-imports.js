@@ -1,18 +1,18 @@
-'use strict'
+'use strict';
 
-const path = require('node:path')
+const path = require('node:path');
 
 function maybeReplaceSubstr(str, substr, to_replace) {
-  const idx = str.indexOf(substr)
+  const idx = str.indexOf(substr);
   if (idx >= 0) {
-    str = to_replace + str.substr(idx + substr.length)
+    str = to_replace + str.substr(idx + substr.length);
   }
-  return str
+  return str;
 }
 
 function stripExt(filename) {
-  const idx = filename.indexOf('.')
-  return filename.substr(0, idx === -1 ? filename.length : idx)
+  const idx = filename.indexOf('.');
+  return filename.substr(0, idx === -1 ? filename.length : idx);
 }
 
 /**
@@ -38,26 +38,26 @@ module.exports = {
         ) {
           // Allow relative imports if module stylesheets.
           if (node.source.value.endsWith('.module.css')) {
-            return
+            return;
           }
 
-          const dir = path.dirname(context.physicalFilename)
-          const import_dir = path.resolve(dir, node.source.value)
+          const dir = path.dirname(context.physicalFilename);
+          const import_dir = path.resolve(dir, node.source.value);
           let new_import_dir = maybeReplaceSubstr(
             import_dir,
             '/common/src/',
             'common/'
-          )
+          );
           new_import_dir = maybeReplaceSubstr(
             new_import_dir,
             '/client/src/',
             'client/'
-          )
+          );
           new_import_dir = maybeReplaceSubstr(
             new_import_dir,
             '/server/src/',
             'server/'
-          )
+          );
 
           if (new_import_dir !== import_dir) {
             // Found a substitution to make
@@ -65,17 +65,17 @@ module.exports = {
               node: node.source,
               message: `Relative imports are disallowed.`,
               fix(fixer) {
-                return fixer.replaceText(node.source, `'${new_import_dir}'`)
+                return fixer.replaceText(node.source, `'${new_import_dir}'`);
               },
-            })
+            });
           } else {
             context.report({
               node: node.source,
               message: `Relative imports are disallowed.`,
-            })
+            });
           }
         }
       },
-    }
+    };
   },
-}
+};

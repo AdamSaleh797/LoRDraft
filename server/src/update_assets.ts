@@ -1,8 +1,8 @@
-import axios from 'axios'
-import { StatusCodes } from 'http-status-codes'
-import path from 'path'
+import axios from 'axios';
+import { StatusCodes } from 'http-status-codes';
+import path from 'path';
 
-import { allFullfilled } from 'common/util/lor_util'
+import { allFullfilled } from 'common/util/lor_util';
 import {
   ErrStatusT,
   Status,
@@ -10,43 +10,43 @@ import {
   isOk,
   makeErrStatus,
   makeOkStatus,
-} from 'common/util/status'
+} from 'common/util/status';
 
-import { config } from 'server/args'
+import { config } from 'server/args';
 import {
   downloadZipAsset,
   extractFromBundle,
   removeBundle,
-} from 'server/bundle'
-import bundles from 'server/config/bundles.json'
-import { dispatch, persistor, store } from 'server/store'
+} from 'server/bundle';
+import bundles from 'server/config/bundles.json';
+import { dispatch, persistor, store } from 'server/store';
 import {
   selectSetPacksState,
   stateContainsSetPack,
   updateSetPack,
-} from 'server/store/set_packs'
+} from 'server/store/set_packs';
 
-type Bundle = (typeof bundles)[number]
+type Bundle = (typeof bundles)[number];
 
-const HOUR_MS = 60 * 60 * 1000
+const HOUR_MS = 60 * 60 * 1000;
 
 export function setUpPollAssetUpdates() {
   // Do once, then set up interval to periodically check for updated assets.
-  setImmediate(pollAssetUpdates)
-  setInterval(pollAssetUpdates, HOUR_MS)
+  setImmediate(pollAssetUpdates);
+  setInterval(pollAssetUpdates, HOUR_MS);
 }
 
 async function shouldUpdateAsset(bundle: Bundle): Promise<boolean> {
-  const state = selectSetPacksState(store.getState())
+  const state = selectSetPacksState(store.getState());
   if (!stateContainsSetPack(state.setPacks, bundle.setName)) {
-    return true
+    return true;
   }
 
-  const lastModified = state.setPacks[bundle.setName].lastModified
+  const lastModified = state.setPacks[bundle.setName].lastModified;
   if (lastModified === null) {
     // If no last-modified was set in the last http response, we have to
     // redownload.
-    return true
+    return true;
   }
 
   return await new Promise((resolve) => {
@@ -61,22 +61,22 @@ async function shouldUpdateAsset(bundle: Bundle): Promise<boolean> {
       .then((res) => {
         // Only don't update the set pack if it has not been modified since it
         // was last updated.
-        resolve(res.status !== (StatusCodes.NOT_MODIFIED as number))
+        resolve(res.status !== (StatusCodes.NOT_MODIFIED as number));
       })
       .catch((reason) => {
-        console.log('Error fetching set pack header:', reason)
-        resolve(true)
-      })
-  })
+        console.log('Error fetching set pack header:', reason);
+        resolve(true);
+      });
+  });
 }
 
 async function pollAssetUpdates() {
-  const result = await maybeUpdateAssets()
+  const result = await maybeUpdateAssets();
   if (!isOk(result)) {
-    console.log('Error while polling for asset update:', result)
+    console.log('Error while polling for asset update:', result);
   } else if (result.value) {
     // Only serialize the global state if some assets were updated.
-    persistor.persist()
+    persistor.persist();
   }
 }
 
@@ -89,29 +89,31 @@ async function pollAssetUpdates() {
  */
 async function maybeUpdateAssets(): Promise<Status<boolean>> {
   if (config.sequential) {
-    return await maybeUpdateAssetsSerial()
+    return await maybeUpdateAssetsSerial();
   } else {
-    return await maybeUpdateAssetsParallel()
+    return await maybeUpdateAssetsParallel();
   }
 }
 
 async function maybeUpdateAssetsParallel(): Promise<Status<boolean>> {
-  const should_update = await Promise.allSettled(bundles.map(shouldUpdateAsset))
+  const should_update = await Promise.allSettled(
+    bundles.map(shouldUpdateAsset)
+  );
   if (!allFullfilled(should_update)) {
     return makeErrStatus(
       StatusCode.INTERNAL_SERVER_ERROR,
       'Unexpected rejected promise in `maybeUpdateAssetsParallel`'
-    )
+    );
   }
 
   const downloads = bundles
     .filter((_bundle, i) => should_update[i].value)
     .map((bundle) => {
-      console.log(`downloading package ${bundle.setName}`)
-      return updateAsset(bundle)
-    })
+      console.log(`downloading package ${bundle.setName}`);
+      return updateAsset(bundle);
+    });
 
-  const results = await Promise.allSettled(downloads)
+  const results = await Promise.allSettled(downloads);
   if (
     !allFullfilled(results) ||
     results.some((result) => !isOk(result.value))
@@ -129,33 +131,35 @@ async function maybeUpdateAssetsParallel(): Promise<Status<boolean>> {
               )
             : (rejected_result.value as ErrStatusT)
         )
-    )
+    );
   } else {
-    return makeOkStatus(results.length !== 0)
+    return makeOkStatus(results.length !== 0);
   }
 }
 
 async function maybeUpdateAssetsSerial(): Promise<Status<boolean>> {
-  const should_update = await Promise.allSettled(bundles.map(shouldUpdateAsset))
+  const should_update = await Promise.allSettled(
+    bundles.map(shouldUpdateAsset)
+  );
   if (!allFullfilled(should_update)) {
     return makeErrStatus(
       StatusCode.INTERNAL_SERVER_ERROR,
       'Unexpected rejected promise in `maybeUpdateAssetsParallel`'
-    )
+    );
   }
 
   // If no assets should update, immediately return false.
   if (!should_update.some((result) => result.value)) {
-    return makeOkStatus(false)
+    return makeOkStatus(false);
   }
 
-  const rejected_results: ErrStatusT[] = []
+  const rejected_results: ErrStatusT[] = [];
 
   for (const bundle of bundles.filter((_bundle, i) => should_update[i])) {
-    const result = await updateAsset(bundle)
+    const result = await updateAsset(bundle);
 
     if (!isOk(result)) {
-      rejected_results.push(result)
+      rejected_results.push(result);
     }
   }
 
@@ -164,9 +168,9 @@ async function maybeUpdateAssetsSerial(): Promise<Status<boolean>> {
       StatusCode.UPDATE_ASSET_ERROR,
       'Asset update error',
       rejected_results
-    )
+    );
   } else {
-    return makeOkStatus(true)
+    return makeOkStatus(true);
   }
 }
 
@@ -174,33 +178,33 @@ async function updateAsset(bundle: Bundle) {
   return await new Promise<Status>((resolve) => {
     downloadZipAsset(bundle.url, bundle.setName, (status, headers) => {
       if (!isOk(status)) {
-        resolve(status)
-        return
+        resolve(status);
+        return;
       }
 
-      console.log(`extracting package ${bundle.setName}`)
+      console.log(`extracting package ${bundle.setName}`);
       extractFromBundle(
         bundle.setName,
         bundle.configPath,
         path.basename(bundle.configPath),
         (status) => {
           if (!isOk(status)) {
-            resolve(status)
-            return
+            resolve(status);
+            return;
           }
 
-          console.log(`removing extras ${bundle.setName}`)
+          console.log(`removing extras ${bundle.setName}`);
           removeBundle(bundle.setName, (status) => {
             if (isOk(status)) {
               updateSetPack(dispatch, {
                 setPack: bundle.setName,
                 state: { lastModified: headers['last-modified'] ?? null },
-              })
+              });
             }
-            resolve(status)
-          })
+            resolve(status);
+          });
         }
-      )
-    })
-  })
+      );
+    });
+  });
 }
