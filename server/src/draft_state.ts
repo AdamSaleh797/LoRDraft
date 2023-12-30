@@ -103,9 +103,6 @@ function chooseNonChampCards(
       cardType: CardType.NON_CHAMP,
       sampleMode: SampleMode.REGION_WEIGHTED,
       numCards: POOL_SIZE,
-      cardType: CardType.NON_CHAMP,
-      sampleMode: SampleMode.REGION_WEIGHTED,
-      numCards: POOL_SIZE,
       deck: deck,
     },
     callback
