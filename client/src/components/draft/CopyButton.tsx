@@ -3,7 +3,7 @@ import { Snackbar } from '@mui/material'
 import clipboardCopy from 'clipboard-copy'
 import React from 'react'
 
-import { Button } from '../common/button'
+import { Button } from 'client/components/common/button'
 
 export interface CopyButtonProps {
   textToCopy: string
