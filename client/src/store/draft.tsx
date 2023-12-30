@@ -1,13 +1,13 @@
-import { Draft, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { Draft, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { Card } from 'common/game/card'
-import { DraftStateInfo } from 'common/game/draft'
-import { DraftOptions } from 'common/game/draft_options'
-import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs'
-import { Status, isOk } from 'common/util/status'
+import { Card } from 'common/game/card';
+import { DraftStateInfo } from 'common/game/draft';
+import { DraftOptions } from 'common/game/draft_options';
+import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
+import { Status, isOk } from 'common/util/status';
 
-import { RootState } from 'client/store'
-import { ThunkAPI, makeThunkPromise } from 'client/store/util'
+import { RootState } from 'client/store';
+import { ThunkAPI, makeThunkPromise } from 'client/store/util';
 
 const enum DraftStateMessage {
   JOIN_DRAFT = 'JOIN_DRAFT',
@@ -17,12 +17,12 @@ const enum DraftStateMessage {
 }
 
 export interface GlobalDraftState {
-  state: DraftStateInfo | null
-  messageInFlight: DraftStateMessage | null
+  state: DraftStateInfo | null;
+  messageInFlight: DraftStateMessage | null;
 }
 
 interface RunningDraftState extends GlobalDraftState {
-  state: DraftStateInfo
+  state: DraftStateInfo;
 }
 
 /**
@@ -30,13 +30,13 @@ interface RunningDraftState extends GlobalDraftState {
  * the field `state` available for the draft state.
  */
 export function inDraft(state: GlobalDraftState): state is RunningDraftState {
-  return state.state !== null
+  return state.state !== null;
 }
 
 export interface JoinDraftArgs {
-  socket: LoRDraftClientSocket
-  authInfo: AuthInfo
-  draftOptions: DraftOptions
+  socket: LoRDraftClientSocket;
+  authInfo: AuthInfo;
+  draftOptions: DraftOptions;
 }
 
 /**
@@ -52,24 +52,24 @@ export const doJoinDraftAsync = createAsyncThunk<
   'draft/joinDraftAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('join_draft', args.authInfo, args.draftOptions, resolve)
-    })
+      args.socket.call('join_draft', args.authInfo, args.draftOptions, resolve);
+    });
   },
   {
     condition: (_, { getState }) => {
-      const { draft } = getState()
+      const { draft } = getState();
       if (draft.state !== null || draft.messageInFlight !== null) {
         // If there is already a draft state, some other message is in flight,
         // don't try to join a new draft.
-        return false
+        return false;
       }
     },
   }
-)
+);
 
 export interface UpdateDraftArgs {
-  socket: LoRDraftClientSocket
-  authInfo: AuthInfo
+  socket: LoRDraftClientSocket;
+  authInfo: AuthInfo;
 }
 
 /**
@@ -84,24 +84,24 @@ export const doUpdateDraftAsync = createAsyncThunk<
   'draft/updateDraftAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('current_draft', args.authInfo, resolve)
-    })
+      args.socket.call('current_draft', args.authInfo, resolve);
+    });
   },
   {
     condition: (_, { getState }) => {
-      const { draft } = getState()
+      const { draft } = getState();
       if (draft.state !== null || draft.messageInFlight !== null) {
         // If there is already a draft state, some other message is in flight,
         // don't try to update it.
-        return false
+        return false;
       }
     },
   }
-)
+);
 
 export interface ExitDraftArgs {
-  socket: LoRDraftClientSocket
-  authInfo: AuthInfo
+  socket: LoRDraftClientSocket;
+  authInfo: AuthInfo;
 }
 
 /**
@@ -116,25 +116,25 @@ export const doExitDraftAsync = createAsyncThunk<
   'draft/exitDraftAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('close_draft', args.authInfo, resolve)
-    })
+      args.socket.call('close_draft', args.authInfo, resolve);
+    });
   },
   {
     condition: (_, { getState }) => {
-      const { draft } = getState()
+      const { draft } = getState();
       if (draft.state === null || draft.messageInFlight !== null) {
         // If there is no draft state, or some other message is in flight,
         // don't follow through with this action.
-        return false
+        return false;
       }
     },
   }
-)
+);
 
 export interface ChooseDraftCardsArgs {
-  socket: LoRDraftClientSocket
-  authInfo: AuthInfo
-  cards: Card[]
+  socket: LoRDraftClientSocket;
+  authInfo: AuthInfo;
+  cards: Card[];
 }
 
 /**
@@ -150,25 +150,25 @@ export const doChooseDraftCardsAsync = createAsyncThunk<
   'draft/chooseDraftCardsAsync',
   async (args) => {
     return await makeThunkPromise((resolve) => {
-      args.socket.call('choose_cards', args.authInfo, args.cards, resolve)
-    })
+      args.socket.call('choose_cards', args.authInfo, args.cards, resolve);
+    });
   },
   {
     condition: (_, { getState }) => {
-      const { draft } = getState()
+      const { draft } = getState();
       if (draft.state === null || draft.messageInFlight !== null) {
         // If there is no draft state, or some other message is in flight,
         // don't follow through with this action.
-        return false
+        return false;
       }
     },
   }
-)
+);
 
 const initialState: GlobalDraftState = {
   state: null,
   messageInFlight: null,
-}
+};
 
 /**
  * Global manager for the current draft state of the logged in user. All
@@ -181,67 +181,67 @@ const draftStateSlice = createSlice({
   reducers: {
     clearDraftState: (state) => {
       if (state.messageInFlight === null) {
-        state.state = null
+        state.state = null;
       }
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(doJoinDraftAsync.pending, (state) => {
-        state.messageInFlight = DraftStateMessage.JOIN_DRAFT
+        state.messageInFlight = DraftStateMessage.JOIN_DRAFT;
       })
       .addCase(doJoinDraftAsync.fulfilled, (state, action) => {
-        state.messageInFlight = null
+        state.messageInFlight = null;
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = action.payload.value as Draft<DraftStateInfo>
+          state.state = action.payload.value as Draft<DraftStateInfo>;
         }
       })
       .addCase(doUpdateDraftAsync.pending, (state) => {
-        state.messageInFlight = DraftStateMessage.UPDATE_DRAFT
+        state.messageInFlight = DraftStateMessage.UPDATE_DRAFT;
       })
       .addCase(doUpdateDraftAsync.fulfilled, (state, action) => {
-        state.messageInFlight = null
+        state.messageInFlight = null;
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = action.payload.value as Draft<DraftStateInfo>
+          state.state = action.payload.value as Draft<DraftStateInfo>;
         }
       })
       .addCase(doExitDraftAsync.pending, (state) => {
-        state.messageInFlight = DraftStateMessage.EXIT_DRAFT
+        state.messageInFlight = DraftStateMessage.EXIT_DRAFT;
       })
       .addCase(doExitDraftAsync.fulfilled, (state, action) => {
-        state.messageInFlight = null
+        state.messageInFlight = null;
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = null
+          state.state = null;
         }
       })
       .addCase(doChooseDraftCardsAsync.pending, (state) => {
-        state.messageInFlight = DraftStateMessage.CHOOSE_CARDS
+        state.messageInFlight = DraftStateMessage.CHOOSE_CARDS;
       })
       .addCase(doChooseDraftCardsAsync.fulfilled, (state, action) => {
-        state.messageInFlight = null
+        state.messageInFlight = null;
 
         // Update the state only if this operation succeeded.
         if (isOk(action.payload)) {
-          state.state = action.payload.value as Draft<DraftStateInfo>
+          state.state = action.payload.value as Draft<DraftStateInfo>;
         }
-      })
+      });
   },
-})
+});
 
 export function selectDraftState(state: RootState) {
-  return state.draft
+  return state.draft;
 }
 
 export function selectDraftStateDeck(state: RootState) {
-  return state.draft.state?.deck
+  return state.draft.state?.deck;
 }
 
-export const { clearDraftState } = draftStateSlice.actions
+export const { clearDraftState } = draftStateSlice.actions;
 
-export default draftStateSlice.reducer
+export default draftStateSlice.reducer;

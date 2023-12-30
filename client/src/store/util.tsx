@@ -1,10 +1,10 @@
-import { ErrStatusT } from 'common/util/status'
+import { ErrStatusT } from 'common/util/status';
 
-import { RootState } from 'client/store'
+import { RootState } from 'client/store';
 
 export interface ThunkAPI {
-  state: RootState
-  rejectValue: ErrStatusT
+  state: RootState;
+  rejectValue: ErrStatusT;
 }
 
 /**
@@ -14,5 +14,5 @@ export interface ThunkAPI {
 export function makeThunkPromise<T>(
   callback: (resolve: (value: T) => void) => void
 ) {
-  return new Promise<T>(callback)
+  return new Promise<T>(callback);
 }

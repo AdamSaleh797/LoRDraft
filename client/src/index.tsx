@@ -1,16 +1,16 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { Helmet } from 'react-helmet'
-import { Provider } from 'react-redux'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { Helmet } from 'react-helmet';
+import { Provider } from 'react-redux';
 
-import App from 'client/App'
-import { store } from 'client/store'
-import 'client/styles/global_styles.css'
+import App from 'client/App';
+import { store } from 'client/store';
+import 'client/styles/global_styles.css';
 
-const APP_TITLE = 'Lor Draft'
-const APP_DESCRIPTION = 'a cool tool to Draft Lor Decks'
+const APP_TITLE = 'Lor Draft';
+const APP_DESCRIPTION = 'a cool tool to Draft Lor Decks';
 
-const root = createRoot(document.getElementById('root') as HTMLElement)
+const root = createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(
   <React.StrictMode>
@@ -27,4 +27,4 @@ root.render(
       <App />
     </Provider>
   </React.StrictMode>
-)
+);

@@ -1,3 +1,3 @@
-import { TypeIcon } from 'client/components/draft/type_icon/TypeIcon'
+import { TypeIcon } from 'client/components/draft/type_icon/TypeIcon';
 
-export default TypeIcon
+export default TypeIcon;
