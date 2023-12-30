@@ -25,7 +25,7 @@ export default function App() {
   const dispatch = useLoRDispatch()
 
   React.useEffect(() => {
-    const theme = createTheme({
+    createTheme({
       palette: {
         primary: {
           light: '#757ce8',
