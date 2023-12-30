@@ -1,8 +1,6 @@
 import { DeepReadonly } from 'ts-essentials';
 
-import { CardType, SampleMode, randomSampleCards } from 'server/card_pool';
-
-import { Card, isChampion } from 'common/game/card';
+import { Card } from 'common/game/card';
 import {
   DraftDeck,
   DraftState,
@@ -12,13 +10,12 @@ import {
   RANDOM_SELECTION_2_CARD_CUTOFF,
   RANDOM_SELECTION_3_CARD_CUTOFF,
   addCardsToDeck,
-  canAddToDeck,
   draftStateCardLimits,
   makeDraftDeck,
 } from 'common/game/draft';
 import { DraftOptions, DraftOptionsT } from 'common/game/draft_options';
 import { CardListT, LoRDraftSocket } from 'common/game/socket-msgs';
-import { intersectListsPred, randSample } from 'common/util/lor_util';
+import { intersectListsPred } from 'common/util/lor_util';
 import {
   Status,
   StatusCode,
@@ -28,6 +25,12 @@ import {
 } from 'common/util/status';
 
 import { joinSession } from 'server/auth';
+import {
+  CardType,
+  SampleMode,
+  SelectionMode,
+  randomSampleCards,
+} from 'server/card_pool';
 import {
   SessionInfo,
   exitDraft,
@@ -55,31 +58,40 @@ function chooseChampCards(
     ? GUARANTEED_CHAMP_COUNT
     : 0;
 
-  randomChampCardsFromDeck(deck, num_guaranteed_champs, (status) => {
-    if (!isOk(status)) {
-      callback(status);
-      return;
-    }
-    const guaranteed_cards = status.value;
-
-    randomSampleCards(
-      {
-        card_type: CardType.CHAMP,
-        allow_same_region: allow_same_region,
-        num_cards: POOL_SIZE - guaranteed_cards.length,
-        deck: deck,
-        restriction_pool: guaranteed_cards,
-      },
-      (status) => {
-        if (!isOk(status)) {
-          callback(status);
-          return;
-        }
-
-        callback(makeOkStatus(guaranteed_cards.concat(status.value)));
+  randomSampleCards(
+    {
+      cardType: CardType.CHAMP,
+      selectionMode: SelectionMode.FROM_DECK,
+      allowSameRegion: allow_same_region,
+      numCards: num_guaranteed_champs,
+      deck: deck,
+    },
+    (status) => {
+      if (!isOk(status)) {
+        callback(status);
+        return;
       }
-    );
-  });
+      const guaranteed_cards = status.value;
+
+      randomSampleCards(
+        {
+          cardType: CardType.CHAMP,
+          allowSameRegion: allow_same_region,
+          numCards: POOL_SIZE - guaranteed_cards.length,
+          deck: deck,
+          restrictionPool: guaranteed_cards,
+        },
+        (status) => {
+          if (!isOk(status)) {
+            callback(status);
+            return;
+          }
+
+          callback(makeOkStatus(guaranteed_cards.concat(status.value)));
+        }
+      );
+    }
+  );
 }
 
 function chooseNonChampCards(
@@ -88,9 +100,9 @@ function chooseNonChampCards(
 ) {
   randomSampleCards(
     {
-      card_type: CardType.NON_CHAMP,
-      sample_mode: SampleMode.REGION_WEIGHTED,
-      num_cards: POOL_SIZE,
+      cardType: CardType.NON_CHAMP,
+      sampleMode: SampleMode.REGION_WEIGHTED,
+      numCards: POOL_SIZE,
       deck: deck,
     },
     callback
@@ -397,42 +409,6 @@ export function initDraftState(socket: LoRDraftSocket) {
       });
     });
   });
-}
-
-/**
- * Attempts to choose `desired_num_champs` unique champs that there aren't
- * already `MAX_CARD_COPIES` copies of, returning the largest such list of
- * champs.
- * @param deck The deck to sample the champs from.
- * @param desired_num_champs The desired number of unique champs to choose.
- * @param callback Called with the result, or an error status if it failed.
- *
- * TODO: Use `randomSampleCards` instead of this.
- */
-function randomChampCardsFromDeck(
-  deck: DraftDeck,
-  desired_num_champs: number,
-  callback: (cards: Status<Card[]>) => void
-): void {
-  const champs = deck.cardCounts.filter(
-    ({ card }) => isChampion(card) && canAddToDeck(deck, card)
-  );
-
-  const num_champs = Math.min(desired_num_champs, champs.length);
-  const chosen_champs =
-    randSample(champs, num_champs)?.map((card_count) => card_count.card) ??
-    null;
-  if (chosen_champs === null) {
-    callback(
-      makeErrStatus(
-        StatusCode.INTERNAL_SERVER_ERROR,
-        'you aint got no champs to get'
-      )
-    );
-    return;
-  }
-
-  callback(makeOkStatus(chosen_champs));
 }
 
 export function enterDraft(

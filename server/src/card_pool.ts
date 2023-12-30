@@ -1,10 +1,11 @@
 import { Card, cardsEqual, isChampion, regionContains } from 'common/game/card';
-import { DraftDeck, canAddToDeck } from 'common/game/draft';
+import { DraftDeck, canAddToDeck, deckContainsCard } from 'common/game/draft';
 import { formatContainsCard } from 'common/game/draft_options';
 import {
   arrayCount,
   binarySearch,
   containsDuplicates,
+  randSample,
   randSampleNumbers,
 } from 'common/util/lor_util';
 import {
@@ -134,9 +135,25 @@ export function randomSampleCards(
 
   switch (selectionMode) {
     case SelectionMode.FROM_DECK: {
-      callback(
-        makeErrStatus(StatusCode.INTERNAL_SERVER_ERROR, 'Unimplemented')
+      const cards = deck.cardCounts.filter(
+        ({ card }) => matchesCardType(card) && canAddToDeck(deck, card)
       );
+
+      const num_cards = Math.min(opts.numCards, cards.length);
+      const chosen_cards =
+        randSample(cards, num_cards)?.map((card_count) => card_count.card) ??
+        null;
+      if (chosen_cards === null) {
+        callback(
+          makeErrStatus(
+            StatusCode.INTERNAL_SERVER_ERROR,
+            'you aint got no cards to get'
+          )
+        );
+        return;
+      }
+
+      callback(makeOkStatus(chosen_cards));
       return;
     }
     case SelectionMode.ANY_CARD:
@@ -341,6 +358,9 @@ export function randomSampleCards(
             )) ||
           // Don't pick ineligible cards.
           cards.some((card) => !formatContainsCard(deck.options, card)) ||
+          // Don't choose cards from the deck if the options forbid it.
+          (selectionMode === SelectionMode.NOT_FROM_DECK &&
+            cards.some((card) => deckContainsCard(deck, card))) ||
           // It is possible for multi-region cards to be selected multiple times.
           containsDuplicates(cards, (card) => {
             return card.cardCode;
