@@ -1,5 +1,3 @@
-import { RegionSet, regionSets } from './set_packs';
-
 import { Card, cardsEqual, isChampion, regionContains } from 'common/game/card';
 import { DraftDeck, canAddToDeck } from 'common/game/draft';
 import { formatContainsCard } from 'common/game/draft_options';
@@ -17,38 +15,40 @@ import {
   makeOkStatus,
 } from 'common/util/status';
 
+import { RegionSet, regionSets } from 'server/set_packs';
+
 const MAX_CARD_REPICK_ITERATIONS = 200;
 
 export enum CardType {
-  CHAMP,
-  NON_CHAMP,
+  CHAMP = 'CHAMP',
+  NON_CHAMP = 'NON_CHAMP',
 }
 
 export enum SampleMode {
   /**
    * Every possible card has an equal probability of being chosen.
    */
-  UNIFORM,
+  UNIFORM = 'UNIFORM',
   /**
    * Each region has an equal probability of being chosen, and each card within
    * each region has an equal probability.
    */
-  REGION_WEIGHTED,
+  REGION_WEIGHTED = 'REGION_WEIGHTED',
 }
 
 export enum SelectionMode {
   /**
    * Any card can be chosen, regardless of whether it's in the deck already.
    */
-  ANY_CARD,
+  ANY_CARD = 'ANY_CARD',
   /**
    * Only cards that are already in the deck are chosen.
    */
-  FROM_DECK,
+  FROM_DECK = 'FROM_DECK',
   /**
    * Only cards that are not in the deck are chosen.
    */
-  NOT_FROM_DECK,
+  NOT_FROM_DECK = 'NOT_FROM_DECK',
 }
 
 function sampleCardsByRegion(
@@ -77,26 +77,26 @@ function sampleCardsByRegion(
 }
 
 export interface CardsFromRegionsOptions {
-  card_type: CardType;
+  cardType: CardType;
   /**
    * Default: UNIFORM
    */
-  sample_mode?: SampleMode;
+  sampleMode?: SampleMode;
   /**
    * Default: ANY_CARD
    */
-  selection_mode?: SelectionMode;
+  selectionMode?: SelectionMode;
   /**
    * If true, may choose multiple cards from the same region. Otherwise, all
    * cards will be guaranteed to be from different regions.
    *
    * Default: true
    */
-  allow_same_region?: boolean;
+  allowSameRegion?: boolean;
   /**
    * The number of cards to randomly choose.
    */
-  num_cards: number;
+  numCards: number;
 
   /**
    * The deck that the cards will be potentially added to. Cards which are
@@ -108,21 +108,21 @@ export interface CardsFromRegionsOptions {
    *
    * Default: []
    */
-  restriction_pool?: Card[];
+  restrictionPool?: Card[];
 }
 
 export function randomSampleCards(
   opts: CardsFromRegionsOptions,
   callback: (cards: Status<Card[]>) => void
 ) {
-  const sample_mode = opts.sample_mode ?? SampleMode.UNIFORM;
-  const selection_mode = opts.selection_mode ?? SelectionMode.ANY_CARD;
-  const allow_same_region = opts.allow_same_region ?? true;
-  const restriction_pool = opts.restriction_pool ?? [];
+  const sampleMode = opts.sampleMode ?? SampleMode.UNIFORM;
+  const selectionMode = opts.selectionMode ?? SelectionMode.ANY_CARD;
+  const allowSameRegion = opts.allowSameRegion ?? true;
+  const restrictionPool = opts.restrictionPool ?? [];
   const deck = opts.deck;
 
   const regionCards = (region_set: RegionSet) => {
-    switch (opts.card_type) {
+    switch (opts.cardType) {
       case CardType.CHAMP:
         return region_set.champs;
       case CardType.NON_CHAMP:
@@ -130,9 +130,9 @@ export function randomSampleCards(
     }
   };
   const matchesCardType = (card: Card) =>
-    isChampion(card) === (opts.card_type === CardType.CHAMP);
+    isChampion(card) === (opts.cardType === CardType.CHAMP);
 
-  switch (selection_mode) {
+  switch (selectionMode) {
     case SelectionMode.FROM_DECK: {
       callback(
         makeErrStatus(StatusCode.INTERNAL_SERVER_ERROR, 'Unimplemented')
@@ -162,13 +162,13 @@ export function randomSampleCards(
         // Ineligible cards are cards that, if chosen, would trigger a re-pick.
         // These must match the conditions checked in the loop below, otherwise it
         // is possible to attempt choosing more cards than possible.
-        const ineligible_cards = restriction_pool.concat(
+        const ineligible_cards = restrictionPool.concat(
           deck.cardCounts
             .filter(
               ({ card }) =>
                 matchesCardType(card) &&
                 !canAddToDeck(deck, card) &&
-                !restriction_pool.some((res_card) => cardsEqual(res_card, card))
+                !restrictionPool.some((res_card) => cardsEqual(res_card, card))
             )
             .map(({ card }) => card)
         );
@@ -190,7 +190,7 @@ export function randomSampleCards(
         // number is less than 4, so for now this edge case is uncovered.
 
         const cards_to_choose = Math.min(
-          opts.num_cards,
+          opts.numCards,
           total_eligible_card_count
         );
 
@@ -213,7 +213,7 @@ export function randomSampleCards(
             return;
           }
 
-          switch (sample_mode) {
+          switch (sampleMode) {
             case SampleMode.UNIFORM: {
               const region_and_set_indexes_result = randSampleNumbers(
                 total_card_count,
@@ -237,6 +237,7 @@ export function randomSampleCards(
               }
 
               region_and_set_indexes = region_and_set_indexes_result;
+              break;
             }
             case SampleMode.REGION_WEIGHTED: {
               region_and_set_indexes = sampleCardsByRegion(
@@ -244,6 +245,7 @@ export function randomSampleCards(
                 cumulative_totals,
                 cards_to_choose
               );
+              break;
             }
           }
 
@@ -254,7 +256,7 @@ export function randomSampleCards(
 
           // Normalize multi-region card selection probabilities depending on
           // the card selection mode.
-          switch (sample_mode) {
+          switch (sampleMode) {
             case SampleMode.UNIFORM: {
               // Each card that is multi-region between the region pool is more
               // likely to be chosen by a factor of how many regions they are
@@ -331,7 +333,7 @@ export function randomSampleCards(
         } while (
           // If not allow_same_region, check that all cards come from a
           // different region, and if not, redraw.
-          (!allow_same_region &&
+          (!allowSameRegion &&
             cards_to_choose <= region_pool.length &&
             containsDuplicates(
               region_and_set_indexes,
@@ -350,7 +352,7 @@ export function randomSampleCards(
           // but the champions individually are each compatible. This will be
           // checked for when validating 'choose_cards' calls.
           cards.some((card) => {
-            return !canAddToDeck(deck, card) || restriction_pool.includes(card);
+            return !canAddToDeck(deck, card) || restrictionPool.includes(card);
           })
         );
 

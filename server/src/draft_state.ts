@@ -1,6 +1,6 @@
 import { DeepReadonly } from 'ts-essentials';
 
-import { CardType, SampleMode, randomSampleCards } from './card_pool';
+import { CardType, SampleMode, randomSampleCards } from 'server/card_pool';
 
 import { Card, isChampion } from 'common/game/card';
 import {
