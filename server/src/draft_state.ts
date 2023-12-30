@@ -39,6 +39,9 @@ import {
   updateDraft,
 } from 'server/store/usermap';
 
+// out of 1
+const REGION_WEIGHTED_CHANCE = 0.35;
+
 const GUARANTEED_CHAMP_COUNT = 2;
 const RESTRICTED_POOL_DRAFT_STATES = [
   DraftState.CHAMP_ROUND_1,
@@ -101,7 +104,10 @@ function chooseNonChampCards(
   randomSampleCards(
     {
       cardType: CardType.NON_CHAMP,
-      sampleMode: SampleMode.REGION_WEIGHTED,
+      sampleMode:
+        Math.random() < REGION_WEIGHTED_CHANCE
+          ? SampleMode.REGION_WEIGHTED
+          : SampleMode.UNIFORM,
       numCards: POOL_SIZE,
       deck: deck,
     },
