@@ -67,6 +67,14 @@ export interface RoundLabelProps {
 export function RoundLabel(props: RoundLabelProps) {
   switch (props.draftState.state) {
     case DraftState.INITIAL_SELECTION:
+      return (
+        <div className={style.roundLabelContainer}>
+          <div className={style.roundLabel}>
+            <div>CHAMPION ROUND</div>
+            <div className={style.bottomText}>select two</div>
+          </div>
+        </div>
+      )
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2:
     case DraftState.CHAMP_ROUND_3:
