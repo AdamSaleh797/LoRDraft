@@ -12,9 +12,12 @@ import { isSignedIn, selectSessionState } from 'client/store/session';
 export interface ModalProps {
   setOpenModal: (b: boolean) => void;
   socket: LoRDraftClientSocket;
+  setOpenModal: (b: boolean) => void;
+  socket: LoRDraftClientSocket;
 }
 
 export function Modal(props: ModalProps) {
+  const session_state = useLoRSelector(selectSessionState);
   const session_state = useLoRSelector(selectSessionState);
 
   return (
@@ -32,5 +35,6 @@ export function Modal(props: ModalProps) {
         </div>
       </div>
     </div>
+  );
   );
 }
