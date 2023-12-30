@@ -9,6 +9,7 @@ import {
   Region,
   RegionT,
   allRegions,
+  cardsEqual,
   mainRegions,
   regionContains,
 } from 'common/game/card';
@@ -142,6 +143,12 @@ export function copyDraftDeck(draft_deck: DraftDeck): DraftDeck {
     numCards: draft_deck.numCards,
     options: draft_deck.options,
   };
+}
+
+export function deckContainsCard(deck: DraftDeck, card: Card): boolean {
+  return deck.cardCounts.some(({ card: deckCard }) =>
+    cardsEqual(deckCard, card)
+  );
 }
 
 /**

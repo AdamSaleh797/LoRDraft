@@ -27,11 +27,11 @@ import {
 import { readBundle } from 'server/bundle';
 import bundles from 'server/config/bundles.json';
 
-interface RegionSet {
+export interface RegionSet {
   champs: readonly Card[];
   nonChamps: readonly Card[];
 }
-type RegionSetMap = Record<Region, RegionSet>;
+export type RegionSetMap = Record<Region, RegionSet>;
 
 const SET_PACKS = bundles
   .filter((bundle) => bundle.setName !== 'core')
