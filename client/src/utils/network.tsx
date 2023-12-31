@@ -10,6 +10,7 @@ export function createLoRSocket(): LoRDraftClientSocket {
   return new AsyncSocketContext(
     io({
       transports: ['websocket', 'polling'],
-    }) as LoRDraftClientSocketIO
+    }) as LoRDraftClientSocketIO,
+    /*verbose=*/ true
   );
 }

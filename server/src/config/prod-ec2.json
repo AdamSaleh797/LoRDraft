@@ -1,5 +1,6 @@
 {
   "root_dir": "../dist/prod",
   "port": 80,
-  "sequential": true
+  "sequential": true,
+  "dev": false
 }

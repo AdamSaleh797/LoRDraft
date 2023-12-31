@@ -165,10 +165,7 @@ export function registerUser(
   const auth_user = usermap[registerInfo.username];
   if (auth_user !== undefined) {
     callback(
-      makeErrStatus(
-        StatusCode.USER_ALREADY_EXISTS,
-        `User ${registerInfo.username} already exists`
-      )
+      makeErrStatus(StatusCode.USER_ALREADY_EXISTS, `User already exists`)
     );
     return;
   }
