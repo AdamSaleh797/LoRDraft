@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@emotion/react';
 import { createTheme } from '@mui/material';
 import React, { useState } from 'react';
 
@@ -17,6 +18,36 @@ import {
 } from 'client/store/session';
 import { createLoRSocket } from 'client/utils/network';
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      light: '#757ce8',
+      main: '#4066ba',
+      dark: '#002884',
+      contrastText: '#fff',
+    },
+    secondary: {
+      light: '#ff7961',
+      main: '#f44336',
+      dark: '#ba000d',
+      contrastText: '#000',
+    },
+    // error?: PaletteColorOptions;
+    // warning?: PaletteColorOptions;
+    // info?: PaletteColorOptions;
+    // success?: PaletteColorOptions;
+    // mode?: PaletteMode;
+    // tonalOffset?: PaletteTonalOffset;
+    // contrastThreshold?: number;
+    // common?: Partial<CommonColors>;
+    // grey?: ColorPartial;
+    // text?: Partial<TypeText>;
+    // divider?: string;
+    // action?: Partial<TypeAction>;
+    // background?: Partial<TypeBackground>;
+  },
+});
+
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const session_state = useLoRSelector(selectSessionState);
@@ -24,24 +55,6 @@ export default function App() {
   const socket_ref = React.useRef(createLoRSocket());
   const dispatch = useLoRDispatch();
 
-  React.useEffect(() => {
-    createTheme({
-      palette: {
-        primary: {
-          light: '#757ce8',
-          main: '#4066ba',
-          dark: '#002884',
-          contrastText: '#fff',
-        },
-        secondary: {
-          light: '#ff7961',
-          main: '#f44336',
-          dark: '#ba000d',
-          contrastText: '#000',
-        },
-      },
-    });
-  }, []);
   // If the session state has not initialized, then trigger the initialization
   if (shouldInitialize(session_state)) {
     tryInitializeUserSession(dispatch, {
@@ -52,28 +65,30 @@ export default function App() {
 
   return (
     <div className={style.App}>
-      <Header>
-        <Button
-          onClick={() => {
-            setModalOpen(true);
-          }}
-        >
-          Login
-        </Button>
-        {modalOpen && (
-          <Modal setOpenModal={setModalOpen} socket={socket_ref.current} />
-        )}
-      </Header>
-      <Layout>
-        {isSignedIn(session_state) ? (
-          <DraftFlowComponent
-            socket={socket_ref.current}
-            authInfo={session_state.authInfo}
-          ></DraftFlowComponent>
-        ) : (
-          <div>Must sign in to start a draft!</div>
-        )}
-      </Layout>
+      <ThemeProvider theme={theme}>
+        <Header>
+          <Button
+            onClick={() => {
+              setModalOpen(true);
+            }}
+          >
+            Login
+          </Button>
+          {modalOpen && (
+            <Modal setOpenModal={setModalOpen} socket={socket_ref.current} />
+          )}
+        </Header>
+        <Layout>
+          {isSignedIn(session_state) ? (
+            <DraftFlowComponent
+              socket={socket_ref.current}
+              authInfo={session_state.authInfo}
+            ></DraftFlowComponent>
+          ) : (
+            <div>Must sign in to start a draft!</div>
+          )}
+        </Layout>
+      </ThemeProvider>
     </div>
   );
 }
