@@ -20,6 +20,7 @@ import {
 
 import { store } from 'server/store';
 import {
+  INVALID_CREDENTIALS_MSG,
   LoggedInAuthUser,
   loginUser,
   logoutUser,
@@ -116,7 +117,7 @@ export function joinSession(
   const auth_user = usermap[username];
   if (auth_user === undefined) {
     callback(
-      makeErrStatus(StatusCode.UNKNOWN_USER, `Unknown user ${username}`)
+      makeErrStatus(StatusCode.INVALID_CREDENTIALS, INVALID_CREDENTIALS_MSG)
     );
     return;
   }
@@ -140,10 +141,7 @@ export function joinSession(
     !crypto.timingSafeEqual(token, auth_user_token)
   ) {
     callback(
-      makeErrStatus(
-        StatusCode.INVALID_TOKEN,
-        `Token provided for ${username} is invalid`
-      )
+      makeErrStatus(StatusCode.INVALID_CREDENTIALS, INVALID_CREDENTIALS_MSG)
     );
     return;
   }
