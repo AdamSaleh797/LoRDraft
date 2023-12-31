@@ -18,6 +18,8 @@ import { RootState, dispatch, persistor, store } from 'server/store';
 const PASSWORD_HASH_METHOD = 'sha256';
 const TOKEN_LENGTH = 256;
 
+export const INVALID_CREDENTIALS_MSG = 'Incorrect username or password.';
+
 export interface SessionAuthInfo {
   // Base-64 encoded token.
   readonly token: string;
@@ -195,10 +197,7 @@ export function loginUser(
   const auth_user = usermap[loginCred.username];
   if (auth_user === undefined) {
     callback(
-      makeErrStatus(
-        StatusCode.UNKNOWN_USER,
-        `Unknown user ${loginCred.username}`
-      )
+      makeErrStatus(StatusCode.INVALID_CREDENTIALS, INVALID_CREDENTIALS_MSG)
     );
     return;
   }
@@ -211,10 +210,7 @@ export function loginUser(
     !crypto.timingSafeEqual(password_hash, auth_user_password_hash)
   ) {
     callback(
-      makeErrStatus(
-        StatusCode.INCORRECT_PASSWORD,
-        `Password for user ${loginCred.username} is incorrect`
-      )
+      makeErrStatus(StatusCode.INVALID_CREDENTIALS, INVALID_CREDENTIALS_MSG)
     );
     return;
   }
