@@ -1,15 +1,24 @@
+import { Grid } from '@mui/material';
 import React from 'react';
 
 import style from './header.module.css';
 
+import { ModeSelection } from 'client/components/draft/ModeSelection';
 import { APP_TITLE } from 'client/utils/constants';
 
-export function Header(props: { children: React.ReactNode }) {
+export function Header() {
   return (
     <div className={style.header}>
-      <div className={style.leftElement}>Something</div>
-      <div className={style.centerTitle}>{APP_TITLE}</div>
-      <div className={style.rightElement}>{props.children}</div>
+      <Grid>
+        <Grid item xs={6}>
+          <div className={style.leftElement}>
+            <ModeSelection />
+          </div>
+        </Grid>
+        <Grid item xs={6}>
+          {APP_TITLE}
+        </Grid>
+      </Grid>
     </div>
   );
 }
