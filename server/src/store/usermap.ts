@@ -184,6 +184,7 @@ export function registerUser(
     })
   );
   persistor.persist();
+  callback(OkStatus);
 }
 
 export function loginUser(
