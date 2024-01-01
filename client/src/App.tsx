@@ -1,13 +1,10 @@
 import { ThemeProvider } from '@emotion/react';
-import { createTheme } from '@mui/material';
+import { CssBaseline, createTheme } from '@mui/material';
 import React from 'react';
-
-import style from './App.module.css';
 
 import SignIn from 'client/components/auth/NewSignInComponent';
 import { UserComponent } from 'client/components/auth/UserInfoComponent';
 import { Header } from 'client/components/common/header';
-import { Layout } from 'client/components/common/layout';
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow';
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks';
 import {
@@ -32,6 +29,9 @@ const theme = createTheme({
       dark: '#ba000d',
       contrastText: '#000',
     },
+    background: {
+      default: '#ffffff',
+    },
     // error?: PaletteColorOptions;
     // warning?: PaletteColorOptions;
     // info?: PaletteColorOptions;
@@ -44,7 +44,9 @@ const theme = createTheme({
     // text?: Partial<TypeText>;
     // divider?: string;
     // action?: Partial<TypeAction>;
-    // background?: Partial<TypeBackground>;
+  },
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
   },
 });
 
@@ -63,20 +65,24 @@ export default function App() {
   }
 
   return (
-    <div className={style.App}>
-      <ThemeProvider theme={theme}>
-        <Header />
-        <Layout>
-          {isSignedIn(session_state) ? (
-            <DraftFlowComponent
-              socket={socket_ref.current}
-              authInfo={session_state.authInfo}
-            ></DraftFlowComponent>
-          ) : (
-            <SignIn socket={socket_ref.current} />
-          )}
-        </Layout>
-      </ThemeProvider>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Header>
+        {isSignedIn(session_state) ? (
+          <UserComponent
+            socket={socket_ref.current}
+            authInfo={session_state.authInfo}
+          />
+        ) : null}
+      </Header>
+      {isSignedIn(session_state) ? (
+        <DraftFlowComponent
+          socket={socket_ref.current}
+          authInfo={session_state.authInfo}
+        ></DraftFlowComponent>
+      ) : (
+        <SignIn socket={socket_ref.current} />
+      )}
+    </ThemeProvider>
   );
 }
