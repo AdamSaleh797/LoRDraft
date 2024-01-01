@@ -9,13 +9,11 @@ import { APP_TITLE } from 'client/utils/constants';
 export function Header() {
   return (
     <div className={style.header}>
-      <Grid>
-        <Grid item xs={6}>
-          <div className={style.leftElement}>
-            <ModeSelection />
-          </div>
+      <Grid container spacing={2}>
+        <Grid item xs={3}>
+          <ModeSelection />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={9} justifyContent='center' alignContent='center'>
           {APP_TITLE}
         </Grid>
       </Grid>
