@@ -11,7 +11,7 @@ import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography, { TypographyProps } from '@mui/material/Typography';
-import * as React from 'react';
+import React from 'react';
 
 import {
   LoRDraftClientSocket,
@@ -21,7 +21,7 @@ import {
 import { isOk } from 'common/util/status';
 
 import { useLoRDispatch } from 'client/store/hooks';
-import { doRegisterAsync, loginUser, registerUser } from 'client/store/session';
+import { loginUser, registerUser } from 'client/store/session';
 
 function Copyright(props: TypographyProps) {
   return (
@@ -65,7 +65,7 @@ function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
     const data = new FormData(event.currentTarget);
     const username = data.get('username')?.toString();
     const password = data.get('password')?.toString();
-    if (username && password) {
+    if (username !== undefined && password !== undefined) {
       loginFn({ username, password });
     }
   };
@@ -77,7 +77,7 @@ function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
 
   return (
     <React.Fragment>
-      {errorMessage ? (
+      {errorMessage !== null ? (
         <Box sx={{ color: 'error.main', fontStyle: 'italic' }}>
           {errorMessage.toLowerCase()}
         </Box>
@@ -146,7 +146,6 @@ interface RegisterComponentProps {
 function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
   const dispatch = useLoRDispatch();
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [badFields, setBadFields] = React.useState<Set<string>>(new Set());
 
   const registerFn = async (registerInfo: RegisterInfo) => {
     const res = await registerUser(dispatch, { socket, registerInfo });
@@ -167,13 +166,13 @@ function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
     const password = data.get('password')?.toString();
     const password2 = data.get('password2')?.toString();
 
-    if (!username) {
+    if (username === undefined) {
       setErrorMessage('please specify a username');
-    } else if (!email) {
+    } else if (email === undefined) {
       setErrorMessage('please specify an email');
-    } else if (!password) {
+    } else if (password === undefined) {
       setErrorMessage('please specify a password');
-    } else if (!password2) {
+    } else if (password2 === undefined) {
       setErrorMessage('please re-type your password');
     } else if (password !== password2) {
       setErrorMessage('passwords must match');
@@ -191,7 +190,7 @@ function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
 
   return (
     <React.Fragment>
-      {errorMessage ? (
+      {errorMessage !== null ? (
         <Box sx={{ color: 'error.main', fontStyle: 'italic' }}>
           {errorMessage.toLowerCase()}
         </Box>
