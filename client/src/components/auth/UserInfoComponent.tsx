@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import React from 'react';
 
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
@@ -15,10 +16,7 @@ export function UserComponent(props: UserComponentProps) {
   const dispatch = useLoRDispatch();
 
   return (
-    <div>
-      <div>
-        You are logged in as <b>{props.authInfo.username}</b>
-      </div>
+    <Box display='flex' justifyContent='center' alignContent='center'>
       <Button
         onClick={() => {
           logoutUser(dispatch, {
@@ -29,6 +27,6 @@ export function UserComponent(props: UserComponentProps) {
       >
         Log out
       </Button>
-    </div>
+    </Box>
   );
 }

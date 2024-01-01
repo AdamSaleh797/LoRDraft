@@ -67,14 +67,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Header>
-        {isSignedIn(session_state) ? (
-          <UserComponent
-            socket={socket_ref.current}
-            authInfo={session_state.authInfo}
-          />
-        ) : null}
-      </Header>
+      <Header socket={socket_ref.current} />
       {isSignedIn(session_state) ? (
         <DraftFlowComponent
           socket={socket_ref.current}
