@@ -25,26 +25,6 @@
   overflow: auto;
 }
 
-.modalContainer .title {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 1.5rem;
-}
-
-.titleCloseBtn {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.titleCloseBtn button {
-  background-color: transparent;
-  border: none;
-  font-size: 25px;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-}
-
 .modalContainer .body {
   flex: 1;
   display: flex;
@@ -52,29 +32,6 @@
   align-items: center;
   font-size: 1.2rem;
   text-align: center;
-}
-
-.modalContainer .footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 15px;
-}
-
-.modalContainer .footer button {
-  width: 150px;
-  height: 45px;
-  margin: 10px;
-  border: none;
-  background-color: cornflowerblue;
-  color: white;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-#cancelBtn {
-  background-color: crimson;
 }
 
 #confirmBtn {

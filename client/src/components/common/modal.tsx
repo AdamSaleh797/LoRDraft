@@ -4,7 +4,7 @@ import style from './modal.module.css';
 
 import { LoRDraftClientSocket } from 'common/game/socket-msgs';
 
-import { SignInComponent } from 'client/components/auth/SignInComponent';
+import SignIn from 'client/components/auth/NewSignInComponent';
 import { UserComponent } from 'client/components/auth/UserInfoComponent';
 import { Button } from 'client/components/common/button';
 import { useLoRSelector } from 'client/store/hooks';
@@ -21,17 +21,6 @@ export function Modal(props: ModalProps) {
   return (
     <div className={style.modalBackground}>
       <div className={style.modalContainer}>
-        <Button
-          onClick={() => {
-            props.setOpenModal(false);
-          }}
-        >
-          Close &times;
-        </Button>
-
-        <div className={style.title}>
-          <h3>Login | Registration</h3>
-        </div>
         <div className={style.body}>
           {isSignedIn(session_state) ? (
             <UserComponent
@@ -39,12 +28,11 @@ export function Modal(props: ModalProps) {
               authInfo={session_state.authInfo}
             />
           ) : (
-            <SignInComponent socket={props.socket} />
+            <SignIn socket={props.socket} />
           )}
         </div>
-        <div className={style.footer}>
+        <div>
           <Button
-            className={style.cancelBtn}
             onClick={() => {
               props.setOpenModal(false);
             }}
