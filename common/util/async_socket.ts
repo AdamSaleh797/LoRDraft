@@ -25,14 +25,14 @@ export type InternalCallbackT<Params extends Parameters<any>> = (
 
 type ToRequestEvents<Events extends EventsMap> = {
   [Ev in keyof Events as Ev extends `${infer T}_req`
-  ? T & string
-  : never]: InternalCallbackT<Parameters<Events[Ev]>>;
+    ? T & string
+    : never]: InternalCallbackT<Parameters<Events[Ev]>>;
 };
 
 type ToResponseEvents<Events extends EventsMap> = {
   [Ev in keyof Events as Ev extends `${infer T}_res`
-  ? T & string
-  : never]: InternalCallbackT<Parameters<Events[Ev]>>;
+    ? T & string
+    : never]: InternalCallbackT<Parameters<Events[Ev]>>;
 };
 
 type ReqParams<
@@ -84,11 +84,11 @@ export class AsyncSocketContext<
 > {
   private readonly socket:
     | ServerSocket<
-      ToResponseEvents<ListenEvents>,
-      ToRequestEvents<EmitEvents>,
-      Empty,
-      Empty
-    >
+        ToResponseEvents<ListenEvents>,
+        ToRequestEvents<EmitEvents>,
+        Empty,
+        Empty
+      >
     | ClientSocket<ToResponseEvents<ListenEvents>, ToRequestEvents<EmitEvents>>;
   // A map from message names to the listeners bound to those messages.
   private readonly listeners: Map<string, InternalCallbackT<never>>;
@@ -170,7 +170,8 @@ export class AsyncSocketContext<
       cb(
         makeErrStatus(
           StatusCode.MESSAGE_TIMEOUT,
-          `Async socket call ${event_name} timed out after ${timeout_ms / 1000
+          `Async socket call ${event_name} timed out after ${
+            timeout_ms / 1000
           } second${timeout_ms === 1000 ? '' : 's'}`
         ),
         ...(new Array(callback.length - 1).fill(null) as null[])
