@@ -1,13 +1,13 @@
 import { ThemeProvider } from '@emotion/react';
 import { createTheme } from '@mui/material';
-import React, { useState } from 'react';
+import React from 'react';
 
 import style from './App.module.css';
 
-import { Button } from 'client/components/common/button';
+import SignIn from 'client/components/auth/NewSignInComponent';
+import { UserComponent } from 'client/components/auth/UserInfoComponent';
 import { Header } from 'client/components/common/header';
 import { Layout } from 'client/components/common/layout';
-import { Modal } from 'client/components/common/modal';
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow';
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks';
 import {
@@ -49,7 +49,6 @@ const theme = createTheme({
 });
 
 export default function App() {
-  const [modalOpen, setModalOpen] = useState(false);
   const session_state = useLoRSelector(selectSessionState);
 
   const socket_ref = React.useRef(createLoRSocket());
@@ -67,16 +66,12 @@ export default function App() {
     <div className={style.App}>
       <ThemeProvider theme={theme}>
         <Header>
-          <Button
-            onClick={() => {
-              setModalOpen(true);
-            }}
-          >
-            Login
-          </Button>
-          {modalOpen && (
-            <Modal setOpenModal={setModalOpen} socket={socket_ref.current} />
-          )}
+          {isSignedIn(session_state) ? (
+            <UserComponent
+              socket={socket_ref.current}
+              authInfo={session_state.authInfo}
+            />
+          ) : null}
         </Header>
         <Layout>
           {isSignedIn(session_state) ? (
@@ -85,7 +80,7 @@ export default function App() {
               authInfo={session_state.authInfo}
             ></DraftFlowComponent>
           ) : (
-            <div>Must sign in to start a draft!</div>
+            <SignIn socket={socket_ref.current} />
           )}
         </Layout>
       </ThemeProvider>

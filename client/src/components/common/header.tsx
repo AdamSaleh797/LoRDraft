@@ -4,7 +4,7 @@ import style from './header.module.css';
 
 import { APP_TITLE } from 'client/utils/constants';
 
-export function Header(props: { children: React.ReactNode }) {
+export function Header(props: { children?: React.ReactNode }) {
   return (
     <div className={style.header}>
       <div className={style.leftElement}>Something</div>
