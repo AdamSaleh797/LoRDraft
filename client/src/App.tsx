@@ -3,7 +3,6 @@ import { CssBaseline, createTheme } from '@mui/material';
 import React from 'react';
 
 import SignIn from 'client/components/auth/NewSignInComponent';
-import { UserComponent } from 'client/components/auth/UserInfoComponent';
 import { Header } from 'client/components/common/header';
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow';
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks';
