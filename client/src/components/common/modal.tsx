@@ -1,11 +1,12 @@
 import React from 'react';
 
-import SignIn from '../auth/NewSignInComponent';
 import style from './modal.module.css';
 
 import { LoRDraftClientSocket } from 'common/game/socket-msgs';
 
+import SignIn from 'client/components/auth/NewSignInComponent';
 import { UserComponent } from 'client/components/auth/UserInfoComponent';
+import { Button } from 'client/components/common/button';
 import { useLoRSelector } from 'client/store/hooks';
 import { isSignedIn, selectSessionState } from 'client/store/session';
 
@@ -29,6 +30,15 @@ export function Modal(props: ModalProps) {
           ) : (
             <SignIn socket={props.socket} />
           )}
+        </div>
+        <div>
+          <Button
+            onClick={() => {
+              props.setOpenModal(false);
+            }}
+          >
+            Close
+          </Button>
         </div>
       </div>
     </div>
