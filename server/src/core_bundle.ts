@@ -156,39 +156,32 @@ function parseFormatsMetadata(
   return makeOkStatus(format_metadata);
 }
 
-export function gameMetadata(
-  callback: (game_metadata: Status<GameMetadata>) => void = () => undefined
-) {
+export async function gameMetadata(): Promise<Status<GameMetadata>> {
   if (g_metadata !== undefined) {
-    callback(makeOkStatus(g_metadata));
-    return;
+    return makeOkStatus(g_metadata);
   }
 
-  readBundle(CORE_BUNDLE_FILENAME, (data: Status<string>) => {
-    if (!isOk(data)) {
-      callback(data);
-      return;
-    }
+  const data = await readBundle(CORE_BUNDLE_FILENAME);
+  if (!isOk(data)) {
+    return data;
+  }
 
-    const obj = JSON.parse(data.value) as unknown;
+  const obj = JSON.parse(data.value) as unknown;
 
-    const regions = parseRegionsMetadata(obj);
-    if (!isOk(regions)) {
-      callback(regions);
-      return;
-    }
+  const regions = parseRegionsMetadata(obj);
+  if (!isOk(regions)) {
+    return regions;
+  }
 
-    const formats = parseFormatsMetadata(obj);
-    if (!isOk(formats)) {
-      callback(formats);
-      return;
-    }
+  const formats = parseFormatsMetadata(obj);
+  if (!isOk(formats)) {
+    return formats;
+  }
 
-    const game_metadata = {
-      regions: regions.value,
-      formats: formats.value,
-    };
-    g_metadata = game_metadata;
-    callback(makeOkStatus(game_metadata));
-  });
+  const game_metadata = {
+    regions: regions.value,
+    formats: formats.value,
+  };
+  g_metadata = game_metadata;
+  return makeOkStatus(game_metadata);
 }

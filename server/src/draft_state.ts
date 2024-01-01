@@ -49,70 +49,53 @@ const RESTRICTED_POOL_DRAFT_STATES = [
   DraftState.CHAMP_ROUND_3,
 ];
 
-function chooseChampCards(
+async function chooseChampCards(
   draft_state: DraftState,
   deck: DraftDeck,
-  callback: (champ_cards: Status<Card[]>) => void,
   allow_same_region = true
-) {
+): Promise<Status<Card[]>> {
   const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
     draft_state
   )
     ? GUARANTEED_CHAMP_COUNT
     : 0;
 
-  randomSampleCards(
-    {
-      cardType: CardType.CHAMP,
-      selectionMode: SelectionMode.FROM_DECK,
-      allowSameRegion: allow_same_region,
-      numCards: num_guaranteed_champs,
-      deck: deck,
-    },
-    (status) => {
-      if (!isOk(status)) {
-        callback(status);
-        return;
-      }
-      const guaranteed_cards = status.value;
+  const status = await randomSampleCards({
+    cardType: CardType.CHAMP,
+    selectionMode: SelectionMode.FROM_DECK,
+    allowSameRegion: allow_same_region,
+    numCards: num_guaranteed_champs,
+    deck: deck,
+  });
+  if (!isOk(status)) {
+    return status;
+  }
+  const guaranteed_cards = status.value;
 
-      randomSampleCards(
-        {
-          cardType: CardType.CHAMP,
-          allowSameRegion: allow_same_region,
-          numCards: POOL_SIZE - guaranteed_cards.length,
-          deck: deck,
-          restrictionPool: guaranteed_cards,
-        },
-        (status) => {
-          if (!isOk(status)) {
-            callback(status);
-            return;
-          }
+  const status2 = await randomSampleCards({
+    cardType: CardType.CHAMP,
+    allowSameRegion: allow_same_region,
+    numCards: POOL_SIZE - guaranteed_cards.length,
+    deck: deck,
+    restrictionPool: guaranteed_cards,
+  });
+  if (!isOk(status2)) {
+    return status2;
+  }
 
-          callback(makeOkStatus(guaranteed_cards.concat(status.value)));
-        }
-      );
-    }
-  );
+  return makeOkStatus(guaranteed_cards.concat(status.value));
 }
 
-function chooseNonChampCards(
-  deck: DraftDeck,
-  callback: (cards: Status<Card[]>) => void
-) {
-  randomSampleCards(
-    {
-      cardType: CardType.NON_CHAMP,
-      sampleMode:
-        Math.random() < REGION_WEIGHTED_CHANCE
-          ? SampleMode.REGION_WEIGHTED
-          : SampleMode.UNIFORM,
-      numCards: POOL_SIZE,
-      deck: deck,
-    },
-    callback
-  );
+async function chooseNonChampCards(deck: DraftDeck): Promise<Status<Card[]>> {
+  return await randomSampleCards({
+    cardType: CardType.NON_CHAMP,
+    sampleMode:
+      Math.random() < REGION_WEIGHTED_CHANCE
+        ? SampleMode.REGION_WEIGHTED
+        : SampleMode.UNIFORM,
+    numCards: POOL_SIZE,
+    deck: deck,
+  });
 }
 
 /**
@@ -160,54 +143,43 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
  * Chooses the next set of cards for draft state `draft_state`, adding the
  * chosen cards to the `pending_cards` and returning the new draft state.
  */
-function chooseNextCards(
-  draft_state: DeepReadonly<DraftStateInfo>,
-  callback: (status: Status<DraftStateInfo>) => void
-) {
+async function chooseNextCards(
+  draft_state: DeepReadonly<DraftStateInfo>
+): Promise<Status<DraftStateInfo>> {
   const cur_state = draft_state.state;
   const next_draft_state = nextDraftState(cur_state, draft_state.deck);
   if (next_draft_state === null) {
-    callback(
-      makeErrStatus(
-        StatusCode.DRAFT_COMPLETE,
-        'The draft is complete, no more card selections to be made.'
-      )
+    return makeErrStatus(
+      StatusCode.DRAFT_COMPLETE,
+      'The draft is complete, no more card selections to be made.'
     );
-    return;
   }
 
   if (next_draft_state === DraftState.GENERATE_CODE) {
     // If the selection phase is complete, don't choose more pending cards.
-    callback(
-      makeOkStatus({
-        ...draft_state,
-        pendingCards: [],
-        state: next_draft_state,
-      })
-    );
-    return;
+    return makeOkStatus({
+      ...draft_state,
+      pendingCards: [],
+      state: next_draft_state,
+    });
   }
 
   const cardsCallback = (status: Status<Card[]>) => {
     if (!isOk(status)) {
-      callback(status);
-      return;
+      return status;
     }
 
     // If cards were chosen successfully, then update the draft state.
-    callback(
-      makeOkStatus({
-        ...draft_state,
-        pendingCards: status.value,
-        state: next_draft_state,
-      })
-    );
+    return makeOkStatus({
+      ...draft_state,
+      pendingCards: status.value,
+      state: next_draft_state,
+    });
   };
 
   const champCardsCallback = (status: Status<Card[]>) => {
     if (!isOk(status)) {
-      callback(status);
-      return;
+      return status;
     }
 
     const cards = status.value;
@@ -235,21 +207,14 @@ function chooseNextCards(
 
   switch (next_draft_state) {
     case DraftState.INIT: {
-      callback(
-        makeErrStatus(
-          StatusCode.INTERNAL_SERVER_ERROR,
-          'Cannot have next draft state be `INIT`.'
-        )
+      return makeErrStatus(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'Cannot have next draft state be `INIT`.'
       );
-      return;
     }
     case DraftState.INITIAL_SELECTION: {
-      chooseChampCards(
-        next_draft_state,
-        draft_state.deck,
-        champCardsCallback,
-        false
-      );
+      chooseChampCards(next_draft_state, draft_state.deck, false);
+      // champCardsCallback,
       return;
     }
     case DraftState.CHAMP_ROUND_1:

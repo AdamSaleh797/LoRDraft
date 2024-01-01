@@ -175,36 +175,28 @@ async function maybeUpdateAssetsSerial(): Promise<Status<boolean>> {
 }
 
 async function updateAsset(bundle: Bundle) {
-  return await new Promise<Status>((resolve) => {
-    downloadZipAsset(bundle.url, bundle.setName, (status, headers) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
+  const [status, headers] = await downloadZipAsset(bundle.url, bundle.setName);
+  if (!isOk(status)) {
+    return status;
+  }
 
-      console.log(`extracting package ${bundle.setName}`);
-      extractFromBundle(
-        bundle.setName,
-        bundle.configPath,
-        path.basename(bundle.configPath),
-        (status) => {
-          if (!isOk(status)) {
-            resolve(status);
-            return;
-          }
+  console.log(`extracting package ${bundle.setName}`);
+  const extract_status = await extractFromBundle(
+    bundle.setName,
+    bundle.configPath,
+    path.basename(bundle.configPath)
+  );
+  if (!isOk(extract_status)) {
+    return extract_status;
+  }
 
-          console.log(`removing extras ${bundle.setName}`);
-          removeBundle(bundle.setName, (status) => {
-            if (isOk(status)) {
-              updateSetPack(dispatch, {
-                setPack: bundle.setName,
-                state: { lastModified: headers['last-modified'] ?? null },
-              });
-            }
-            resolve(status);
-          });
-        }
-      );
+  console.log(`removing extras ${bundle.setName}`);
+  const remove_status = await removeBundle(bundle.setName);
+  if (isOk(remove_status)) {
+    updateSetPack(dispatch, {
+      setPack: bundle.setName,
+      state: { lastModified: headers['last-modified'] ?? null },
     });
-  });
+  }
+  return remove_status;
 }

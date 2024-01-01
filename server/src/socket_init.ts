@@ -20,7 +20,7 @@ function initStaticMessages(socket: LoRDraftSocket) {
       if (!isOk(auth_user)) {
         resolve(auth_user);
       } else {
-        gameMetadata(resolve);
+        gameMetadata().then(resolve);
       }
     });
   });

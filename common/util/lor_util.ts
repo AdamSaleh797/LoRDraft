@@ -40,19 +40,13 @@ export type MapTypeValues<T> = T extends Record<
   ? U
   : never;
 
-export function rejectedResults(
+function rejectedResults(
   promise_results: PromiseSettledResult<unknown>[]
 ): PromiseRejectedResult[] {
   return promise_results.filter(
     (result: PromiseSettledResult<unknown>): result is PromiseRejectedResult =>
       result.status === 'rejected'
   );
-}
-
-export function rejectedResultReasons<T>(
-  promise_results: PromiseSettledResult<unknown>[]
-): T[] {
-  return rejectedResults(promise_results).map((res) => res.reason);
 }
 
 export function allFullfilled<T>(
