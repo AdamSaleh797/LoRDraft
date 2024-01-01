@@ -145,7 +145,10 @@ const ORIGINS = {
     );
   },
   ElderDragon: (card: Card): boolean => {
-    return (card.cost >= 6 && !isChampion(card)) || card.cardCode === '08RU014';
+    return (
+      (card.cost >= 6 && card.type === 'Unit' && !isChampion(card)) ||
+      card.cardCode === '08RU014'
+    );
   },
   /* eslint-enable @typescript-eslint/naming-convention */
 } as const;

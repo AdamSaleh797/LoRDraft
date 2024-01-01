@@ -97,16 +97,19 @@ export class AsyncSocketContext<
     AsyncMessage<ListenEvents, EmitEvents, never, never>
   >;
   private timeout: number;
+  private verbose: boolean;
 
   constructor(
     socket:
       | ServerSocket<ListenEvents, EmitEvents, Empty, Empty>
-      | ClientSocket<ListenEvents, EmitEvents>
+      | ClientSocket<ListenEvents, EmitEvents>,
+    verbose?: boolean
   ) {
     this.socket = socket;
     this.listeners = new Map();
     this.outstanding_calls = new Map();
     this.timeout = 1000;
+    this.verbose = verbose ?? false;
   }
 
   private rawSocket():
@@ -124,9 +127,11 @@ export class AsyncSocketContext<
 
     if (!this.listeners.has(event)) {
       const cb: CallbackT = (uuid, ...call_args) => {
-        console.log(uuid, call_args);
+        if (this.verbose) {
+          console.log(`Receiving ${uuid} with`, call_args);
+        }
         if (!this.outstanding_calls.has(uuid)) {
-          console.log(`Error: received event with unknown uuid: ${uuid}`);
+          console.error(`Error: received event with unknown uuid: ${uuid}`);
           return;
         }
 
@@ -178,6 +183,9 @@ export class AsyncSocketContext<
     event_name: EventName,
     ...args: DeepReadonlyTuple<Parameters<EmitEvents[EventName]>>
   ) {
+    if (this.verbose) {
+      console.log(`emitting ${event_name} with`, ...args);
+    }
     this.rawSocket().emit(event_name, ...args);
   }
 
@@ -187,7 +195,17 @@ export class AsyncSocketContext<
   ) {
     const onCall: (ev: EventName, cb: ListenEvents[EventName]) => void =
       this.rawSocket().on;
-    onCall(event_name, callback);
+    let cb: ListenEvents[EventName];
+    if (this.verbose) {
+      cb = ((...args: unknown[]) => {
+        console.log(`responding (on) ${event_name} with`, ...args);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        callback(...args);
+      }) as ListenEvents[EventName];
+    } else {
+      cb = callback;
+    }
+    onCall(event_name, cb);
   }
 
   call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
@@ -197,7 +215,9 @@ export class AsyncSocketContext<
       ResponseCallbackT<EventName, ListenEvents>
     ]
   ): void {
-    console.log(`calling ${event_name} with`, ...args.slice(0, -1));
+    if (this.verbose) {
+      console.log(`calling ${event_name} with`, ...args.slice(0, -1));
+    }
     const callback = args[args.length - 1] as ResponseCallbackT<
       EventName,
       ListenEvents
@@ -250,15 +270,20 @@ export class AsyncSocketContext<
     )(
       event_name,
       (uuid: string, ...params: ReqParams<EventName, ListenEvents>): void => {
+        if (this.verbose) {
+          console.log(`received ${event_name} (${uuid}) with`, ...params);
+        }
         callback((...result) => {
-          // prettier-ignore
+          if (this.verbose) {
+            console.log(`responding ${event_name} (${uuid}) with`, ...result);
+          }
           (
             this.socket.emit as unknown as (
               event_name: EventName,
               uuid: string,
               ...params: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
             ) => void
-          )(event_name, uuid, ...result)
+          )(event_name, uuid, ...result);
         }, ...params);
       }
     );

@@ -125,6 +125,31 @@ export async function loginUser(dispatch: LoRDispatch, args: LoginArgs) {
 }
 
 /**
+ * Logs in with given username/password. If the login succeeds, the session
+ * state is moved to the `SIGNED_IN` state.
+ */
+export async function registerUser(dispatch: LoRDispatch, args: RegisterArgs) {
+  const result = await dispatch(doRegisterAsync(args));
+  if (result.payload === undefined) {
+    return makeErrStatus(
+      StatusCode.REDUX_DISPATCH_FAILED,
+      'Failed to dispatch register action'
+    );
+  } else if (!isOk(result.payload)) {
+    return result.payload;
+  }
+
+  // If we were able to register successfully, try logging in.
+  return await loginUser(dispatch, {
+    socket: args.socket,
+    loginInfo: {
+      username: args.registerInfo.username,
+      password: args.registerInfo.password,
+    },
+  });
+}
+
+/**
  * Logs out the session state. If the call succeeds, the session state moves to
  * `SIGNED_OUT`.
  */
