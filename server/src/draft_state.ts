@@ -83,7 +83,7 @@ async function chooseChampCards(
     return status2;
   }
 
-  return makeOkStatus(guaranteed_cards.concat(status.value));
+  return makeOkStatus(guaranteed_cards.concat(status2.value));
 }
 
 async function chooseNonChampCards(deck: DraftDeck): Promise<Status<Card[]>> {
