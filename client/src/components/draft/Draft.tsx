@@ -87,7 +87,7 @@ export function DraftComponent(props: DraftProps) {
   }
 
   return (
-    <div>
+    <div className={style.padding}>
       <div className={style.cardSelectLayout}>
         <PoolComponent
           socket={props.socket}

@@ -20,44 +20,24 @@ interface NonChampRoundLabelProps {
 }
 
 function NonChampRoundLabel(props: NonChampRoundLabelProps) {
+  let cutoff;
   switch (props.state) {
     case DraftState.RANDOM_SELECTION_1:
-      return (
-        <div className={style.roundLabelContainer}>
-          <div className={style.roundLabel}>
-            <div>
-              NEXT CHAMP ROUND IN:{' '}
-              {RANDOM_SELECTION_1_CARD_CUTOFF - props.deck.numCards}
-            </div>
-            <div className={style.bottomText}>select one</div>
-          </div>
-        </div>
-      );
+      cutoff = RANDOM_SELECTION_1_CARD_CUTOFF;
+      break;
     case DraftState.RANDOM_SELECTION_2:
-      return (
-        <div className={style.roundLabelContainer}>
-          <div className={style.roundLabel}>
-            <div>
-              NEXT CHAMP ROUND IN:{' '}
-              {RANDOM_SELECTION_2_CARD_CUTOFF - props.deck.numCards}
-            </div>
-            <div className={style.bottomText}>select one</div>
-          </div>
-        </div>
-      );
+      cutoff = RANDOM_SELECTION_2_CARD_CUTOFF;
+      break;
     case DraftState.RANDOM_SELECTION_3:
-      return (
-        <div className={style.roundLabelContainer}>
-          <div className={style.roundLabel}>
-            <div>
-              NEXT CHAMP ROUND IN:{' '}
-              {RANDOM_SELECTION_3_CARD_CUTOFF - props.deck.numCards}
-            </div>
-            <div className={style.bottomText}>select one</div>
-          </div>
-        </div>
-      );
+      cutoff = RANDOM_SELECTION_3_CARD_CUTOFF;
+      break;
   }
+  return (
+    <>
+      <div>Next Champion Round In: {cutoff - props.deck.numCards}</div>
+      <div className={style.bottomText}>select one</div>
+    </>
+  );
 }
 
 export interface RoundLabelProps {
@@ -65,30 +45,51 @@ export interface RoundLabelProps {
 }
 
 export function RoundLabel(props: RoundLabelProps) {
+  let contents;
   switch (props.draftState.state) {
     case DraftState.INITIAL_SELECTION:
+      contents = (
+        <>
+          <div>CHAMPION ROUND</div>
+          <div className={style.bottomText}>Select Two</div>
+        </>
+      );
+      break;
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2:
     case DraftState.CHAMP_ROUND_3:
-      return (
-        <div className={style.roundLabelContainer}>
-          <div className={style.roundLabel}>
-            <div>CHAMPION ROUND</div>
-            <div className={style.bottomText}>select up to two</div>
-          </div>
-        </div>
+      contents = (
+        <>
+          <div>CHAMPION ROUND</div>
+          <div className={style.bottomText}>Select Up To Two</div>
+        </>
       );
+      break;
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3:
-      return (
+      contents = (
         <NonChampRoundLabel
           state={props.draftState.state}
           deck={props.draftState.deck}
         />
       );
+      break;
     case DraftState.GENERATE_CODE:
+      contents = (
+        <>
+          <div>Draft Completed!</div>
+          <div className={style.bottomText}>Copy Your Deck Code!</div>
+        </>
+      );
+      break;
     case DraftState.INIT:
-      return <div></div>;
+      contents = <></>;
+      break;
   }
+  return (
+    <div className={style.roundLabelContainer}>
+      <div className={style.roundLabel}>{contents}</div>
+    </div>
+  );
 }

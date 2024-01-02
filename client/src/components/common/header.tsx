@@ -21,7 +21,12 @@ export function Header(props: { socket: LoRDraftClientSocket }) {
           <ModeSelection />
         </Grid>
         <Grid item xs={6}>
-          <Box display='flex' justifyContent='center' fontWeight='bold'>
+          <Box
+            display='flex'
+            justifyContent='center'
+            fontWeight='bold'
+            fontSize={24}
+          >
             {APP_TITLE}
           </Box>
         </Grid>
