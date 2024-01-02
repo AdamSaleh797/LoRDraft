@@ -83,7 +83,7 @@ async function chooseChampCards(
     return status2;
   }
 
-  return makeOkStatus(guaranteed_cards.concat(status.value));
+  return makeOkStatus(guaranteed_cards.concat(status2.value));
 }
 
 async function chooseNonChampCards(deck: DraftDeck): Promise<Status<Card[]>> {
@@ -201,6 +201,10 @@ async function chooseNextCards(
   }
 
   const cards = next_cards_status.value;
+  console.log(
+    `Cards for ${next_draft_state}:`,
+    cards.map((card) => card.name)
+  );
   if (cards.length === 0) {
     // If no cards were chosen, move immediately to the next round. This should
     // only happen in champ rounds if there are no more champs left.
