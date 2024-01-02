@@ -49,70 +49,53 @@ const RESTRICTED_POOL_DRAFT_STATES = [
   DraftState.CHAMP_ROUND_3,
 ];
 
-function chooseChampCards(
+async function chooseChampCards(
   draft_state: DraftState,
   deck: DraftDeck,
-  callback: (champ_cards: Status<Card[]>) => void,
   allow_same_region = true
-) {
+): Promise<Status<Card[]>> {
   const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
     draft_state
   )
     ? GUARANTEED_CHAMP_COUNT
     : 0;
 
-  randomSampleCards(
-    {
-      cardType: CardType.CHAMP,
-      selectionMode: SelectionMode.FROM_DECK,
-      allowSameRegion: allow_same_region,
-      numCards: num_guaranteed_champs,
-      deck: deck,
-    },
-    (status) => {
-      if (!isOk(status)) {
-        callback(status);
-        return;
-      }
-      const guaranteed_cards = status.value;
+  const status = await randomSampleCards({
+    cardType: CardType.CHAMP,
+    selectionMode: SelectionMode.FROM_DECK,
+    allowSameRegion: allow_same_region,
+    numCards: num_guaranteed_champs,
+    deck: deck,
+  });
+  if (!isOk(status)) {
+    return status;
+  }
+  const guaranteed_cards = status.value;
 
-      randomSampleCards(
-        {
-          cardType: CardType.CHAMP,
-          allowSameRegion: allow_same_region,
-          numCards: POOL_SIZE - guaranteed_cards.length,
-          deck: deck,
-          restrictionPool: guaranteed_cards,
-        },
-        (status) => {
-          if (!isOk(status)) {
-            callback(status);
-            return;
-          }
+  const status2 = await randomSampleCards({
+    cardType: CardType.CHAMP,
+    allowSameRegion: allow_same_region,
+    numCards: POOL_SIZE - guaranteed_cards.length,
+    deck: deck,
+    restrictionPool: guaranteed_cards,
+  });
+  if (!isOk(status2)) {
+    return status2;
+  }
 
-          callback(makeOkStatus(guaranteed_cards.concat(status.value)));
-        }
-      );
-    }
-  );
+  return makeOkStatus(guaranteed_cards.concat(status.value));
 }
 
-function chooseNonChampCards(
-  deck: DraftDeck,
-  callback: (cards: Status<Card[]>) => void
-) {
-  randomSampleCards(
-    {
-      cardType: CardType.NON_CHAMP,
-      sampleMode:
-        Math.random() < REGION_WEIGHTED_CHANCE
-          ? SampleMode.REGION_WEIGHTED
-          : SampleMode.UNIFORM,
-      numCards: POOL_SIZE,
-      deck: deck,
-    },
-    callback
-  );
+async function chooseNonChampCards(deck: DraftDeck): Promise<Status<Card[]>> {
+  return await randomSampleCards({
+    cardType: CardType.NON_CHAMP,
+    sampleMode:
+      Math.random() < REGION_WEIGHTED_CHANCE
+        ? SampleMode.REGION_WEIGHTED
+        : SampleMode.UNIFORM,
+    numCards: POOL_SIZE,
+    deck: deck,
+  });
 }
 
 /**
@@ -160,308 +143,234 @@ function nextDraftState(state: DraftState, deck: DraftDeck): DraftState | null {
  * Chooses the next set of cards for draft state `draft_state`, adding the
  * chosen cards to the `pending_cards` and returning the new draft state.
  */
-function chooseNextCards(
-  draft_state: DeepReadonly<DraftStateInfo>,
-  callback: (status: Status<DraftStateInfo>) => void
-) {
+async function chooseNextCards(
+  draft_state: DeepReadonly<DraftStateInfo>
+): Promise<Status<DraftStateInfo>> {
   const cur_state = draft_state.state;
   const next_draft_state = nextDraftState(cur_state, draft_state.deck);
   if (next_draft_state === null) {
-    callback(
-      makeErrStatus(
-        StatusCode.DRAFT_COMPLETE,
-        'The draft is complete, no more card selections to be made.'
-      )
+    return makeErrStatus(
+      StatusCode.DRAFT_COMPLETE,
+      'The draft is complete, no more card selections to be made.'
     );
-    return;
   }
 
   if (next_draft_state === DraftState.GENERATE_CODE) {
     // If the selection phase is complete, don't choose more pending cards.
-    callback(
-      makeOkStatus({
-        ...draft_state,
-        pendingCards: [],
-        state: next_draft_state,
-      })
-    );
-    return;
+    return makeOkStatus({
+      ...draft_state,
+      pendingCards: [],
+      state: next_draft_state,
+    });
   }
 
-  const cardsCallback = (status: Status<Card[]>) => {
-    if (!isOk(status)) {
-      callback(status);
-      return;
-    }
-
-    // If cards were chosen successfully, then update the draft state.
-    callback(
-      makeOkStatus({
-        ...draft_state,
-        pendingCards: status.value,
-        state: next_draft_state,
-      })
-    );
-  };
-
-  const champCardsCallback = (status: Status<Card[]>) => {
-    if (!isOk(status)) {
-      callback(status);
-      return;
-    }
-
-    const cards = status.value;
-    if (cards.length === 0) {
-      // If no champs were chosen, move immediately to the next round (which is
-      // a non-champ round).
-      chooseNextCards(
-        {
-          ...draft_state,
-          state: next_draft_state,
-        },
-        callback
-      );
-    } else {
-      // If cards were chosen successfully, then update the draft state.
-      callback(
-        makeOkStatus({
-          ...draft_state,
-          pendingCards: cards,
-          state: next_draft_state,
-        })
-      );
-    }
-  };
-
+  let next_cards_status;
   switch (next_draft_state) {
     case DraftState.INIT: {
-      callback(
-        makeErrStatus(
-          StatusCode.INTERNAL_SERVER_ERROR,
-          'Cannot have next draft state be `INIT`.'
-        )
+      return makeErrStatus(
+        StatusCode.INTERNAL_SERVER_ERROR,
+        'Cannot have next draft state be `INIT`.'
       );
-      return;
     }
     case DraftState.INITIAL_SELECTION: {
-      chooseChampCards(
+      next_cards_status = await chooseChampCards(
         next_draft_state,
         draft_state.deck,
-        champCardsCallback,
-        false
+        /*allow_same_region=*/ false
       );
-      return;
+      break;
     }
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2:
     case DraftState.CHAMP_ROUND_3: {
-      chooseChampCards(next_draft_state, draft_state.deck, champCardsCallback);
-      return;
+      next_cards_status = await chooseChampCards(
+        next_draft_state,
+        draft_state.deck
+      );
+      break;
     }
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
-      chooseNonChampCards(draft_state.deck, cardsCallback);
-      return;
+      next_cards_status = await chooseNonChampCards(draft_state.deck);
+      break;
     }
   }
+  if (!isOk(next_cards_status)) {
+    return next_cards_status;
+  }
+
+  const cards = next_cards_status.value;
+  if (cards.length === 0) {
+    // If no cards were chosen, move immediately to the next round. This should
+    // only happen in champ rounds if there are no more champs left.
+    return await chooseNextCards({
+      ...draft_state,
+      state: next_draft_state,
+    });
+  }
+
+  return makeOkStatus({
+    ...draft_state,
+    pendingCards: cards,
+    state: next_draft_state,
+  });
 }
 
 export function initDraftState(socket: LoRDraftSocket) {
-  socket.respond('current_draft', (resolve, session_cred) => {
-    joinSession(session_cred, (auth_user_status) => {
-      if (!isOk(auth_user_status)) {
-        resolve(auth_user_status);
-        return;
-      }
-      const auth_user = auth_user_status.value;
+  socket.respond('current_draft', async (session_cred) => {
+    const auth_user_status = joinSession(session_cred);
+    if (!isOk(auth_user_status)) {
+      return auth_user_status;
+    }
+    const auth_user = auth_user_status.value;
 
-      resolve(getDraftState(auth_user));
-    });
+    return getDraftState(auth_user);
   });
 
-  socket.respond('join_draft', (resolve, session_cred, draft_options) => {
+  socket.respond('join_draft', async (session_cred, draft_options) => {
     if (!DraftOptionsT.guard(draft_options)) {
-      resolve(
-        makeErrStatus(
-          StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
-          `Argument \`draft_options\` to 'join_draft' is not of the correct type.`
-        )
+      return makeErrStatus(
+        StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
+        `Argument \`draft_options\` to 'join_draft' is not of the correct type.`
       );
-      return;
     }
 
-    joinSession(session_cred, (status) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
-      const auth_user = status.value;
+    const status = joinSession(session_cred);
+    if (!isOk(status)) {
+      return status;
+    }
+    const auth_user = status.value;
 
-      enterDraft(auth_user.sessionInfo, draft_options, resolve);
-    });
+    return await enterDraft(auth_user.sessionInfo, draft_options);
   });
 
-  socket.respond('close_draft', (resolve, session_cred) => {
-    joinSession(session_cred, (status) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
-      const auth_user = status.value;
+  socket.respond('close_draft', async (session_cred) => {
+    const status = joinSession(session_cred);
+    if (!isOk(status)) {
+      return status;
+    }
+    const auth_user = status.value;
 
-      resolve(exitDraft(auth_user.sessionInfo));
-    });
+    return exitDraft(auth_user.sessionInfo);
   });
 
-  socket.respond('choose_cards', (resolve, session_cred, cards) => {
+  socket.respond('choose_cards', async (session_cred, cards) => {
     if (!CardListT.guard(cards)) {
-      resolve(
-        makeErrStatus(
-          StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
-          `Argument \`cards\` to 'choose_cards' is not of the correct type.`
-        )
+      return makeErrStatus(
+        StatusCode.INCORRECT_MESSAGE_ARGUMENTS,
+        `Argument \`cards\` to 'choose_cards' is not of the correct type.`
       );
-      return;
     }
 
-    joinSession(session_cred, (status) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
-      const auth_user = status.value;
+    const status = joinSession(session_cred);
+    if (!isOk(status)) {
+      return status;
+    }
+    const auth_user = status.value;
 
-      const draft_state_status = getDraftState(auth_user);
-      if (!isOk(draft_state_status)) {
-        resolve(draft_state_status);
-        return;
-      }
-      let draft_state = draft_state_status.value;
+    const draft_state_status = getDraftState(auth_user);
+    if (!isOk(draft_state_status)) {
+      return draft_state_status;
+    }
+    let draft_state = draft_state_status.value;
 
-      if (draft_state.pendingCards.length === 0) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
-            'Draft state is not currently waiting for pending cards from the client.'
-          )
-        );
-        return;
-      }
-
-      const min_max_cards = draftStateCardLimits(draft_state.state);
-      if (min_max_cards === null) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
-            'Draft state is not currently waiting for pending cards from the client.'
-          )
-        );
-        return;
-      }
-      const [min_cards, max_cards] = min_max_cards;
-
-      if (cards.length < min_cards || cards.length > max_cards) {
-        resolve(
-          makeErrStatus(
-            StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
-            `Cannot choose ${cards.length} cards in state ${draft_state.state}, must choose from ${min_cards} to ${max_cards} cards`
-          )
-        );
-        return;
-      }
-
-      const chosen_cards = intersectListsPred(
-        draft_state.pendingCards,
-        cards,
-        (pending_card, card) => pending_card.cardCode === card.cardCode
+    if (draft_state.pendingCards.length === 0) {
+      return makeErrStatus(
+        StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
+        'Draft state is not currently waiting for pending cards from the client.'
       );
+    }
 
-      if (chosen_cards.length !== cards.length) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_PENDING_CARD,
-            `Some chosen cards are not pending cards, or are duplicates.`
-          )
-        );
-        return;
-      }
+    const min_max_cards = draftStateCardLimits(draft_state.state);
+    if (min_max_cards === null) {
+      return makeErrStatus(
+        StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
+        'Draft state is not currently waiting for pending cards from the client.'
+      );
+    }
+    const [min_cards, max_cards] = min_max_cards;
 
-      // Add the chosen cards to the deck.
-      const deck = addCardsToDeck(draft_state.deck, chosen_cards);
-      if (deck === null) {
-        resolve(
-          makeErrStatus(
-            StatusCode.ILLEGAL_CARD_COMBINATION,
-            'The cards could not be added to the deck'
-          )
-        );
-        return;
-      }
+    if (cards.length < min_cards || cards.length > max_cards) {
+      return makeErrStatus(
+        StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
+        `Cannot choose ${cards.length} cards in state ${draft_state.state}, must choose from ${min_cards} to ${max_cards} cards`
+      );
+    }
 
-      draft_state = {
-        ...draft_state,
-        deck,
-      };
+    const chosen_cards = intersectListsPred(
+      draft_state.pendingCards,
+      cards,
+      (pending_card, card) => pending_card.cardCode === card.cardCode
+    );
 
-      chooseNextCards(draft_state, (status) => {
-        if (!isOk(status)) {
-          resolve(status);
-          return;
-        }
+    if (chosen_cards.length !== cards.length) {
+      return makeErrStatus(
+        StatusCode.NOT_PENDING_CARD,
+        `Some chosen cards are not pending cards, or are duplicates.`
+      );
+    }
 
-        updateDraft(auth_user.sessionInfo, status.value);
-        resolve(makeOkStatus(status.value));
-      });
-    });
+    // Add the chosen cards to the deck.
+    const deck = addCardsToDeck(draft_state.deck, chosen_cards);
+    if (deck === null) {
+      return makeErrStatus(
+        StatusCode.ILLEGAL_CARD_COMBINATION,
+        'The cards could not be added to the deck'
+      );
+    }
+
+    draft_state = {
+      ...draft_state,
+      deck,
+    };
+
+    const next_cards_status = await chooseNextCards(draft_state);
+    if (!isOk(next_cards_status)) {
+      return next_cards_status;
+    }
+
+    updateDraft(auth_user.sessionInfo, next_cards_status.value);
+    return makeOkStatus(next_cards_status.value);
   });
 }
 
-export function enterDraft(
+export async function enterDraft(
   session_info: SessionInfo,
-  draft_options: DraftOptions,
-  callback: (status: Status<DraftStateInfo>) => void
-) {
+  draft_options: DraftOptions
+): Promise<Status<DraftStateInfo>> {
   if (inDraft(session_info)) {
-    callback(
-      makeErrStatus(
-        StatusCode.ALREADY_IN_DRAFT_SESSION,
-        'Already in draft session siwwy'
-      )
+    return makeErrStatus(
+      StatusCode.ALREADY_IN_DRAFT_SESSION,
+      'Already in draft session siwwy'
     );
-    return;
   }
 
-  const draft_state = {
+  const init_draft_state = {
     state: DraftState.INIT,
     deck: makeDraftDeck(draft_options),
     pendingCards: [],
   };
 
   // Choose the first set of pending cards to show.
-  chooseNextCards(draft_state, (status) => {
-    if (!isOk(status)) {
-      callback(status);
-      return;
-    }
+  const status = await chooseNextCards(init_draft_state);
+  if (!isOk(status)) {
+    return status;
+  }
 
-    const draft_state = status.value;
+  const next_draft_state = status.value;
 
-    // Since choose_next_cards is async, we need to check again that we're not
-    // already in a draft. It's possible another request to join a draft
-    // finished processing between when we last checked and now.
-    if (inDraft(session_info)) {
-      callback(
-        makeErrStatus(
-          StatusCode.ALREADY_IN_DRAFT_SESSION,
-          'Already in draft session!'
-        )
-      );
-      return;
-    }
+  // Since choose_next_cards is async, we need to check again that we're not
+  // already in a draft. It's possible another request to join a draft
+  // finished processing between when we last checked and now.
+  if (inDraft(session_info)) {
+    return makeErrStatus(
+      StatusCode.ALREADY_IN_DRAFT_SESSION,
+      'Already in draft session!'
+    );
+  }
 
-    // If successful, join the draft by adding it to the session info.
-    updateDraft(session_info, draft_state);
-    callback(makeOkStatus(draft_state));
-  });
+  // If successful, join the draft by adding it to the session info.
+  updateDraft(session_info, next_draft_state);
+  return makeOkStatus(next_draft_state);
 }

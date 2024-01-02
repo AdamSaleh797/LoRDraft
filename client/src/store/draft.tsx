@@ -7,7 +7,7 @@ import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 import { Status, isOk } from 'common/util/status';
 
 import { RootState } from 'client/store';
-import { ThunkAPI, makeThunkPromise } from 'client/store/util';
+import { ThunkAPI } from 'client/store/util';
 
 const enum DraftStateMessage {
   JOIN_DRAFT = 'JOIN_DRAFT',
@@ -51,9 +51,11 @@ export const doJoinDraftAsync = createAsyncThunk<
 >(
   'draft/joinDraftAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('join_draft', args.authInfo, args.draftOptions, resolve);
-    });
+    return await args.socket.call(
+      'join_draft',
+      args.authInfo,
+      args.draftOptions
+    );
   },
   {
     condition: (_, { getState }) => {
@@ -83,9 +85,7 @@ export const doUpdateDraftAsync = createAsyncThunk<
 >(
   'draft/updateDraftAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('current_draft', args.authInfo, resolve);
-    });
+    return await args.socket.call('current_draft', args.authInfo);
   },
   {
     condition: (_, { getState }) => {
@@ -115,9 +115,7 @@ export const doExitDraftAsync = createAsyncThunk<
 >(
   'draft/exitDraftAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('close_draft', args.authInfo, resolve);
-    });
+    return await args.socket.call('close_draft', args.authInfo);
   },
   {
     condition: (_, { getState }) => {
@@ -149,9 +147,7 @@ export const doChooseDraftCardsAsync = createAsyncThunk<
 >(
   'draft/chooseDraftCardsAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('choose_cards', args.authInfo, args.cards, resolve);
-    });
+    return await args.socket.call('choose_cards', args.authInfo, args.cards);
   },
   {
     condition: (_, { getState }) => {

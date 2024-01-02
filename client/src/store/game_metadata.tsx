@@ -5,7 +5,7 @@ import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 import { Status, isOk } from 'common/util/status';
 
 import { RootState } from 'client/store';
-import { ThunkAPI, makeThunkPromise } from 'client/store/util';
+import { ThunkAPI } from 'client/store/util';
 
 const enum GameMetadataState {
   UNINITIALIZED = 'UNINITIALIZED',
@@ -30,9 +30,7 @@ export const doFetchGameMetadataAsync = createAsyncThunk<
 >(
   'gameMetadata/fetchGameMetadataAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('game_metadata', args.authInfo, resolve);
-    });
+    return await args.socket.call('game_metadata', args.authInfo);
   },
   {
     condition: (_, { getState }) => {

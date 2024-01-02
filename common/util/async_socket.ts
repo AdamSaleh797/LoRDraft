@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Socket as ServerSocket } from 'socket.io';
 import { Socket as ClientSocket } from 'socket.io-client';
+import { DeepReadonly } from 'ts-essentials';
 
 import { DeepReadonlyTuple, Empty, genUUID } from 'common/util/lor_util';
 import { Status, StatusCode, makeErrStatus } from 'common/util/status';
@@ -8,10 +9,6 @@ import { Status, StatusCode, makeErrStatus } from 'common/util/status';
 interface EventsMap {
   [event: string]: any;
 }
-
-type MakeOptional<T extends any[]> = {
-  [I in keyof T]: T[I] | null;
-};
 
 type EventNames<Map extends EventsMap> = keyof Map & string;
 
@@ -53,30 +50,23 @@ type AsyncCompatibleEvents<
 > = EventNames<ToRequestEvents<ReqEvents>> &
   EventNames<ToResponseEvents<ResEvents>>;
 
+type ResponseT<
+  EventName extends keyof ToResponseEvents<Events> & string,
+  Events extends EventsMap
+> = ResParams<EventName, Events> extends Parameters<
+  (status: Status<infer T>) => void
+>
+  ? Status<T>
+  : never;
+
 interface AsyncMessage<
   ListenEvents extends EventsMap,
   EmitEvents extends EventsMap,
-  EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>,
-  Args extends ResParams<EventName, ListenEvents>
+  EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
 > {
   timeoutId: NodeJS.Timeout;
-  callback: (...args: Args) => void;
+  resolve: (response: ResponseT<EventName, ListenEvents>) => void;
 }
-
-type ResponseCallbackArgsT<
-  Params extends Parameters<(...args: unknown[]) => void>
-> = Params extends Parameters<
-  (status: Status<infer T>, ...args: infer U) => void
->
-  ? Parameters<(status: Status<T>, ...args: MakeOptional<U>) => void>
-  : never;
-
-export type ResponseCallbackT<
-  EventName extends keyof ToResponseEvents<ListenEvents> & string,
-  ListenEvents extends EventsMap
-> = (
-  ...args: ResponseCallbackArgsT<ResParams<EventName, ListenEvents>>
-) => void;
 
 export class AsyncSocketContext<
   ListenEvents extends EventsMap,
@@ -94,7 +84,7 @@ export class AsyncSocketContext<
   private readonly listeners: Map<string, InternalCallbackT<never>>;
   private readonly outstanding_calls: Map<
     string,
-    AsyncMessage<ListenEvents, EmitEvents, never, never>
+    AsyncMessage<ListenEvents, EmitEvents, never>
   >;
   private timeout: number;
   private verbose: boolean;
@@ -123,12 +113,12 @@ export class AsyncSocketContext<
   private initCallback<
     EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>
   >(event: EventName): void {
-    type CallbackT = InternalCallbackT<ResParams<EventName, ListenEvents>>;
+    type CallbackT = InternalCallbackT<[ResponseT<EventName, ListenEvents>]>;
 
     if (!this.listeners.has(event)) {
-      const cb: CallbackT = (uuid, ...call_args) => {
+      const cb: CallbackT = (uuid, response) => {
         if (this.verbose) {
-          console.log(`Receiving ${uuid} with`, call_args);
+          console.log(`Receiving ${uuid} with`, response);
         }
         if (!this.outstanding_calls.has(uuid)) {
           console.error(`Error: received event with unknown uuid: ${uuid}`);
@@ -138,11 +128,10 @@ export class AsyncSocketContext<
         const message_info = this.outstanding_calls.get(uuid) as AsyncMessage<
           ListenEvents,
           EmitEvents,
-          EventName,
-          ResParams<EventName, ListenEvents>
+          EventName
         >;
         clearTimeout(message_info.timeoutId);
-        message_info.callback(...call_args);
+        message_info.resolve(response);
       };
 
       this.listeners.set(event, cb);
@@ -161,20 +150,18 @@ export class AsyncSocketContext<
     event_name: string,
     uuid: string,
     timeout_ms: number,
-    callback: ResponseCallbackT<EventName, ListenEvents>
+    resolve: (response: ResponseT<EventName, ListenEvents>) => void
   ): NodeJS.Timeout {
     return setTimeout(() => {
       this.outstanding_calls.delete(uuid);
 
-      const cb = callback as (status: Status<unknown>, ...args: null[]) => void;
-      cb(
+      (resolve as (response: Status<unknown>) => void)(
         makeErrStatus(
           StatusCode.MESSAGE_TIMEOUT,
           `Async socket call ${event_name} timed out after ${
             timeout_ms / 1000
           } second${timeout_ms === 1000 ? '' : 's'}`
-        ),
-        ...(new Array(callback.length - 1).fill(null) as null[])
+        )
       );
     }, timeout_ms);
   }
@@ -208,58 +195,49 @@ export class AsyncSocketContext<
     onCall(event_name, cb);
   }
 
-  call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
+  async call<EventName extends AsyncCompatibleEvents<ListenEvents, EmitEvents>>(
     event_name: EventName,
-    ...args: [
-      ...DeepReadonlyTuple<ReqParams<EventName, EmitEvents>>,
-      ResponseCallbackT<EventName, ListenEvents>
-    ]
-  ): void {
+    ...args: ReqParams<EventName, EmitEvents>
+  ): Promise<ResponseT<EventName, ListenEvents>> {
     if (this.verbose) {
-      console.log(`calling ${event_name} with`, ...args.slice(0, -1));
+      console.log(`calling ${event_name} with`, ...args);
     }
-    const callback = args[args.length - 1] as ResponseCallbackT<
-      EventName,
-      ListenEvents
-    >;
-    const call_args = args.slice(0, -1) as ReqParams<EventName, EmitEvents>;
 
     this.initCallback(event_name);
 
     const uuid = genUUID();
 
-    const timeout_id = this.addTimeout(
-      event_name,
-      uuid,
-      this.timeout,
-      callback
-    );
+    return new Promise((resolve) => {
+      const timeout_id = this.addTimeout(
+        event_name,
+        uuid,
+        this.timeout,
+        resolve
+      );
 
-    this.outstanding_calls.set(uuid, {
-      timeoutId: timeout_id,
-      callback: callback,
+      this.outstanding_calls.set(uuid, {
+        timeoutId: timeout_id,
+        resolve,
+      });
+
+      // const args: ToRequestEvents<EmitEvents>[EventName] = [uuid, ...call_args]
+      // Disappointing, but this seems to be a limitation in the typescript type checker
+      // (https://stackoverflow.com/questions/72704929/typescript-wrong-typechecking-when-remapping-keys-with-as-combined-with-generi)
+      (
+        this.socket.emit as unknown as (
+          event_name: EventName,
+          uuid: string,
+          ...params: ReqParams<EventName, EmitEvents>
+        ) => void
+      )(event_name, uuid, ...args);
     });
-
-    // const args: ToRequestEvents<EmitEvents>[EventName] = [uuid, ...call_args]
-    // Disappointing, but this seems to be a limitation in the typescript type checker
-    // (https://stackoverflow.com/questions/72704929/typescript-wrong-typechecking-when-remapping-keys-with-as-combined-with-generi)
-    (
-      this.socket.emit as unknown as (
-        event_name: EventName,
-        uuid: string,
-        ...params: ReqParams<EventName, EmitEvents>
-      ) => void
-    )(event_name, uuid, ...call_args);
   }
 
   respond<EventName extends AsyncCompatibleEvents<EmitEvents, ListenEvents>>(
     event_name: EventName,
     callback: (
-      resolve: (
-        ...args: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
-      ) => void,
       ...args: ReqParams<EventName, ListenEvents>
-    ) => void
+    ) => Promise<DeepReadonly<ResponseT<EventName, EmitEvents>>>
   ): void {
     type UserCallbackT = InternalCallbackT<ReqParams<EventName, ListenEvents>>;
     (
@@ -269,22 +247,21 @@ export class AsyncSocketContext<
       ) => void
     )(
       event_name,
-      (uuid: string, ...params: ReqParams<EventName, ListenEvents>): void => {
+      async (uuid: string, ...params: ReqParams<EventName, ListenEvents>) => {
         if (this.verbose) {
           console.log(`received ${event_name} (${uuid}) with`, ...params);
         }
-        callback((...result) => {
-          if (this.verbose) {
-            console.log(`responding ${event_name} (${uuid}) with`, ...result);
-          }
-          (
-            this.socket.emit as unknown as (
-              event_name: EventName,
-              uuid: string,
-              ...params: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
-            ) => void
-          )(event_name, uuid, ...result);
-        }, ...params);
+        const result = await callback(...params);
+        if (this.verbose) {
+          console.log(`responding ${event_name} (${uuid}) with`, result);
+        }
+        (
+          this.socket.emit as unknown as (
+            event_name: EventName,
+            uuid: string,
+            result: DeepReadonly<ResponseT<EventName, EmitEvents>>
+          ) => void
+        )(event_name, uuid, result);
       }
     );
   }
