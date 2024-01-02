@@ -164,47 +164,7 @@ async function chooseNextCards(
     });
   }
 
-  const cardsCallback = (status: Status<Card[]>) => {
-    if (!isOk(status)) {
-      return status;
-    }
-
-    // If cards were chosen successfully, then update the draft state.
-    return makeOkStatus({
-      ...draft_state,
-      pendingCards: status.value,
-      state: next_draft_state,
-    });
-  };
-
-  const champCardsCallback = (status: Status<Card[]>) => {
-    if (!isOk(status)) {
-      return status;
-    }
-
-    const cards = status.value;
-    if (cards.length === 0) {
-      // If no champs were chosen, move immediately to the next round (which is
-      // a non-champ round).
-      chooseNextCards(
-        {
-          ...draft_state,
-          state: next_draft_state,
-        },
-        callback
-      );
-    } else {
-      // If cards were chosen successfully, then update the draft state.
-      callback(
-        makeOkStatus({
-          ...draft_state,
-          pendingCards: cards,
-          state: next_draft_state,
-        })
-      );
-    }
-  };
-
+  let next_cards_status;
   switch (next_draft_state) {
     case DraftState.INIT: {
       return makeErrStatus(
@@ -213,23 +173,48 @@ async function chooseNextCards(
       );
     }
     case DraftState.INITIAL_SELECTION: {
-      chooseChampCards(next_draft_state, draft_state.deck, false);
-      // champCardsCallback,
-      return;
+      next_cards_status = await chooseChampCards(
+        next_draft_state,
+        draft_state.deck,
+        /*allow_same_region=*/ false
+      );
+      break;
     }
     case DraftState.CHAMP_ROUND_1:
     case DraftState.CHAMP_ROUND_2:
     case DraftState.CHAMP_ROUND_3: {
-      chooseChampCards(next_draft_state, draft_state.deck, champCardsCallback);
-      return;
+      next_cards_status = await chooseChampCards(
+        next_draft_state,
+        draft_state.deck
+      );
+      break;
     }
     case DraftState.RANDOM_SELECTION_1:
     case DraftState.RANDOM_SELECTION_2:
     case DraftState.RANDOM_SELECTION_3: {
-      chooseNonChampCards(draft_state.deck, cardsCallback);
-      return;
+      next_cards_status = await chooseNonChampCards(draft_state.deck);
+      break;
     }
   }
+  if (!isOk(next_cards_status)) {
+    return next_cards_status;
+  }
+
+  const cards = next_cards_status.value;
+  if (cards.length === 0) {
+    // If no cards were chosen, move immediately to the next round. This should
+    // only happen in champ rounds if there are no more champs left.
+    return await chooseNextCards({
+      ...draft_state,
+      state: next_draft_state,
+    });
+  }
+
+  return makeOkStatus({
+    ...draft_state,
+    pendingCards: cards,
+    state: next_draft_state,
+  });
 }
 
 export function initDraftState(socket: LoRDraftSocket) {
@@ -263,7 +248,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       }
       const auth_user = status.value;
 
-      enterDraft(auth_user.sessionInfo, draft_options, resolve);
+      enterDraft(auth_user.sessionInfo, draft_options).then(resolve);
     });
   });
 
@@ -290,7 +275,7 @@ export function initDraftState(socket: LoRDraftSocket) {
       return;
     }
 
-    joinSession(session_cred, (status) => {
+    joinSession(session_cred, async (status) => {
       if (!isOk(status)) {
         resolve(status);
         return;
@@ -369,64 +354,54 @@ export function initDraftState(socket: LoRDraftSocket) {
         deck,
       };
 
-      chooseNextCards(draft_state, (status) => {
-        if (!isOk(status)) {
-          resolve(status);
-          return;
-        }
+      const next_cards_status = await chooseNextCards(draft_state);
+      if (!isOk(next_cards_status)) {
+        resolve(next_cards_status);
+        return;
+      }
 
-        updateDraft(auth_user.sessionInfo, status.value);
-        resolve(makeOkStatus(status.value));
-      });
+      updateDraft(auth_user.sessionInfo, next_cards_status.value);
+      resolve(makeOkStatus(next_cards_status.value));
     });
   });
 }
 
-export function enterDraft(
+export async function enterDraft(
   session_info: SessionInfo,
-  draft_options: DraftOptions,
-  callback: (status: Status<DraftStateInfo>) => void
-) {
+  draft_options: DraftOptions
+): Promise<Status<DraftStateInfo>> {
   if (inDraft(session_info)) {
-    callback(
-      makeErrStatus(
-        StatusCode.ALREADY_IN_DRAFT_SESSION,
-        'Already in draft session siwwy'
-      )
+    return makeErrStatus(
+      StatusCode.ALREADY_IN_DRAFT_SESSION,
+      'Already in draft session siwwy'
     );
-    return;
   }
 
-  const draft_state = {
+  const init_draft_state = {
     state: DraftState.INIT,
     deck: makeDraftDeck(draft_options),
     pendingCards: [],
   };
 
   // Choose the first set of pending cards to show.
-  chooseNextCards(draft_state, (status) => {
-    if (!isOk(status)) {
-      callback(status);
-      return;
-    }
+  const status = await chooseNextCards(init_draft_state);
+  if (!isOk(status)) {
+    return status;
+  }
 
-    const draft_state = status.value;
+  const next_draft_state = status.value;
 
-    // Since choose_next_cards is async, we need to check again that we're not
-    // already in a draft. It's possible another request to join a draft
-    // finished processing between when we last checked and now.
-    if (inDraft(session_info)) {
-      callback(
-        makeErrStatus(
-          StatusCode.ALREADY_IN_DRAFT_SESSION,
-          'Already in draft session!'
-        )
-      );
-      return;
-    }
+  // Since choose_next_cards is async, we need to check again that we're not
+  // already in a draft. It's possible another request to join a draft
+  // finished processing between when we last checked and now.
+  if (inDraft(session_info)) {
+    return makeErrStatus(
+      StatusCode.ALREADY_IN_DRAFT_SESSION,
+      'Already in draft session!'
+    );
+  }
 
-    // If successful, join the draft by adding it to the session info.
-    updateDraft(session_info, draft_state);
-    callback(makeOkStatus(draft_state));
-  });
+  // If successful, join the draft by adding it to the session info.
+  updateDraft(session_info, next_draft_state);
+  return makeOkStatus(next_draft_state);
 }
