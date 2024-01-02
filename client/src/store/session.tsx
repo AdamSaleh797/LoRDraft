@@ -17,7 +17,7 @@ import {
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info';
 import { LoRDispatch, RootState } from 'client/store';
 import { clearDraftState, doUpdateDraftAsync } from 'client/store/draft';
-import { ThunkAPI, makeThunkPromise } from 'client/store/util';
+import { ThunkAPI } from 'client/store/util';
 
 export const enum UserSessionState {
   UNINITIALIZED = 'UNINITIALIZED',
@@ -180,20 +180,15 @@ const doInitializeAsync = createAsyncThunk<
 >(
   'session/initializeAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      const auth_info = args.cachedAuthInfo.getStorageAuthInfo();
-      if (auth_info === null) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_LOGGED_IN,
-            `No cached auth info found, not attempting to sign in`
-          )
-        );
-        return;
-      }
+    const auth_info = args.cachedAuthInfo.getStorageAuthInfo();
+    if (auth_info === null) {
+      return makeErrStatus(
+        StatusCode.NOT_LOGGED_IN,
+        `No cached auth info found, not attempting to sign in`
+      );
+    }
 
-      args.socket.call('join_session', auth_info, resolve);
-    });
+    return await args.socket.call('join_session', auth_info);
   },
   {
     condition: (_, { getState }) => {
@@ -218,9 +213,7 @@ export interface LoginArgs {
 const doLoginAsync = createAsyncThunk<Status<AuthInfo>, LoginArgs, ThunkAPI>(
   'session/loginAsync',
   async (args: LoginArgs) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('login', args.loginInfo, resolve);
-    });
+    return await args.socket.call('login', args.loginInfo);
   },
   {
     condition: (_, { getState }) => {
@@ -245,9 +238,7 @@ export interface LogoutArgs {
 const doLogoutAsync = createAsyncThunk<Status, LogoutArgs, ThunkAPI>(
   'session/logoutAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('logout', args.authInfo, resolve);
-    });
+    return await args.socket.call('logout', args.authInfo);
   },
   {
     condition: (_, { getState }) => {
@@ -272,9 +263,7 @@ export interface RegisterArgs {
 export const doRegisterAsync = createAsyncThunk<Status, RegisterArgs, ThunkAPI>(
   'session/registerAsync',
   async (args) => {
-    return await makeThunkPromise((resolve) => {
-      args.socket.call('register', args.registerInfo, resolve);
-    });
+    return await args.socket.call('register', args.registerInfo);
   },
   {
     condition: (_, { getState }) => {
