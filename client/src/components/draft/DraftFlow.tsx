@@ -1,10 +1,14 @@
 import React from 'react';
 
+import { DraftRarityRestriction } from 'common/game/draft_options';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { DraftComponent } from 'client/components/draft/Draft';
-import { DraftOptionsComponent } from 'client/components/draft/DraftOptions';
-import { inDraft, selectDraftState } from 'client/store/draft';
+import {
+  doJoinDraftAsync,
+  inDraft,
+  selectDraftState,
+} from 'client/store/draft';
 import {
   doFetchGameMetadataAsync,
   selectGameMetadataState,
@@ -32,14 +36,23 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     }, 0);
   }
 
-  if (!inDraft(draft_state)) {
-    return (
-      <DraftOptionsComponent
-        socket={props.socket}
-        authInfo={props.authInfo}
-        gameMetadata={game_metadata}
-      />
+  React.useEffect(() => {
+    const draft_options = {
+      draftFormat: 'Eternal' as const,
+      rarityRestriction: DraftRarityRestriction.ANY_RARITY,
+    };
+
+    dispatch(
+      doJoinDraftAsync({
+        socket: props.socket,
+        authInfo: props.authInfo,
+        draftOptions: draft_options,
+      })
     );
+  }, []);
+
+  if (!inDraft(draft_state)) {
+    return <></>;
   } else {
     return (
       <DraftComponent
