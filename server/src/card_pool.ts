@@ -318,7 +318,7 @@ export async function randomSampleCards(
 
                 if (regions.length > 1) {
                   const region_size =
-                    region_sets[regions[region_idx]].nonChamps.length;
+                    region_sets[region_pool[region_idx]].nonChamps.length;
                   const weighted_sizes = regions.reduce<number>(
                     (sum, region) =>
                       sum + 1 / region_sets[region].nonChamps.length,
