@@ -1,4 +1,3 @@
-import { Card } from '@mui/material';
 import React from 'react';
 
 import style from './RoundLabel.module.css';
