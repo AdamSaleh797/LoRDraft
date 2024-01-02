@@ -13,6 +13,7 @@ interface ButtonProps {
 export function Button(props: ButtonProps) {
   return (
     <MButton
+      sx={{ fontFamily: 'Roboto, sans-serif' }}
       className={props.className ?? style.button}
       onClick={props.onClick}
       color='primary'
