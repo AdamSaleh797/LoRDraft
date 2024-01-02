@@ -219,15 +219,14 @@ async function chooseNextCards(
 
 export function initDraftState(socket: LoRDraftSocket) {
   socket.respond('current_draft', (resolve, session_cred) => {
-    joinSession(session_cred, (auth_user_status) => {
-      if (!isOk(auth_user_status)) {
-        resolve(auth_user_status);
-        return;
-      }
-      const auth_user = auth_user_status.value;
+    const auth_user_status = joinSession(session_cred);
+    if (!isOk(auth_user_status)) {
+      resolve(auth_user_status);
+      return;
+    }
+    const auth_user = auth_user_status.value;
 
-      resolve(getDraftState(auth_user));
-    });
+    resolve(getDraftState(auth_user));
   });
 
   socket.respond('join_draft', (resolve, session_cred, draft_options) => {
@@ -241,30 +240,28 @@ export function initDraftState(socket: LoRDraftSocket) {
       return;
     }
 
-    joinSession(session_cred, (status) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
-      const auth_user = status.value;
+    const status = joinSession(session_cred);
+    if (!isOk(status)) {
+      resolve(status);
+      return;
+    }
+    const auth_user = status.value;
 
-      enterDraft(auth_user.sessionInfo, draft_options).then(resolve);
-    });
+    enterDraft(auth_user.sessionInfo, draft_options).then(resolve);
   });
 
   socket.respond('close_draft', (resolve, session_cred) => {
-    joinSession(session_cred, (status) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
-      const auth_user = status.value;
+    const status = joinSession(session_cred);
+    if (!isOk(status)) {
+      resolve(status);
+      return;
+    }
+    const auth_user = status.value;
 
-      resolve(exitDraft(auth_user.sessionInfo));
-    });
+    resolve(exitDraft(auth_user.sessionInfo));
   });
 
-  socket.respond('choose_cards', (resolve, session_cred, cards) => {
+  socket.respond('choose_cards', async (resolve, session_cred, cards) => {
     if (!CardListT.guard(cards)) {
       resolve(
         makeErrStatus(
@@ -275,94 +272,93 @@ export function initDraftState(socket: LoRDraftSocket) {
       return;
     }
 
-    joinSession(session_cred, async (status) => {
-      if (!isOk(status)) {
-        resolve(status);
-        return;
-      }
-      const auth_user = status.value;
+    const status = joinSession(session_cred);
+    if (!isOk(status)) {
+      resolve(status);
+      return;
+    }
+    const auth_user = status.value;
 
-      const draft_state_status = getDraftState(auth_user);
-      if (!isOk(draft_state_status)) {
-        resolve(draft_state_status);
-        return;
-      }
-      let draft_state = draft_state_status.value;
+    const draft_state_status = getDraftState(auth_user);
+    if (!isOk(draft_state_status)) {
+      resolve(draft_state_status);
+      return;
+    }
+    let draft_state = draft_state_status.value;
 
-      if (draft_state.pendingCards.length === 0) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
-            'Draft state is not currently waiting for pending cards from the client.'
-          )
-        );
-        return;
-      }
-
-      const min_max_cards = draftStateCardLimits(draft_state.state);
-      if (min_max_cards === null) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
-            'Draft state is not currently waiting for pending cards from the client.'
-          )
-        );
-        return;
-      }
-      const [min_cards, max_cards] = min_max_cards;
-
-      if (cards.length < min_cards || cards.length > max_cards) {
-        resolve(
-          makeErrStatus(
-            StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
-            `Cannot choose ${cards.length} cards in state ${draft_state.state}, must choose from ${min_cards} to ${max_cards} cards`
-          )
-        );
-        return;
-      }
-
-      const chosen_cards = intersectListsPred(
-        draft_state.pendingCards,
-        cards,
-        (pending_card, card) => pending_card.cardCode === card.cardCode
+    if (draft_state.pendingCards.length === 0) {
+      resolve(
+        makeErrStatus(
+          StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
+          'Draft state is not currently waiting for pending cards from the client.'
+        )
       );
+      return;
+    }
 
-      if (chosen_cards.length !== cards.length) {
-        resolve(
-          makeErrStatus(
-            StatusCode.NOT_PENDING_CARD,
-            `Some chosen cards are not pending cards, or are duplicates.`
-          )
-        );
-        return;
-      }
+    const min_max_cards = draftStateCardLimits(draft_state.state);
+    if (min_max_cards === null) {
+      resolve(
+        makeErrStatus(
+          StatusCode.NOT_WAITING_FOR_CARD_SELECTION,
+          'Draft state is not currently waiting for pending cards from the client.'
+        )
+      );
+      return;
+    }
+    const [min_cards, max_cards] = min_max_cards;
 
-      // Add the chosen cards to the deck.
-      const deck = addCardsToDeck(draft_state.deck, chosen_cards);
-      if (deck === null) {
-        resolve(
-          makeErrStatus(
-            StatusCode.ILLEGAL_CARD_COMBINATION,
-            'The cards could not be added to the deck'
-          )
-        );
-        return;
-      }
+    if (cards.length < min_cards || cards.length > max_cards) {
+      resolve(
+        makeErrStatus(
+          StatusCode.INCORRECT_NUM_CHOSEN_CARDS,
+          `Cannot choose ${cards.length} cards in state ${draft_state.state}, must choose from ${min_cards} to ${max_cards} cards`
+        )
+      );
+      return;
+    }
 
-      draft_state = {
-        ...draft_state,
-        deck,
-      };
+    const chosen_cards = intersectListsPred(
+      draft_state.pendingCards,
+      cards,
+      (pending_card, card) => pending_card.cardCode === card.cardCode
+    );
 
-      const next_cards_status = await chooseNextCards(draft_state);
-      if (!isOk(next_cards_status)) {
-        resolve(next_cards_status);
-        return;
-      }
+    if (chosen_cards.length !== cards.length) {
+      resolve(
+        makeErrStatus(
+          StatusCode.NOT_PENDING_CARD,
+          `Some chosen cards are not pending cards, or are duplicates.`
+        )
+      );
+      return;
+    }
 
-      updateDraft(auth_user.sessionInfo, next_cards_status.value);
-      resolve(makeOkStatus(next_cards_status.value));
-    });
+    // Add the chosen cards to the deck.
+    const deck = addCardsToDeck(draft_state.deck, chosen_cards);
+    if (deck === null) {
+      resolve(
+        makeErrStatus(
+          StatusCode.ILLEGAL_CARD_COMBINATION,
+          'The cards could not be added to the deck'
+        )
+      );
+      return;
+    }
+
+    draft_state = {
+      ...draft_state,
+      deck,
+    };
+
+    const next_cards_status = await chooseNextCards(draft_state);
+    if (!isOk(next_cards_status)) {
+      resolve(next_cards_status);
+      return;
+    }
+
+    updateDraft(auth_user.sessionInfo, next_cards_status.value);
+    resolve(makeOkStatus(next_cards_status.value));
   });
 }
 

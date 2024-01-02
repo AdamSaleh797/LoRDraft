@@ -16,13 +16,12 @@ import { initDraftState } from 'server/draft_state';
 
 function initStaticMessages(socket: LoRDraftSocket) {
   socket.respond('game_metadata', (resolve, session_cred) => {
-    joinSession(session_cred, (auth_user) => {
-      if (!isOk(auth_user)) {
-        resolve(auth_user);
-      } else {
-        gameMetadata().then(resolve);
-      }
-    });
+    const auth_user = joinSession(session_cred);
+    if (!isOk(auth_user)) {
+      resolve(auth_user);
+    } else {
+      gameMetadata().then(resolve);
+    }
   });
 }
 

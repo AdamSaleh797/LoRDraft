@@ -157,17 +157,11 @@ export function selectUsermapState(state: RootState): Usermap {
   return state.usermap;
 }
 
-export function registerUser(
-  registerInfo: RegisterInfo,
-  callback: (status: Status) => void
-) {
+export function registerUser(registerInfo: RegisterInfo): Status {
   const usermap = selectUsermapState(store.getState());
   const auth_user = usermap[registerInfo.username];
   if (auth_user !== undefined) {
-    callback(
-      makeErrStatus(StatusCode.USER_ALREADY_EXISTS, `User already exists`)
-    );
-    return;
+    return makeErrStatus(StatusCode.USER_ALREADY_EXISTS, `User already exists`);
   }
 
   // TODO: check that email is not already used
@@ -184,20 +178,17 @@ export function registerUser(
     })
   );
   persistor.persist();
-  callback(OkStatus);
+  return OkStatus;
 }
 
-export function loginUser(
-  loginCred: LoginCred,
-  callback: (auth_user: Status<SessionAuthInfo>) => void
-) {
+export function loginUser(loginCred: LoginCred): Status<SessionAuthInfo> {
   const usermap = selectUsermapState(store.getState());
   const auth_user = usermap[loginCred.username];
   if (auth_user === undefined) {
-    callback(
-      makeErrStatus(StatusCode.INVALID_CREDENTIALS, INVALID_CREDENTIALS_MSG)
+    return makeErrStatus(
+      StatusCode.INVALID_CREDENTIALS,
+      INVALID_CREDENTIALS_MSG
     );
-    return;
   }
 
   const hash = crypto.createHash(PASSWORD_HASH_METHOD);
@@ -207,10 +198,10 @@ export function loginUser(
     password_hash.length !== auth_user_password_hash.length ||
     !crypto.timingSafeEqual(password_hash, auth_user_password_hash)
   ) {
-    callback(
-      makeErrStatus(StatusCode.INVALID_CREDENTIALS, INVALID_CREDENTIALS_MSG)
+    return makeErrStatus(
+      StatusCode.INVALID_CREDENTIALS,
+      INVALID_CREDENTIALS_MSG
     );
-    return;
   }
 
   // Generate a token that the client can use for authentication on all future
@@ -229,7 +220,7 @@ export function loginUser(
     })
   );
   persistor.persist();
-  callback(makeOkStatus(authInfo));
+  return makeOkStatus(authInfo);
 }
 
 export function logoutUser(authUser: LoggedInAuthUser) {
