@@ -33,59 +33,57 @@ import {
 const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
 export function initAuth(socket: LoRDraftSocket): void {
-  socket.respond('register', (resolve, register_info) => {
+  socket.respond('register', async (register_info) => {
     if (!RegisterInfoT.guard(register_info)) {
-      // Invalid input, we can ignore
-      return;
+      return makeErrStatus(
+        StatusCode.INVALID_ARGUMENTS,
+        'Invalid arguments passed to "register".'
+      );
     }
 
-    resolve(registerUser(register_info));
+    return registerUser(register_info);
   });
 
-  socket.respond('login', (resolve, login_cred?: LoginCred) => {
+  socket.respond('login', async (login_cred?: LoginCred) => {
     if (!LoginCredT.guard(login_cred)) {
-      // Invalid input, we can ignore
-      return;
+      return makeErrStatus(
+        StatusCode.INVALID_ARGUMENTS,
+        'Invalid arguments passed to "login".'
+      );
     }
 
     const status = loginUser(login_cred);
     if (!isOk(status)) {
-      resolve(status);
-      return;
+      return status;
     }
     const auth_info = status.value;
 
-    resolve(
-      makeOkStatus({
-        username: login_cred.username,
-        token: auth_info.token,
-      })
-    );
+    return makeOkStatus({
+      username: login_cred.username,
+      token: auth_info.token,
+    });
   });
 
-  socket.respond('join_session', (resolve, session_cred) => {
+  socket.respond('join_session', async (session_cred) => {
     const status = joinSession(session_cred);
     if (!isOk(status)) {
-      resolve(status);
-      return;
+      return status;
     }
     const auth_user = status.value;
 
-    resolve(
-      makeOkStatus({
-        username: auth_user.username,
-        token: auth_user.sessionInfo.authInfo.token,
-      })
-    );
+    return makeOkStatus({
+      username: auth_user.username,
+      token: auth_user.sessionInfo.authInfo.token,
+    });
   });
 
-  socket.respond('logout', (resolve, session_cred) => {
+  socket.respond('logout', async (session_cred) => {
     const status = joinSession(session_cred);
     if (!isOk(status)) {
-      resolve(status);
+      return status;
     } else {
       logoutUser(status.value);
-      resolve(OkStatus);
+      return OkStatus;
     }
   });
 }

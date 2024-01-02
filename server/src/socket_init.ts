@@ -15,12 +15,12 @@ import { gameMetadata } from 'server/core_bundle';
 import { initDraftState } from 'server/draft_state';
 
 function initStaticMessages(socket: LoRDraftSocket) {
-  socket.respond('game_metadata', (resolve, session_cred) => {
+  socket.respond('game_metadata', async (session_cred) => {
     const auth_user = joinSession(session_cred);
     if (!isOk(auth_user)) {
-      resolve(auth_user);
+      return auth_user;
     } else {
-      gameMetadata().then(resolve);
+      return await gameMetadata();
     }
   });
 }

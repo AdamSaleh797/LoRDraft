@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Socket as ServerSocket } from 'socket.io';
 import { Socket as ClientSocket } from 'socket.io-client';
+import { DeepReadonly } from 'ts-essentials';
 
 import { DeepReadonlyTuple, Empty, genUUID } from 'common/util/lor_util';
 import { Status, StatusCode, makeErrStatus } from 'common/util/status';
@@ -50,9 +51,9 @@ type AsyncCompatibleEvents<
   EventNames<ToResponseEvents<ResEvents>>;
 
 type ResponseT<
-  EventName extends keyof ToResponseEvents<ListenEvents> & string,
-  ListenEvents extends EventsMap
-> = ResParams<EventName, ListenEvents> extends Parameters<
+  EventName extends keyof ToResponseEvents<Events> & string,
+  Events extends EventsMap
+> = ResParams<EventName, Events> extends Parameters<
   (status: Status<infer T>) => void
 >
   ? Status<T>
@@ -207,7 +208,6 @@ export class AsyncSocketContext<
     const uuid = genUUID();
 
     return new Promise((resolve) => {
-      // promise: Promise<ResponseT<EventName, ListenEvents>>
       const timeout_id = this.addTimeout(
         event_name,
         uuid,
@@ -236,11 +236,8 @@ export class AsyncSocketContext<
   respond<EventName extends AsyncCompatibleEvents<EmitEvents, ListenEvents>>(
     event_name: EventName,
     callback: (
-      resolve: (
-        ...args: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
-      ) => void,
       ...args: ReqParams<EventName, ListenEvents>
-    ) => void
+    ) => Promise<DeepReadonly<ResponseT<EventName, EmitEvents>>>
   ): void {
     type UserCallbackT = InternalCallbackT<ReqParams<EventName, ListenEvents>>;
     (
@@ -250,22 +247,21 @@ export class AsyncSocketContext<
       ) => void
     )(
       event_name,
-      (uuid: string, ...params: ReqParams<EventName, ListenEvents>): void => {
+      async (uuid: string, ...params: ReqParams<EventName, ListenEvents>) => {
         if (this.verbose) {
           console.log(`received ${event_name} (${uuid}) with`, ...params);
         }
-        callback((...result) => {
-          if (this.verbose) {
-            console.log(`responding ${event_name} (${uuid}) with`, ...result);
-          }
-          (
-            this.socket.emit as unknown as (
-              event_name: EventName,
-              uuid: string,
-              ...params: DeepReadonlyTuple<ResParams<EventName, EmitEvents>>
-            ) => void
-          )(event_name, uuid, ...result);
-        }, ...params);
+        const result = await callback(...params);
+        if (this.verbose) {
+          console.log(`responding ${event_name} (${uuid}) with`, result);
+        }
+        (
+          this.socket.emit as unknown as (
+            event_name: EventName,
+            uuid: string,
+            result: DeepReadonly<ResponseT<EventName, EmitEvents>>
+          ) => void
+        )(event_name, uuid, result);
       }
     );
   }
