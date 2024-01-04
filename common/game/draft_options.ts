@@ -29,13 +29,15 @@ export function formatContainsCard(
   card: Card
 ): boolean {
   switch (draft_options.draftFormat) {
-    case 'Eternal': {
+    case 'Eternal':
+    case 'FREE_BUILD': {
       break;
     }
     case 'Standard': {
       if (!card.isStandard) {
         return false;
       }
+      break;
     }
   }
 

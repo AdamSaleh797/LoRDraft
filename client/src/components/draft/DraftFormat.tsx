@@ -24,7 +24,11 @@ export function DraftFormatComponent(props: DraftFormatComponentProps) {
           }}
         >
           {props.gameMetadata !== null ? (
-            <img src={props.gameMetadata.formats[format].imageUrl}></img>
+            props.gameMetadata.formats[format].imageUrl !== undefined ? (
+              <img src={props.gameMetadata.formats[format].imageUrl}></img>
+            ) : (
+              props.gameMetadata.formats[format].name
+            )
           ) : (
             <div>{format}</div>
           )}
