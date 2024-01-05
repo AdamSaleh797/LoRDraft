@@ -75,7 +75,7 @@ function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
   };
 
   return (
-    <React.Fragment>
+    <>
       {errorMessage !== null ? (
         <Box sx={{ color: 'error.main', fontStyle: 'italic' }}>
           {errorMessage.toLowerCase()}
@@ -125,7 +125,7 @@ function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
           </Grid>
         </Grid>
       </Box>
-    </React.Fragment>
+    </>
   );
 }
 
@@ -180,7 +180,7 @@ function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
   };
 
   return (
-    <React.Fragment>
+    <>
       {errorMessage !== null ? (
         <Box sx={{ color: 'error.main', fontStyle: 'italic' }}>
           {errorMessage.toLowerCase()}
@@ -254,7 +254,7 @@ function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
           </Grid>
         </Grid>
       </Box>
-    </React.Fragment>
+    </>
   );
 }
 

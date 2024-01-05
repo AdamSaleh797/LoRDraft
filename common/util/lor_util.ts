@@ -40,6 +40,40 @@ export type MapTypeValues<T> = T extends Record<
   ? U
   : never;
 
+export function deepReplaceKey(
+  obj: object | Array<unknown>,
+  key: string,
+  replace: unknown
+): object {
+  if (Array.isArray(obj)) {
+    return obj.map((v: unknown) => {
+      if (v !== null && typeof v === 'object') {
+        return deepReplaceKey(v, key, replace);
+      } else {
+        return v;
+      }
+    });
+  } else {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .map(([k, v]: [string | number | symbol, unknown]) => {
+          if (k === key) {
+            return [k, replace];
+          } else if (v !== null && typeof v === 'object') {
+            return [k, deepReplaceKey(v, key, replace)];
+          } else {
+            return [k, v];
+          }
+        })
+        .filter(([_, v]) => v !== undefined)
+    );
+  }
+}
+
+export function filterPII(obj: object): object {
+  return deepReplaceKey(deepReplaceKey(obj, 'token', '***'), 'password', '***');
+}
+
 function rejectedResults(
   promise_results: PromiseSettledResult<unknown>[]
 ): PromiseRejectedResult[] {
