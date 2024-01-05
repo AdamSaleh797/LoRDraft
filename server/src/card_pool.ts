@@ -1,4 +1,10 @@
-import { Card, cardsEqual, isChampion, regionContains } from 'common/game/card';
+import {
+  Card,
+  cardsEqual,
+  isChampion,
+  mainRegions,
+  regionContains,
+} from 'common/game/card';
 import { DraftDeck, canAddToDeck, deckContainsCard } from 'common/game/draft';
 import { formatContainsCard } from 'common/game/draft_options';
 import {

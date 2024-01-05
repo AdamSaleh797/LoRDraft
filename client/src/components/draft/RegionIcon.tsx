@@ -14,28 +14,29 @@ export interface RegionIconComponentProps {
   cardCount: number;
 
   /**
-   * A list of regions which are necessarily in the deck, no matter which cards
-   * are chosen in the future.
+   * If true, the region icon is rendered faded. Applied to regions which are
+   * potentially, but not necessarily in the deck.
+   *
+   * Note: regions that are faded won't display the `cardCount`, since it's
+   * ambiguous how many cards should be in each of those regions.
    */
-  certainRegions: readonly Region[];
+  faded: boolean;
 
   gameMetadata: GameMetadata;
 }
 
 export function RegionIcon(props: RegionIconComponentProps) {
-  // Note: regions that are faded won't display the `cardCount`, since it's
-  // ambiguous how many cards should be in each of those regions.
-  const faded = !props.certainRegions.includes(props.region);
-
   return (
-    <div className={`${style.regionIconContainer} ${faded ? style.faded : ''}`}>
+    <div
+      className={`${style.regionIconContainer} ${
+        props.faded ? style.faded : ''
+      }`}
+    >
       <img
         className={style.regionIcon}
         src={props.gameMetadata.regions[props.region].imageUrl}
       />
-      {props.cardCount === 0 || faded ? (
-        []
-      ) : (
+      {props.cardCount === 0 || props.faded ? null : (
         <div className={style.cardCountContainer}>
           <div className={style.cardCount}>{props.cardCount}</div>
         </div>

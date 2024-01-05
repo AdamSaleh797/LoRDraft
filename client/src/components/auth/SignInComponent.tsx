@@ -1,3 +1,14 @@
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockPersonIcon from '@mui/icons-material/LockPerson';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import CssBaseline from '@mui/material/CssBaseline';
+import Grid from '@mui/material/Grid';
+import Link from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
+import Typography, { TypographyProps } from '@mui/material/Typography';
 import React from 'react';
 
 import {
@@ -5,92 +16,245 @@ import {
   LoginCred,
   RegisterInfo,
 } from 'common/game/socket-msgs';
+import { isOk } from 'common/util/status';
 
-import { Button } from 'client/components/common/button';
+import { Header } from 'client/components/common/header';
 import { useLoRDispatch } from 'client/store/hooks';
-import { doRegisterAsync, loginUser } from 'client/store/session';
-import { APP_TITLE } from 'client/utils/constants';
+import { loginUser, registerUser } from 'client/store/session';
 
-interface RegisterComponentProps {
-  registerFn: (register_info: RegisterInfo) => void;
-}
-
-function RegisterComponent(props: RegisterComponentProps) {
-  const [username, setUsername] = React.useState<string>('');
-  const [password, setPassword] = React.useState<string>('');
-  const [email, setEmail] = React.useState<string>('');
-
+function Copyright(props: TypographyProps) {
   return (
-    <div>
-      <input
-        value={username}
-        onChange={(change_event) => {
-          setUsername(change_event.target.value);
-        }}
-      />
-      <input
-        type='password'
-        value={password}
-        onChange={(change_event) => {
-          setPassword(change_event.target.value);
-        }}
-      />
-      <input
-        value={email}
-        onChange={(change_event) => {
-          setEmail(change_event.target.value);
-        }}
-      />
-      <Button
-        onClick={() => {
-          if (username.length > 0 && password.length > 0) {
-            props.registerFn({
-              username: username,
-              password: password,
-              email: email,
-            });
-          }
-        }}
-      >
-        Register
-      </Button>
-    </div>
+    <Typography
+      variant='body2'
+      color='text.secondary'
+      align='center'
+      {...props}
+    >
+      {'Copyright © '}
+      <Link color='inherit' href='#'>
+        DraftRuneterra
+      </Link>{' '}
+      {new Date().getFullYear()} {'.'}
+    </Typography>
   );
 }
 
 interface LoginComponentProps {
+  socket: LoRDraftClientSocket;
   toRegisterFn: () => void;
-  loginFn: (login_cred: LoginCred) => void;
 }
 
-function LoginComponent(props: LoginComponentProps) {
-  const [username, setUsername] = React.useState<string>('');
-  const [password, setPassword] = React.useState<string>('');
+function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
+  const dispatch = useLoRDispatch();
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  const loginFn = async (loginInfo: LoginCred) => {
+    const res = await loginUser(dispatch, { socket, loginInfo });
+
+    if (!isOk(res)) {
+      console.log(res);
+      setErrorMessage(res.message);
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    const data = new FormData(event.currentTarget);
+    const username = data.get('username')?.toString();
+    const password = data.get('password')?.toString();
+    if (username !== undefined && password !== undefined) {
+      loginFn({ username, password });
+    }
+  };
+
+  const handleSignUp = (event: React.MouseEvent) => {
+    event.preventDefault();
+    toRegisterFn();
+  };
 
   return (
-    <div>
-      <input
-        value={username}
-        onChange={(change_event) => {
-          setUsername(change_event.target.value);
-        }}
-      />
-      <input
-        type='password'
-        value={password}
-        onChange={(change_event) => {
-          setPassword(change_event.target.value);
-        }}
-      />
-      <Button
-        onClick={() => {
-          props.loginFn({ username: username, password: password });
-        }}
-      >
-        Log in
-      </Button>
-      <Button onClick={props.toRegisterFn}>Register</Button>
-    </div>
+    <>
+      {errorMessage !== null ? (
+        <Box sx={{ color: 'error.main', fontStyle: 'italic' }}>
+          {errorMessage.toLowerCase()}
+        </Box>
+      ) : null}
+      <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+        <LockPersonIcon />
+      </Avatar>
+      <Typography component='h1' variant='h5'>
+        Sign in
+      </Typography>
+      <Box component='form' onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <TextField
+          margin='normal'
+          required
+          fullWidth
+          id='username'
+          label='Username'
+          name='username'
+          autoComplete='username'
+          autoFocus
+        />
+        <TextField
+          margin='normal'
+          required
+          fullWidth
+          name='password'
+          label='Password'
+          type='password'
+          id='password'
+          autoComplete='current-password'
+        />
+        <Button
+          type='submit'
+          fullWidth
+          variant='contained'
+          sx={{ mt: 3, mb: 2 }}
+        >
+          Sign In
+        </Button>
+        <Grid container>
+          {/* <Grid item xs> add a forgot password </Grid> */}
+          <Grid item>
+            <Link href='#' variant='body2' onClick={handleSignUp}>
+              {"Don't have an account? Sign Up"}
+            </Link>
+          </Grid>
+        </Grid>
+      </Box>
+    </>
+  );
+}
+
+interface RegisterComponentProps {
+  socket: LoRDraftClientSocket;
+  toSignInFn: () => void;
+}
+
+function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
+  const dispatch = useLoRDispatch();
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  const registerFn = async (registerInfo: RegisterInfo) => {
+    const res = await registerUser(dispatch, { socket, registerInfo });
+
+    if (!isOk(res)) {
+      console.log(res);
+      setErrorMessage(res.message);
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    const data = new FormData(event.currentTarget);
+    const username = data.get('username')?.toString();
+    const email = data.get('email')?.toString();
+    const password = data.get('password')?.toString();
+    const password2 = data.get('password2')?.toString();
+
+    if (username === undefined) {
+      setErrorMessage('please specify a username');
+    } else if (email === undefined) {
+      setErrorMessage('please specify an email');
+    } else if (password === undefined) {
+      setErrorMessage('please specify a password');
+    } else if (password2 === undefined) {
+      setErrorMessage('please re-type your password');
+    } else if (password !== password2) {
+      setErrorMessage('passwords must match');
+      data.set('password', '');
+      data.set('password2', '');
+    } else {
+      registerFn({ username, password, email });
+    }
+  };
+
+  const handleSignIn = (event: React.MouseEvent) => {
+    event.preventDefault();
+    toSignInFn();
+  };
+
+  return (
+    <>
+      {errorMessage !== null ? (
+        <Box sx={{ color: 'error.main', fontStyle: 'italic' }}>
+          {errorMessage.toLowerCase()}
+        </Box>
+      ) : null}
+      <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+        <LockOpenIcon />
+      </Avatar>
+      <Typography component='h1' variant='h5'>
+        Register
+      </Typography>
+      <Box component='form' onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <TextField
+          margin='normal'
+          required
+          fullWidth
+          id='username'
+          label='Username'
+          name='username'
+          autoComplete='username'
+          autoFocus
+        />
+        <TextField
+          margin='normal'
+          required
+          fullWidth
+          id='email'
+          label='Email'
+          name='email'
+          autoComplete='email'
+          autoFocus
+        />
+        <TextField
+          margin='normal'
+          required
+          fullWidth
+          name='password'
+          label='Password'
+          type='password'
+          id='password'
+          autoComplete='new-password'
+        />
+        <TextField
+          margin='normal'
+          required
+          fullWidth
+          name='password2'
+          label='Retype Password'
+          type='password'
+          id='password2'
+          autoComplete='new-password'
+        />
+        <Button
+          type='submit'
+          fullWidth
+          variant='contained'
+          sx={{ mt: 3, mb: 2 }}
+        >
+          Register
+        </Button>
+        <Grid container>
+          <Grid item xs>
+            {/*<Link href='#' variant='body2'>
+              Forgot password?
+            </Link>*/}
+          </Grid>
+          <Grid item>
+            <Link href='#' variant='body2' onClick={handleSignIn}>
+              Back to sign in
+            </Link>
+          </Grid>
+        </Grid>
+      </Box>
+    </>
   );
 }
 
@@ -103,56 +267,46 @@ export const enum SignInState {
   REGISTER = 'REGISTER',
 }
 
-export function SignInComponent(props: SessionComponentProps) {
+export default function SignIn({ socket }: SessionComponentProps) {
   const [signInState, setSignInState] = React.useState<SignInState>(
     SignInState.LOGIN
   );
-  const dispatch = useLoRDispatch();
+  const toRegisterFn = () => {
+    setSignInState(SignInState.REGISTER);
+  };
+  const toSignInFn = () => {
+    setSignInState(SignInState.LOGIN);
+  };
 
-  const socket = props.socket;
-
+  let form;
   switch (signInState) {
-    case SignInState.REGISTER: {
-      return (
-        <RegisterComponent
-          registerFn={(register_info) => {
-            dispatch(doRegisterAsync({ socket, registerInfo: register_info }));
-            setSignInState(SignInState.LOGIN);
-          }}
-        />
-      );
-    }
     case SignInState.LOGIN: {
-      const loginFn = (login_cred: LoginCred) => {
-        loginUser(dispatch, { socket, loginInfo: login_cred });
-      };
-
-      const autoLogin = async () => {
-        const username = 'test';
-        const password = 'test';
-        const email = 'test@mail.com';
-
-        await dispatch(
-          doRegisterAsync({
-            socket,
-            registerInfo: { username, password, email },
-          })
-        );
-        loginUser(dispatch, { socket, loginInfo: { username, password } });
-      };
-
-      return (
-        <div>
-          <p>You need an Account to use {APP_TITLE}</p>
-          <Button onClick={autoLogin}>Auto login</Button>
-          <LoginComponent
-            toRegisterFn={() => {
-              setSignInState(SignInState.REGISTER);
-            }}
-            loginFn={loginFn}
-          />
-        </div>
-      );
+      form = <LoginComponent socket={socket} toRegisterFn={toRegisterFn} />;
+      break;
+    }
+    case SignInState.REGISTER: {
+      form = <RegisterComponent socket={socket} toSignInFn={toSignInFn} />;
+      break;
     }
   }
+
+  return (
+    <>
+      <Header socket={socket} />
+      <Container component='main' maxWidth='xs'>
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          {form}
+        </Box>
+        <Copyright sx={{ mt: 8, mb: 4 }} />
+      </Container>
+    </>
+  );
 }

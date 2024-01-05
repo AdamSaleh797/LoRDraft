@@ -46,6 +46,17 @@ export type OfficialDraftFormat = MapTypeValues<typeof DRAFT_FORMAT_REFS>;
 
 export type DraftFormat = OfficialDraftFormat | keyof typeof UnofficialFormats;
 
+export function formatDisplayName(format: DraftFormat): string {
+  switch (format) {
+    case 'Eternal':
+      return 'Eternal';
+    case 'Standard':
+      return 'Standard';
+    case 'FREE_BUILD':
+      return 'Free Build';
+  }
+}
+
 export interface DraftFormatMetadata {
   name: string;
   imageUrl?: string;

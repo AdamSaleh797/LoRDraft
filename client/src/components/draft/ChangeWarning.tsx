@@ -15,23 +15,22 @@ const style = {
   p: 4,
 };
 
-export default function SettingChangeWarning(props: {
+export default function ChangeWarning(props: {
+  flavorText: string;
+  open: boolean;
   accept: () => void;
   decline: () => void;
 }) {
   return (
     <div>
       <Modal
-        open={true}
+        open={props.open}
         aria-labelledby='setting-change-warning'
         aria-describedby='setting-change-warning'
       >
         <Box sx={style} display='flex' flexDirection='column'>
           <Box display='flex' marginBottom='50px'>
-            <Typography variant='h6'>
-              Are you sure you want to apply these changes? Note that doing so
-              will restart your draft.
-            </Typography>
+            <Typography variant='h6'>{props.flavorText}</Typography>
           </Box>
           <Box display='flex' justifyContent='space-between'>
             <Button onClick={props.decline}>No</Button>

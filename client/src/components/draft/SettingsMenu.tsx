@@ -9,8 +9,8 @@ import { DraftDeck } from 'common/game/draft';
 import { DraftOptions } from 'common/game/draft_options';
 
 import { Button } from 'client/components/common/button';
+import ChangeWarning from 'client/components/draft/ChangeWarning';
 import { ModeSelection } from 'client/components/draft/ModeSelection';
-import SettingChangeWarning from 'client/components/draft/SettingChangeWarning';
 
 const style = {
   position: 'absolute' as const,
@@ -88,17 +88,27 @@ export default function SettingsMenu(props: {
           <Box display='flex' justifyContent='right' marginTop='40px'>
             <Button
               onClick={() => {
-                setOpenWarning(true);
+                if (
+                  format !== props.deck.options.draftFormat ||
+                  rarity !== props.deck.options.rarityRestriction
+                ) {
+                  setOpenWarning(true);
+                } else {
+                  handleClose();
+                }
               }}
             >
               OK
             </Button>
-            {openWarning ? (
-              <SettingChangeWarning
-                accept={acceptChanges}
-                decline={declineChanges}
-              />
-            ) : null}
+            <ChangeWarning
+              flavorText={
+                'Are you sure you want to apply these changes? Note that ' +
+                'doing so will restart your draft.'
+              }
+              open={openWarning}
+              accept={acceptChanges}
+              decline={declineChanges}
+            />
           </Box>
         </Box>
       </Modal>

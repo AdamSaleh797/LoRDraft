@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { DraftOptions, defaultDraftOptions } from 'common/game/draft_options';
+import { defaultDraftOptions } from 'common/game/draft_options';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { Header } from 'client/components/common/header';
@@ -24,8 +24,7 @@ interface DraftFlowComponentProps {
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
-  const [options, setOptions] =
-    React.useState<DraftOptions>(defaultDraftOptions);
+  const [options, setOptions] = React.useState(defaultDraftOptions);
   const draft_state = useLoRSelector(selectDraftState);
   const game_metadata = useLoRSelector(selectGameMetadataState);
   const dispatch = useLoRDispatch();

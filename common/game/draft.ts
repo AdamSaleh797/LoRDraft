@@ -111,7 +111,7 @@ export function makeDraftDeck(
 ): DraftDeck {
   let regions;
   if (options.draftFormat === 'FREE_BUILD') {
-    regions = [];
+    regions = allRegions();
   } else {
     switch (options.rarityRestriction) {
       case DraftRarityRestriction.COMMONS: {
@@ -335,7 +335,7 @@ export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   const card_counts = addToCardCounts(deck.cardCounts, card);
   let new_regions;
   if (deck.options.draftFormat === 'FREE_BUILD') {
-    new_regions = [];
+    new_regions = deck.regions;
   } else if (deck.regions.length === 2) {
     // If the deck only has two possible regions, these must be the two regions
     // for the deck. We can simply check if this card is in either of those two
