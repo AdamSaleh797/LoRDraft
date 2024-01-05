@@ -110,16 +110,21 @@ export function makeDraftDeck(
   cards: Card[] = []
 ): DraftDeck {
   let regions;
-  switch (options.rarityRestriction) {
-    case DraftRarityRestriction.COMMONS: {
-      regions = mainRegions();
-      break;
-    }
-    case DraftRarityRestriction.ANY_RARITY: {
-      regions = allRegions();
-      break;
+  if (options.draftFormat === 'FREE_BUILD') {
+    regions = [];
+  } else {
+    switch (options.rarityRestriction) {
+      case DraftRarityRestriction.COMMONS: {
+        regions = mainRegions();
+        break;
+      }
+      case DraftRarityRestriction.ANY_RARITY: {
+        regions = allRegions();
+        break;
+      }
     }
   }
+
   const deck: DraftDeck = {
     regions: regions,
     cardCounts: [],
@@ -259,7 +264,10 @@ export function certainRegionsForDeck(deck: DraftDeck): readonly Region[] {
     return deck.regions;
   }
   // If no cards have been chosen, all regions are uncertain.
-  if (deck.cardCounts.length === 0) {
+  if (
+    deck.cardCounts.length === 0 ||
+    deck.options.draftFormat === 'FREE_BUILD'
+  ) {
     return [];
   }
 
@@ -300,6 +308,11 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
     return false;
   }
 
+  // In free build, regions don't matter.
+  if (deck.options.draftFormat === 'FREE_BUILD') {
+    return true;
+  }
+
   // If the deck only has two possible regions, these must be the two regions
   // for the deck. We can simply check if this card is in either of those two
   // regions.
@@ -321,7 +334,9 @@ export function canAddToDeck(deck: DraftDeck, card: Card): boolean {
 export function addCardToDeck(deck: DraftDeck, card: Card): boolean {
   const card_counts = addToCardCounts(deck.cardCounts, card);
   let new_regions;
-  if (deck.regions.length === 2) {
+  if (deck.options.draftFormat === 'FREE_BUILD') {
+    new_regions = [];
+  } else if (deck.regions.length === 2) {
     // If the deck only has two possible regions, these must be the two regions
     // for the deck. We can simply check if this card is in either of those two
     // regions.
