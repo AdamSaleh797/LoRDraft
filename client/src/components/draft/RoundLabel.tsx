@@ -100,13 +100,14 @@ export function RoundLabel(props: RoundLabelProps) {
           <div className={style.bottomText}>Copy Your Deck Code!</div>
         </>
       );
+    } else {
+      contents = (
+        <>
+          <div>Rounds Left: {43 - props.draftState.deck.numCards} </div>
+          <div className={style.bottomText}>Select One</div>
+        </>
+      );
     }
-    contents = (
-      <>
-        <div>Rounds Left: {43 - props.draftState.deck.numCards} </div>
-        <div className={style.bottomText}>Select One</div>
-      </>
-    );
   }
 
   return (
