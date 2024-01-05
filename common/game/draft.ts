@@ -264,10 +264,7 @@ export function certainRegionsForDeck(deck: DraftDeck): readonly Region[] {
     return deck.regions;
   }
   // If no cards have been chosen, all regions are uncertain.
-  if (
-    deck.cardCounts.length === 0 ||
-    deck.options.draftFormat === 'FREE_BUILD'
-  ) {
+  if (deck.cardCounts.length === 0) {
     return [];
   }
 
