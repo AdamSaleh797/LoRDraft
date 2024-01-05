@@ -20,6 +20,7 @@ import {
 } from 'common/game/socket-msgs';
 import { isOk } from 'common/util/status';
 
+import { Header } from 'client/components/common/header';
 import { useLoRDispatch } from 'client/store/hooks';
 import { loginUser, registerUser } from 'client/store/session';
 
@@ -33,7 +34,7 @@ function Copyright(props: TypographyProps) {
     >
       {'Copyright © '}
       <Link color='inherit' href='#'>
-        LoRDraftKingdom
+        DraftRuneterra
       </Link>{' '}
       {new Date().getFullYear()} {'.'}
     </Typography>
@@ -304,19 +305,22 @@ export default function SignIn({ socket }: SessionComponentProps) {
   }
 
   return (
-    <Container component='main' maxWidth='xs'>
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        {form}
-      </Box>
-      <Copyright sx={{ mt: 8, mb: 4 }} />
-    </Container>
+    <>
+      <Header socket={socket} />
+      <Container component='main' maxWidth='xs'>
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          {form}
+        </Box>
+        <Copyright sx={{ mt: 8, mb: 4 }} />
+      </Container>
+    </>
   );
 }
