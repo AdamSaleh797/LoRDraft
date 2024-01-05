@@ -42,7 +42,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
   }
 
   React.useEffect(() => {
-    const joinDraft = async () => {
+    const rejoinDraft = async () => {
       await dispatch(
         doExitDraftAsync({
           socket: props.socket,
@@ -59,7 +59,7 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     };
 
     if (inDraft(draft_state)) {
-      joinDraft();
+      rejoinDraft();
     }
   }, [options.draftFormat, options.rarityRestriction]);
 
