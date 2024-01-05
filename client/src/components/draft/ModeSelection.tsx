@@ -8,7 +8,19 @@ import {
 } from '@mui/material';
 import React from 'react';
 
-export function ModeSelection() {
+import {
+  DraftRarityRestriction,
+  allRarityRestrictions,
+  rarityDisplayName,
+} from 'common/game/draft_options';
+import { DraftFormat, allDraftFormats } from 'common/game/metadata';
+
+export function ModeSelection(props: {
+  setFormat: (format: DraftFormat) => void;
+  setRarity: (rarity: DraftRarityRestriction) => void;
+  currentFormat: DraftFormat;
+  currentRarity: DraftRarityRestriction;
+}) {
   return (
     <>
       <Grid container spacing={2}>
@@ -19,13 +31,17 @@ export function ModeSelection() {
               <Select
                 labelId='mode-select-label'
                 id='mode-select'
-                //value={age}
                 label='Mode'
-                defaultValue={'Eternal'}
-                //onChange={handleChange}
+                value={props.currentFormat}
+                onChange={(event) => {
+                  props.setFormat(event.target.value as DraftFormat);
+                }}
               >
-                <MenuItem value={'Standard'}>Standard</MenuItem>
-                <MenuItem value={'Eternal'}>Eternal</MenuItem>
+                {allDraftFormats().map((format) => (
+                  <MenuItem key={format} value={format}>
+                    {format}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>
@@ -37,13 +53,17 @@ export function ModeSelection() {
               <Select
                 labelId='rarity-select-label'
                 id='rarity-select'
-                //value={age}
                 label='Rarity'
-                defaultValue={'Any Rarity'}
-                //onChange={handleChange}
+                value={props.currentRarity}
+                onChange={(event) => {
+                  props.setRarity(event.target.value as DraftRarityRestriction);
+                }}
               >
-                <MenuItem value={'Any Rarity'}>Any Rarity</MenuItem>
-                <MenuItem value={'Commons Only'}>Commons Only</MenuItem>
+                {allRarityRestrictions().map((rarity) => (
+                  <MenuItem key={rarity} value={rarity}>
+                    {rarityDisplayName(rarity)}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>

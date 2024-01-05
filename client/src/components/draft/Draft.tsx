@@ -4,6 +4,7 @@ import style from './Draft.module.css';
 
 import { Card, cardsEqual } from 'common/game/card';
 import { DraftStateInfo, draftStateCardLimits } from 'common/game/draft';
+import { DraftOptions } from 'common/game/draft_options';
 import { GameMetadata } from 'common/game/metadata';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
@@ -14,7 +15,11 @@ import { PoolComponent } from 'client/components/draft/PoolComponent';
 import { RoundLabel } from 'client/components/draft/RoundLabel';
 import { DraftSketch } from 'client/context/draft/draft_sketch';
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager';
-import { doChooseDraftCardsAsync, doExitDraftAsync } from 'client/store/draft';
+import {
+  doChooseDraftCardsAsync,
+  doExitDraftAsync,
+  doJoinDraftAsync,
+} from 'client/store/draft';
 import { useLoRDispatch } from 'client/store/hooks';
 
 export interface DraftProps {
@@ -22,6 +27,7 @@ export interface DraftProps {
   authInfo: AuthInfo;
   draftState: DraftStateInfo;
   gameMetadata: GameMetadata | null;
+  setOptions: (options: DraftOptions) => void;
 }
 
 export function DraftComponent(props: DraftProps) {
@@ -46,11 +52,18 @@ export function DraftComponent(props: DraftProps) {
     // deck to monitor changes.
   }, [props.draftState.deck.numCards]);
 
-  function exitDraft() {
-    dispatch(
+  async function restartDraft() {
+    await dispatch(
       doExitDraftAsync({
         socket: props.socket,
         authInfo: props.authInfo,
+      })
+    );
+    dispatch(
+      doJoinDraftAsync({
+        socket: props.socket,
+        authInfo: props.authInfo,
+        draftOptions: props.draftState.deck.options,
       })
     );
   }
@@ -111,7 +124,7 @@ export function DraftComponent(props: DraftProps) {
         />
       </div>
       <div>
-        <Button onClick={exitDraft}>EXIT!</Button>
+        <Button onClick={restartDraft}>Restart</Button>
       </div>
     </div>
   );

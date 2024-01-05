@@ -35,7 +35,7 @@ function NonChampRoundLabel(props: NonChampRoundLabelProps) {
   return (
     <>
       <div>Next Champion Round In: {cutoff - props.deck.numCards}</div>
-      <div className={style.bottomText}>select one</div>
+      <div className={style.bottomText}>Select One</div>
     </>
   );
 }
