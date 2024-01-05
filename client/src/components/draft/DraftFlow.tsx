@@ -1,10 +1,17 @@
 import React from 'react';
 
+import { DraftOptions, defaultDraftOptions } from 'common/game/draft_options';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
+import { Header } from 'client/components/common/header';
 import { DraftComponent } from 'client/components/draft/Draft';
-import { DraftOptionsComponent } from 'client/components/draft/DraftOptions';
-import { inDraft, selectDraftState } from 'client/store/draft';
+import SettingsMenu from 'client/components/draft/SettingsMenu';
+import {
+  doExitDraftAsync,
+  doJoinDraftAsync,
+  inDraft,
+  selectDraftState,
+} from 'client/store/draft';
 import {
   doFetchGameMetadataAsync,
   selectGameMetadataState,
@@ -17,6 +24,8 @@ interface DraftFlowComponentProps {
 }
 
 export function DraftFlowComponent(props: DraftFlowComponentProps) {
+  const [options, setOptions] =
+    React.useState<DraftOptions>(defaultDraftOptions);
   const draft_state = useLoRSelector(selectDraftState);
   const game_metadata = useLoRSelector(selectGameMetadataState);
   const dispatch = useLoRDispatch();
@@ -32,22 +41,50 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
     }, 0);
   }
 
+  React.useEffect(() => {
+    const rejoinDraft = async () => {
+      await dispatch(
+        doExitDraftAsync({
+          socket: props.socket,
+          authInfo: props.authInfo,
+        })
+      );
+      await dispatch(
+        doJoinDraftAsync({
+          socket: props.socket,
+          authInfo: props.authInfo,
+          draftOptions: options,
+        })
+      );
+    };
+
+    if (inDraft(draft_state)) {
+      rejoinDraft();
+    }
+  }, [options.draftFormat, options.rarityRestriction]);
+
   if (!inDraft(draft_state)) {
-    return (
-      <DraftOptionsComponent
-        socket={props.socket}
-        authInfo={props.authInfo}
-        gameMetadata={game_metadata}
-      />
-    );
+    return <></>;
   } else {
     return (
-      <DraftComponent
-        socket={props.socket}
-        authInfo={props.authInfo}
-        draftState={draft_state.state}
-        gameMetadata={game_metadata}
-      />
+      <>
+        <Header
+          socket={props.socket}
+          leftComponent={
+            <SettingsMenu
+              setOptions={setOptions}
+              deck={draft_state.state.deck}
+            />
+          }
+        />
+        <DraftComponent
+          socket={props.socket}
+          authInfo={props.authInfo}
+          draftState={draft_state.state}
+          gameMetadata={game_metadata}
+          setOptions={setOptions}
+        />
+      </>
     );
   }
 }

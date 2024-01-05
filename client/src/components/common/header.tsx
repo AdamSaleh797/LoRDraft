@@ -1,24 +1,26 @@
 import { Box, Grid } from '@mui/material';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 import style from './header.module.css';
 
 import { LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { UserComponent } from 'client/components/auth/UserInfoComponent';
-import { ModeSelection } from 'client/components/draft/ModeSelection';
 import { useLoRSelector } from 'client/store/hooks';
 import { isSignedIn, selectSessionState } from 'client/store/session';
 import { APP_TITLE } from 'client/utils/constants';
 
-export function Header(props: { socket: LoRDraftClientSocket }) {
+export function Header(props: {
+  socket: LoRDraftClientSocket;
+  leftComponent?: ReactNode;
+}) {
   const session_state = useLoRSelector(selectSessionState);
 
   return (
     <div className={style.header}>
       <Grid container spacing={2} alignItems='center'>
         <Grid item xs={3}>
-          <ModeSelection />
+          {props.leftComponent}
         </Grid>
         <Grid item xs={6}>
           <Box

@@ -25,6 +25,8 @@
   font-size: 9px;
   background-color: #262931;
   color: white;
+  display: flex;
+  justify-content: center;
 }
 
 .cardCount {

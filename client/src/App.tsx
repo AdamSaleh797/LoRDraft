@@ -3,7 +3,6 @@ import { CssBaseline, createTheme } from '@mui/material';
 import React from 'react';
 
 import SignIn from 'client/components/auth/NewSignInComponent';
-import { Header } from 'client/components/common/header';
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow';
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks';
 import {
@@ -66,7 +65,6 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Header socket={socket_ref.current} />
       {isSignedIn(session_state) ? (
         <DraftFlowComponent
           socket={socket_ref.current}

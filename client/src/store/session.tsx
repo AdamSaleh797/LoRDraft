@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
+import { defaultDraftOptions } from 'common/game/draft_options';
 import {
   AuthInfo,
   LoRDraftClientSocket,
@@ -16,7 +17,11 @@ import {
 
 import { CachedAuthInfo } from 'client/components/auth/cached_auth_info';
 import { LoRDispatch, RootState } from 'client/store';
-import { clearDraftState, doUpdateDraftAsync } from 'client/store/draft';
+import {
+  clearDraftState,
+  doJoinDraftAsync,
+  doUpdateDraftAsync,
+} from 'client/store/draft';
 import { ThunkAPI } from 'client/store/util';
 
 export const enum UserSessionState {
@@ -90,7 +95,7 @@ export async function tryInitializeUserSession(
   }
 
   // If we were able to login successfully, try joining a draft
-  dispatch(
+  await dispatch(
     doUpdateDraftAsync({
       socket: args.socket,
       authInfo: result.payload.value,
@@ -113,14 +118,42 @@ export async function loginUser(dispatch: LoRDispatch, args: LoginArgs) {
   } else if (!isOk(result.payload)) {
     return result.payload;
   }
+  const authInfo = result.payload.value;
 
   // If we were able to login successfully, try joining a draft
-  dispatch(
+  const current_draft_res = await dispatch(
     doUpdateDraftAsync({
       socket: args.socket,
-      authInfo: result.payload.value,
+      authInfo,
     })
   );
+  if (current_draft_res.payload === undefined) {
+    return makeErrStatus(
+      StatusCode.REDUX_DISPATCH_FAILED,
+      'Failed to dispatch current draft action'
+    );
+  } else if (!isOk(current_draft_res.payload)) {
+    if (current_draft_res.payload.status !== StatusCode.NOT_IN_DRAFT_SESSION) {
+      return current_draft_res.payload;
+    }
+
+    // If we are not in a draft already, try joining a new one.
+    const join_draft_res = await dispatch(
+      doJoinDraftAsync({
+        socket: args.socket,
+        authInfo,
+        draftOptions: defaultDraftOptions,
+      })
+    );
+    if (join_draft_res.payload === undefined) {
+      return makeErrStatus(
+        StatusCode.REDUX_DISPATCH_FAILED,
+        'Failed to dispatch join draft action'
+      );
+    } else if (!isOk(join_draft_res.payload)) {
+      return join_draft_res.payload;
+    }
+  }
   return OkStatus;
 }
 

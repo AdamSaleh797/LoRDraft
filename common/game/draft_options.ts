@@ -11,6 +11,19 @@ export enum DraftRarityRestriction {
 
 export const DraftRarityRestrictionT = enumToRuntype(DraftRarityRestriction);
 
+export function allRarityRestrictions(): DraftRarityRestriction[] {
+  return Object.values(DraftRarityRestriction);
+}
+
+export function rarityDisplayName(rarity: DraftRarityRestriction): string {
+  switch (rarity) {
+    case DraftRarityRestriction.ANY_RARITY:
+      return 'Any Rarity';
+    case DraftRarityRestriction.COMMONS:
+      return 'Commons Only';
+  }
+}
+
 export const DraftOptionsT = RecordT({
   rarityRestriction: DraftRarityRestrictionT,
   draftFormat: DraftFormatT,
@@ -20,6 +33,13 @@ export interface DraftOptions {
   rarityRestriction: DraftRarityRestriction;
   draftFormat: DraftFormat;
 }
+
+export const defaultFormat: DraftFormat = 'Eternal';
+export const defaultRarity = DraftRarityRestriction.ANY_RARITY;
+export const defaultDraftOptions: DraftOptions = {
+  draftFormat: defaultFormat,
+  rarityRestriction: defaultRarity,
+};
 
 /**
  * Checks whether the given card is part of the draft format specified by `draft_options`.
