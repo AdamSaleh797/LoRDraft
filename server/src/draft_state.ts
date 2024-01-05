@@ -13,7 +13,11 @@ import {
   draftStateCardLimits,
   makeDraftDeck,
 } from 'common/game/draft';
-import { DraftOptions, DraftOptionsT } from 'common/game/draft_options';
+import {
+  DraftOptions,
+  DraftOptionsT,
+  DraftRarityRestriction,
+} from 'common/game/draft_options';
 import { CardListT, LoRDraftSocket } from 'common/game/socket-msgs';
 import { intersectListsPred } from 'common/util/lor_util';
 import {
@@ -54,6 +58,10 @@ async function chooseChampCards(
   deck: DraftDeck,
   allow_same_region = true
 ): Promise<Status<Card[]>> {
+  if (deck.options.rarityRestriction === DraftRarityRestriction.COMMONS) {
+    return makeOkStatus([]);
+  }
+
   const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
     draft_state
   )
