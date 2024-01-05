@@ -3,10 +3,8 @@ import LockPersonIcon from '@mui/icons-material/LockPerson';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
@@ -110,10 +108,6 @@ function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
           id='password'
           autoComplete='current-password'
         />
-        <FormControlLabel
-          control={<Checkbox value='remember' color='primary' />}
-          label='Remember me'
-        />
         <Button
           type='submit'
           fullWidth
@@ -123,11 +117,7 @@ function LoginComponent({ socket, toRegisterFn }: LoginComponentProps) {
           Sign In
         </Button>
         <Grid container>
-          <Grid item xs>
-            <Link href='#' variant='body2'>
-              Forgot password?
-            </Link>
-          </Grid>
+          {/* <Grid item xs> add a forgot password </Grid> */}
           <Grid item>
             <Link href='#' variant='body2' onClick={handleSignUp}>
               {"Don't have an account? Sign Up"}
@@ -242,10 +232,6 @@ function RegisterComponent({ socket, toSignInFn }: RegisterComponentProps) {
           type='password'
           id='password2'
           autoComplete='new-password'
-        />
-        <FormControlLabel
-          control={<Checkbox value='remember' color='primary' />}
-          label='Remember me'
         />
         <Button
           type='submit'

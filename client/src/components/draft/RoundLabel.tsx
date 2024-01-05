@@ -10,6 +10,7 @@ import {
   RANDOM_SELECTION_2_CARD_CUTOFF,
   RANDOM_SELECTION_3_CARD_CUTOFF,
 } from 'common/game/draft';
+import { DraftRarityRestriction } from 'common/game/draft_options';
 
 interface NonChampRoundLabelProps {
   state:
@@ -46,47 +47,69 @@ export interface RoundLabelProps {
 
 export function RoundLabel(props: RoundLabelProps) {
   let contents;
-  switch (props.draftState.state) {
-    case DraftState.INITIAL_SELECTION:
-      contents = (
-        <>
-          <div>CHAMPION ROUND</div>
-          <div className={style.bottomText}>Select Two</div>
-        </>
-      );
-      break;
-    case DraftState.CHAMP_ROUND_1:
-    case DraftState.CHAMP_ROUND_2:
-    case DraftState.CHAMP_ROUND_3:
-      contents = (
-        <>
-          <div>CHAMPION ROUND</div>
-          <div className={style.bottomText}>Select Up To Two</div>
-        </>
-      );
-      break;
-    case DraftState.RANDOM_SELECTION_1:
-    case DraftState.RANDOM_SELECTION_2:
-    case DraftState.RANDOM_SELECTION_3:
-      contents = (
-        <NonChampRoundLabel
-          state={props.draftState.state}
-          deck={props.draftState.deck}
-        />
-      );
-      break;
-    case DraftState.GENERATE_CODE:
+  if (
+    props.draftState.deck.options.rarityRestriction ===
+    DraftRarityRestriction.ANY_RARITY
+  ) {
+    switch (props.draftState.state) {
+      case DraftState.INITIAL_SELECTION:
+        contents = (
+          <>
+            <div>Champion Round</div>
+            <div className={style.bottomText}>Select Two</div>
+          </>
+        );
+        break;
+      case DraftState.CHAMP_ROUND_1:
+      case DraftState.CHAMP_ROUND_2:
+      case DraftState.CHAMP_ROUND_3:
+        contents = (
+          <>
+            <div>Champion Round</div>
+            <div className={style.bottomText}>Select Up To Two</div>
+          </>
+        );
+        break;
+      case DraftState.RANDOM_SELECTION_1:
+      case DraftState.RANDOM_SELECTION_2:
+      case DraftState.RANDOM_SELECTION_3:
+        contents = (
+          <NonChampRoundLabel
+            state={props.draftState.state}
+            deck={props.draftState.deck}
+          />
+        );
+        break;
+      case DraftState.GENERATE_CODE:
+        contents = (
+          <>
+            <div>Draft Completed!</div>
+            <div className={style.bottomText}>Copy Your Deck Code!</div>
+          </>
+        );
+        break;
+      case DraftState.INIT:
+        contents = <></>;
+        break;
+    }
+  } else {
+    if (props.draftState.state === DraftState.GENERATE_CODE) {
       contents = (
         <>
           <div>Draft Completed!</div>
           <div className={style.bottomText}>Copy Your Deck Code!</div>
         </>
       );
-      break;
-    case DraftState.INIT:
-      contents = <></>;
-      break;
+    } else {
+      contents = (
+        <>
+          <div>Rounds Left: {43 - props.draftState.deck.numCards} </div>
+          <div className={style.bottomText}>Select One</div>
+        </>
+      );
+    }
   }
+
   return (
     <div className={style.roundLabelContainer}>
       <div className={style.roundLabel}>{contents}</div>
