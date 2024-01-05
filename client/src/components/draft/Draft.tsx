@@ -59,7 +59,7 @@ export function DraftComponent(props: DraftProps) {
         authInfo: props.authInfo,
       })
     );
-    dispatch(
+    await dispatch(
       doJoinDraftAsync({
         socket: props.socket,
         authInfo: props.authInfo,

@@ -3,7 +3,12 @@ import { Socket as ServerSocket } from 'socket.io';
 import { Socket as ClientSocket } from 'socket.io-client';
 import { DeepReadonly } from 'ts-essentials';
 
-import { DeepReadonlyTuple, Empty, genUUID } from 'common/util/lor_util';
+import {
+  DeepReadonlyTuple,
+  Empty,
+  filterPII,
+  genUUID,
+} from 'common/util/lor_util';
 import { Status, StatusCode, makeErrStatus } from 'common/util/status';
 
 interface EventsMap {
@@ -118,7 +123,7 @@ export class AsyncSocketContext<
     if (!this.listeners.has(event)) {
       const cb: CallbackT = (uuid, response) => {
         if (this.verbose) {
-          console.log(`Receiving ${uuid} with`, response);
+          console.log(`Receiving ${uuid} with`, filterPII(response));
         }
         if (!this.outstanding_calls.has(uuid)) {
           console.error(`Error: received event with unknown uuid: ${uuid}`);
@@ -171,7 +176,7 @@ export class AsyncSocketContext<
     ...args: DeepReadonlyTuple<Parameters<EmitEvents[EventName]>>
   ) {
     if (this.verbose) {
-      console.log(`emitting ${event_name} with`, ...args);
+      console.log(`emitting ${event_name} with`, filterPII(args));
     }
     this.rawSocket().emit(event_name, ...args);
   }
@@ -185,7 +190,7 @@ export class AsyncSocketContext<
     let cb: ListenEvents[EventName];
     if (this.verbose) {
       cb = ((...args: unknown[]) => {
-        console.log(`responding (on) ${event_name} with`, ...args);
+        console.log(`responding (on) ${event_name} with`, filterPII(args));
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         callback(...args);
       }) as ListenEvents[EventName];
@@ -200,7 +205,7 @@ export class AsyncSocketContext<
     ...args: ReqParams<EventName, EmitEvents>
   ): Promise<ResponseT<EventName, ListenEvents>> {
     if (this.verbose) {
-      console.log(`calling ${event_name} with`, ...args);
+      console.log(`calling ${event_name} with`, filterPII(args));
     }
 
     this.initCallback(event_name);
@@ -249,11 +254,17 @@ export class AsyncSocketContext<
       event_name,
       async (uuid: string, ...params: ReqParams<EventName, ListenEvents>) => {
         if (this.verbose) {
-          console.log(`received ${event_name} (${uuid}) with`, ...params);
+          console.log(
+            `received ${event_name} (${uuid}) with`,
+            filterPII(params)
+          );
         }
         const result = await callback(...params);
         if (this.verbose) {
-          console.log(`responding ${event_name} (${uuid}) with`, result);
+          console.log(
+            `responding ${event_name} (${uuid}) with`,
+            filterPII(result)
+          );
         }
         (
           this.socket.emit as unknown as (

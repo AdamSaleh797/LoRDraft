@@ -36,6 +36,10 @@ export interface DraftOptions {
 
 export const defaultFormat: DraftFormat = 'Eternal';
 export const defaultRarity = DraftRarityRestriction.ANY_RARITY;
+export const defaultDraftOptions: DraftOptions = {
+  draftFormat: defaultFormat,
+  rarityRestriction: defaultRarity,
+};
 
 /**
  * Checks whether the given card is part of the draft format specified by `draft_options`.
