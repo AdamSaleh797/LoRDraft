@@ -4,12 +4,15 @@ import {
   DraftFormatMetadata,
   DraftFormatRef,
   GameMetadata,
+  OfficialDraftFormat,
   RegionMetadata,
   RegionRef,
   SetPackDraftFormatMetadataT,
   SetPackRegionMetadataT,
   allDraftFormats,
-  draftFormatRefToName,
+  officialDraftFormatRefToName,
+  officialDraftFormats,
+  unofficialFormatMetadata,
 } from 'common/game/metadata';
 import { isArray, keyInUnknown } from 'common/util/lor_util';
 import {
@@ -128,7 +131,7 @@ function parseFormatsMetadata(
       continue;
     }
 
-    const name = draftFormatRefToName(format.nameRef as DraftFormatRef);
+    const name = officialDraftFormatRefToName(format.nameRef as DraftFormatRef);
 
     format_metadata_builder[name] = {
       imageUrl: format.iconAbsolutePath,
@@ -136,9 +139,9 @@ function parseFormatsMetadata(
     };
   }
 
-  // Check that all formats are in the formats metadata map.
+  // Check that all official formats are in the formats metadata map.
   if (
-    allDraftFormats().some((format) => {
+    officialDraftFormats().some((format) => {
       return !(format in format_metadata_builder);
     })
   ) {
@@ -150,8 +153,13 @@ function parseFormatsMetadata(
     );
   }
 
-  const format_metadata: Record<DraftFormat, DraftFormatMetadata> =
-    format_metadata_builder as Record<DraftFormat, DraftFormatMetadata>;
+  const format_metadata: Record<DraftFormat, DraftFormatMetadata> = {
+    ...(format_metadata_builder as Record<
+      OfficialDraftFormat,
+      DraftFormatMetadata
+    >),
+    ...unofficialFormatMetadata,
+  };
 
   return makeOkStatus(format_metadata);
 }

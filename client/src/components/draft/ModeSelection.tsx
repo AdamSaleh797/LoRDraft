@@ -13,7 +13,11 @@ import {
   allRarityRestrictions,
   rarityDisplayName,
 } from 'common/game/draft_options';
-import { DraftFormat, allDraftFormats } from 'common/game/metadata';
+import {
+  DraftFormat,
+  allDraftFormats,
+  formatDisplayName,
+} from 'common/game/metadata';
 
 export function ModeSelection(props: {
   setFormat: (format: DraftFormat) => void;
@@ -39,7 +43,7 @@ export function ModeSelection(props: {
               >
                 {allDraftFormats().map((format) => (
                   <MenuItem key={format} value={format}>
-                    {format}
+                    {formatDisplayName(format)}
                   </MenuItem>
                 ))}
               </Select>

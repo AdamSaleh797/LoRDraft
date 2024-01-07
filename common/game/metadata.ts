@@ -12,6 +12,11 @@ const DRAFT_FORMAT_REFS = {
   /* eslint-enable @typescript-eslint/naming-convention */
 } as const;
 
+enum UnofficialFormats {
+  // Non-official formats
+  FREE_BUILD = 'FREE_BUILD',
+}
+
 const DRAFT_FORMAT_REF_LITERALS = Object.keys(DRAFT_FORMAT_REFS).map((format) =>
   Literal(format)
 );
@@ -29,28 +34,58 @@ export const SetPackDraftFormatMetadataT = RecordT({
   /* eslint-enable @typescript-eslint/naming-convention */
 });
 
-const DRAFT_FORMAT_LITERALS = Object.values(DRAFT_FORMAT_REFS).map((format) =>
-  Literal(format)
-);
+const DRAFT_FORMAT_LITERALS = Object.values<string>(DRAFT_FORMAT_REFS)
+  .concat(...Object.values(UnofficialFormats))
+  .map((format) => Literal(format));
 export const DraftFormatT = Union(
   DRAFT_FORMAT_LITERALS[0],
   ...DRAFT_FORMAT_LITERALS.slice(1)
 );
 
-export type DraftFormat = MapTypeValues<typeof DRAFT_FORMAT_REFS>;
+export type OfficialDraftFormat = MapTypeValues<typeof DRAFT_FORMAT_REFS>;
+
+export type DraftFormat = OfficialDraftFormat | keyof typeof UnofficialFormats;
+
+export function formatDisplayName(format: DraftFormat): string {
+  switch (format) {
+    case 'Eternal':
+      return 'Eternal';
+    case 'Standard':
+      return 'Standard';
+    case 'FREE_BUILD':
+      return 'Free Build';
+  }
+}
 
 export interface DraftFormatMetadata {
-  name: DraftFormat;
-  imageUrl: string;
+  name: string;
+  imageUrl?: string;
+}
+
+export function officialDraftFormats(): readonly OfficialDraftFormat[] {
+  return Object.values(DRAFT_FORMAT_REFS);
 }
 
 export function allDraftFormats(): readonly DraftFormat[] {
-  return Object.values(DRAFT_FORMAT_REFS) as DraftFormat[];
+  return Object.values<string>(DRAFT_FORMAT_REFS).concat(
+    ...Object.values(UnofficialFormats)
+  ) as DraftFormat[];
 }
 
-export function draftFormatRefToName(format_ref: DraftFormatRef): DraftFormat {
+export function officialDraftFormatRefToName(
+  format_ref: DraftFormatRef
+): DraftFormat {
   return DRAFT_FORMAT_REFS[format_ref];
 }
+
+export const unofficialFormatMetadata: Record<
+  UnofficialFormats,
+  DraftFormatMetadata
+> = {
+  [UnofficialFormats.FREE_BUILD]: {
+    name: 'Free Build',
+  },
+};
 
 const REGION_ABBREVIATIONS = [
   'NX',

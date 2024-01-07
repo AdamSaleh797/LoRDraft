@@ -9,6 +9,7 @@ import { GameMetadata } from 'common/game/metadata';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { Button } from 'client/components/common/button';
+import ChangeWarning from 'client/components/draft/ChangeWarning';
 import { DeckList } from 'client/components/draft/DeckList';
 import { ManaCurve } from 'client/components/draft/ManaCurve';
 import { PoolComponent } from 'client/components/draft/PoolComponent';
@@ -36,6 +37,14 @@ export function DraftComponent(props: DraftProps) {
   const [sketch, setSketch] = React.useState<DraftSketch>(
     new DraftSketch(props.draftState.deck)
   );
+  const [warning, setWarning] = React.useState(false);
+
+  const openWarning = () => {
+    setWarning(true);
+  };
+  const closeWarning = () => {
+    setWarning(false);
+  };
 
   const selected_cards = sketch.addedCards;
   const cards = props.draftState.pendingCards;
@@ -124,7 +133,16 @@ export function DraftComponent(props: DraftProps) {
         />
       </div>
       <div>
-        <Button onClick={restartDraft}>Restart</Button>
+        <Button onClick={openWarning}>Restart</Button>
+        <ChangeWarning
+          flavorText='Are you sure you want to restart the draft?'
+          open={warning}
+          accept={() => {
+            closeWarning();
+            restartDraft();
+          }}
+          decline={closeWarning}
+        />
       </div>
     </div>
   );

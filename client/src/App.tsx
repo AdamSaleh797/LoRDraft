@@ -2,7 +2,7 @@ import { ThemeProvider } from '@emotion/react';
 import { CssBaseline, createTheme } from '@mui/material';
 import React from 'react';
 
-import SignIn from 'client/components/auth/NewSignInComponent';
+import SignIn from 'client/components/auth/SignInComponent';
 import { DraftFlowComponent } from 'client/components/draft/DraftFlow';
 import { useLoRDispatch, useLoRSelector } from 'client/store/hooks';
 import {

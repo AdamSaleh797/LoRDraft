@@ -78,7 +78,10 @@ export function RegionIconList(props: RegionIconListComponentProps) {
               key={`${region}${index}`}
               region={region as Region}
               cardCount={count}
-              certainRegions={certain_regions}
+              faded={
+                props.draftSketch.deck.options.draftFormat !== 'FREE_BUILD' &&
+                certain_regions.includes(region as Region)
+              }
               gameMetadata={props.gameMetadata}
             />
           );
