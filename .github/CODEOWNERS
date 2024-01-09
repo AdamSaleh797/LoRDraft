@@ -1,6 +1,6 @@
 # By default, AdamSaleh797 and Clayton own all json config files.
 
-\*.json @AdamSaleh797 @ClaytonKnittel
+.json @AdamSaleh797 @ClaytonKnittel
 
 /common @AdamSaleh797 @ClaytonKnittel
 
