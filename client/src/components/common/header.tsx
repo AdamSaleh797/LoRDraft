@@ -12,7 +12,8 @@ import { APP_TITLE } from 'client/utils/constants';
 
 export function Header(props: {
   socket: LoRDraftClientSocket;
-  leftComponent?: ReactNode;
+  settingsComponent?: ReactNode;
+  rulesComponent?: ReactNode;
 }) {
   const session_state = useLoRSelector(selectSessionState);
 
@@ -20,7 +21,10 @@ export function Header(props: {
     <div className={style.header}>
       <Grid container spacing={2} alignItems='center'>
         <Grid item xs={3}>
-          {props.leftComponent}
+          <Box display='flex' justifyContent='column'>
+            <Box marginRight='10px'>{props.settingsComponent}</Box>
+            <Box>{props.rulesComponent}</Box>
+          </Box>
         </Grid>
         <Grid item xs={6}>
           <Box
