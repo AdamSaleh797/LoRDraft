@@ -33,7 +33,7 @@ default formatter for TypeScript files.
 Once you have a set of changes you'd like to commit, first publish them to a new
 branch. If you are not a contributor for the repository, first make a fork and
 push your changes to a branch of the forked repository. From there, open a pull
-request into the `main` branch. Either @ClaytonKnittel or @Moniino will be
+request into the `main` branch. Either @ClaytonKnittel or @AdamSaleh797 will be
 automatically requested as reviewers, depending on which files were changed.
 
 Before merging, all of the GitHub actions must pass, and you need an approval

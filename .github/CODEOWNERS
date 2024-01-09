@@ -1,14 +1,15 @@
-# By default, Moniino and Clayton own all json config files.
-*.json @Moniino @ClaytonKnittel
+# By default, AdamSaleh797 and Clayton own all json config files.
 
-/common @Moniino @ClaytonKnittel
+*.json @AdamSaleh797 @ClaytonKnittel
 
-/client @Moniino
+/common @AdamSaleh797 @ClaytonKnittel
 
-/bot @Moniino @ClaytonKnittel
+/client @AdamSaleh797
+
+/bot @AdamSaleh797 @ClaytonKnittel
 
 /server @ClaytonKnittel
 
-.github @Moniino @ClaytonKnittel
+.github @AdamSaleh797 @ClaytonKnittel
 
 /lint @ClaytonKnittel
