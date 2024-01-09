@@ -5,6 +5,7 @@ import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { Header } from 'client/components/common/header';
 import { DraftComponent } from 'client/components/draft/Draft';
+import Rules from 'client/components/draft/Rules';
 import SettingsMenu from 'client/components/draft/SettingsMenu';
 import {
   doExitDraftAsync,
@@ -69,12 +70,13 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
       <>
         <Header
           socket={props.socket}
-          leftComponent={
+          settingsComponent={
             <SettingsMenu
               setOptions={setOptions}
               deck={draft_state.state.deck}
             />
           }
+          rulesComponent={<Rules />}
         />
         <DraftComponent
           socket={props.socket}
