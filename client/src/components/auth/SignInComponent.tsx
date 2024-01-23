@@ -306,6 +306,11 @@ export default function SignIn({ socket }: SessionComponentProps) {
           {form}
         </Box>
         <Copyright sx={{ mt: 8, mb: 4 }} />
+        <Box display='flex' justifyContent='center'>
+          <Typography fontSize='12px' color='text.secondary'>
+            Credits to: @MoniinoLoR, Clayton Knittel, @Rune_Linkerty, @Kuvi_LoR
+          </Typography>
+        </Box>
       </Container>
     </>
   );
