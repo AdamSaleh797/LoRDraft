@@ -109,6 +109,7 @@ export function RoundLabel(props: RoundLabelProps) {
       );
     }
   }
+
   return (
     <div className={style.roundLabelContainer}>
       <div className={style.roundLabel}>{contents}</div>
