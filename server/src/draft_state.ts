@@ -62,11 +62,11 @@ async function chooseChampCards(
     return makeOkStatus([]);
   }
 
-  const num_guaranteed_champs = RESTRICTED_POOL_DRAFT_STATES.includes(
-    draft_state
-  )
-    ? GUARANTEED_CHAMP_COUNT
-    : 0;
+  const num_guaranteed_champs =
+    RESTRICTED_POOL_DRAFT_STATES.includes(draft_state) &&
+    deck.options.draftFormat !== 'FREE_BUILD'
+      ? GUARANTEED_CHAMP_COUNT
+      : 0;
 
   const status = await randomSampleCards({
     cardType: CardType.CHAMP,
