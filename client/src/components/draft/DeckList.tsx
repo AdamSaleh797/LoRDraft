@@ -2,17 +2,9 @@ import React from 'react';
 
 import style from './DeckList.module.css';
 
-import {
-  CARDS_PER_DECK,
-  CardCount,
-  DraftState,
-  DraftStateInfo,
-  getDeckCode,
-} from 'common/game/draft';
+import { CardCount, DraftState, DraftStateInfo } from 'common/game/draft';
 import { GameMetadata } from 'common/game/metadata';
-import { isOk } from 'common/util/status';
 
-import { CopyButton } from 'client/components/draft/CopyButton';
 import { RegionIconList } from 'client/components/draft/RegionIconList';
 import {
   CardCategory,
@@ -47,31 +39,16 @@ export function DeckList(props: DeckListComponentProps) {
     }
   );
 
-  let deckCode: string | null;
-  if (props.draftState.deck.numCards >= CARDS_PER_DECK) {
-    const code = getDeckCode(props.draftState.deck);
-    if (!isOk(code)) {
-      deckCode = null;
-    } else {
-      deckCode = code.value;
-    }
-  } else {
-    deckCode = null;
-  }
   return (
     <div>
       {props.draftState.state === DraftState.GENERATE_CODE ? (
-        <CopyButton
-          textToCopy={deckCode === null ? '' : deckCode}
-          buttonText='COPY DECK'
-        ></CopyButton>
+        <></>
       ) : (
-        []
+        <RegionIconList
+          draftSketch={props.draftSketch}
+          gameMetadata={props.gameMetadata}
+        />
       )}
-      <RegionIconList
-        draftSketch={props.draftSketch}
-        gameMetadata={props.gameMetadata}
-      />
       <br></br>
       <div>
         {Object.entries(typeCategories).map(([category, cardCounts]) => (

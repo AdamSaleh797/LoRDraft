@@ -1,10 +1,12 @@
 import React from 'react';
 
+import { DraftState } from 'common/game/draft';
 import { defaultDraftOptions } from 'common/game/draft_options';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { Header } from 'client/components/common/header';
 import { DraftComponent } from 'client/components/draft/Draft';
+import { EndScreen } from 'client/components/draft/EndScreen';
 import Rules from 'client/components/draft/Rules';
 import SettingsMenu from 'client/components/draft/SettingsMenu';
 import {
@@ -78,13 +80,22 @@ export function DraftFlowComponent(props: DraftFlowComponentProps) {
           }
           rulesComponent={<Rules />}
         />
-        <DraftComponent
-          socket={props.socket}
-          authInfo={props.authInfo}
-          draftState={draft_state.state}
-          gameMetadata={game_metadata}
-          setOptions={setOptions}
-        />
+        {draft_state.state.state === DraftState.GENERATE_CODE ? (
+          <EndScreen
+            socket={props.socket}
+            authInfo={props.authInfo}
+            draftState={draft_state.state}
+            gameMetadata={game_metadata}
+          />
+        ) : (
+          <DraftComponent
+            socket={props.socket}
+            authInfo={props.authInfo}
+            draftState={draft_state.state}
+            gameMetadata={game_metadata}
+            setOptions={setOptions}
+          />
+        )}
       </>
     );
   }
