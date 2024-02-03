@@ -9,18 +9,14 @@ import { GameMetadata } from 'common/game/metadata';
 import { AuthInfo, LoRDraftClientSocket } from 'common/game/socket-msgs';
 
 import { Button } from 'client/components/common/button';
-import ChangeWarning from 'client/components/draft/ChangeWarning';
 import { DeckList } from 'client/components/draft/DeckList';
 import { ManaCurve } from 'client/components/draft/ManaCurve';
 import { PoolComponent } from 'client/components/draft/PoolComponent';
+import { RestartButton } from 'client/components/draft/RestartButton';
 import { RoundLabel } from 'client/components/draft/RoundLabel';
 import { DraftSketch } from 'client/context/draft/draft_sketch';
 import { DraftSketchManager } from 'client/context/draft/draft_sketch_manager';
-import {
-  doChooseDraftCardsAsync,
-  doExitDraftAsync,
-  doJoinDraftAsync,
-} from 'client/store/draft';
+import { doChooseDraftCardsAsync } from 'client/store/draft';
 import { useLoRDispatch } from 'client/store/hooks';
 
 export interface DraftProps {
@@ -37,14 +33,6 @@ export function DraftComponent(props: DraftProps) {
   const [sketch, setSketch] = React.useState<DraftSketch>(
     new DraftSketch(props.draftState.deck)
   );
-  const [warning, setWarning] = React.useState(false);
-
-  const openWarning = () => {
-    setWarning(true);
-  };
-  const closeWarning = () => {
-    setWarning(false);
-  };
 
   const selected_cards = sketch.addedCards;
   const cards = props.draftState.pendingCards;
@@ -60,22 +48,6 @@ export function DraftComponent(props: DraftProps) {
     // change by adding cards, so we can just monitor the number of cards in the
     // deck to monitor changes.
   }, [props.draftState.deck.numCards]);
-
-  async function restartDraft() {
-    await dispatch(
-      doExitDraftAsync({
-        socket: props.socket,
-        authInfo: props.authInfo,
-      })
-    );
-    await dispatch(
-      doJoinDraftAsync({
-        socket: props.socket,
-        authInfo: props.authInfo,
-        draftOptions: props.draftState.deck.options,
-      })
-    );
-  }
 
   function confirm() {
     const revertedCards = selected_cards.map(
@@ -133,15 +105,10 @@ export function DraftComponent(props: DraftProps) {
         />
       </div>
       <div>
-        <Button onClick={openWarning}>Restart</Button>
-        <ChangeWarning
-          flavorText='Are you sure you want to restart the draft?'
-          open={warning}
-          accept={() => {
-            closeWarning();
-            restartDraft();
-          }}
-          decline={closeWarning}
+        <RestartButton
+          socket={props.socket}
+          authInfo={props.authInfo}
+          draftState={props.draftState}
         />
       </div>
     </div>
